@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -14,6 +13,7 @@ type Config struct {
 
 type ConfigBuilder struct {
 	config Config
+	Error  error
 }
 
 func NewConfigBuilder() *ConfigBuilder {
@@ -29,23 +29,23 @@ func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 	var config Config
 	err := yaml.Unmarshal([]byte(yamlString), &config)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error parsing YAML config: ", err)
-		os.Exit(1)
+		cb.Error = fmt.Errorf("error parsing yaml config: %w", err)
 	}
 
 	cb.config = config
 	return cb
 }
 
-func (cb *ConfigBuilder) FromYAML(yamlFilename string) (*ConfigBuilder, error) {
-	data, err := ioutil.ReadFile(yamlFilename)
+func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
+	data, err := os.ReadFile(yamlFilename)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading YAML file: %s", err)
+		cb.Error = fmt.Errorf("error reading yaml file: %w", err)
 	}
 
-	return cb.WithYAML(string(data)), nil
+	cb.config = cb.WithYAML(string(data)).config
+	return cb
 }
 
-func (cb *ConfigBuilder) Build() Config {
-	return cb.config
+func (cb *ConfigBuilder) Build() (Config, error) {
+	return cb.config, cb.Error
 }
