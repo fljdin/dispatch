@@ -15,7 +15,7 @@ type Config struct {
 
 type ConfigBuilder struct {
 	config Config
-	Error  error
+	err    error
 }
 
 func NewConfigBuilder() *ConfigBuilder {
@@ -36,7 +36,7 @@ func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 	var config Config
 	err := yaml.Unmarshal([]byte(yamlString), &config)
 	if err != nil {
-		cb.Error = fmt.Errorf("error parsing yaml config: %w", err)
+		cb.err = fmt.Errorf("error parsing yaml config: %w", err)
 	}
 
 	cb.config = config
@@ -46,7 +46,7 @@ func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 	data, err := os.ReadFile(yamlFilename)
 	if err != nil {
-		cb.Error = fmt.Errorf("error reading yaml file: %w", err)
+		cb.err = fmt.Errorf("error reading yaml file: %w", err)
 	}
 
 	cb.config = cb.WithYAML(string(data)).config
@@ -62,5 +62,5 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 		cb.config.MaxWorkers = runtime.NumCPU()
 	}
 
-	return cb.config, cb.Error
+	return cb.config, cb.err
 }

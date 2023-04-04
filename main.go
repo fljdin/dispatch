@@ -47,7 +47,6 @@ func launch(cmd *cobra.Command, args []string) error {
 }
 
 func main() {
-	code := 0
 	cmd := &cobra.Command{
 		Use:  "dispatch -c config [-j 2]",
 		RunE: launch,
@@ -57,14 +56,11 @@ func main() {
 	// precedence rules are provided by ConfigBuilder
 	cmd.Flags().IntVarP(&configWorkers, "jobs", "j", 0, ConfigWorkersDesc)
 
-	// make config flag required by cli
+	// make the config flag required by cli
 	cmd.Flags().StringVarP(&ConfigFilename, "config", "c", "", ConfigFilenameDesc)
 	cmd.MarkFlagRequired("config")
 
-	err := cmd.Execute()
-	if err != nil {
-		code = 1
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
 	}
-
-	os.Exit(code)
 }
