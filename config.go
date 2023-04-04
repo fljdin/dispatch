@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"gopkg.in/yaml.v2"
 )
@@ -54,7 +55,11 @@ func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 
 func (cb *ConfigBuilder) Build() (Config, error) {
 	if cb.config.MaxWorkers < 1 {
-		cb.config.MaxWorkers = configWorkersDefault
+		cb.config.MaxWorkers = ConfigWorkersDefault
+	}
+
+	if cb.config.MaxWorkers > runtime.NumCPU() {
+		cb.config.MaxWorkers = runtime.NumCPU()
 	}
 
 	return cb.config, cb.Error

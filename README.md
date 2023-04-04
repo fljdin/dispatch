@@ -11,7 +11,13 @@ Common use cases:
 ## Usage
 
 ```sh
-dispatch -c config.yml
+Usage:
+  dispatch -c config [-j 2] [flags]
+
+Flags:
+  -c, --config string   configuration file
+  -h, --help            help for dispatch
+  -j, --jobs int        number of workers (default 2)
 ```
 
 ## Configuration

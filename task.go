@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os/exec"
 	"time"
 )
@@ -23,7 +24,7 @@ type Task struct {
 	Command string `yaml:"command"`
 }
 
-func (t Task) Run(results chan<- TaskResult) {
+func (t Task) Run(ctx context.Context) TaskResult {
 	startTime := time.Now()
 
 	cmd := exec.Command("sh", "-c", t.Command)
@@ -40,8 +41,9 @@ func (t Task) Run(results chan<- TaskResult) {
 	}
 
 	if err != nil {
+		tr.Status = Failed
 		tr.Message = err.Error()
 	}
 
-	results <- tr
+	return tr
 }

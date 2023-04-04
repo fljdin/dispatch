@@ -1,20 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-var configFilename string
-var configFilenameDesc string = "configuration file"
-var configWorkers int
-var configWorkersDefault int = 2
-var configWorkersDesc string = "number of workers (default 2)"
+var (
+	ConfigFilename       string
+	ConfigFilenameDesc   string = "configuration file"
+	configWorkers        int
+	ConfigWorkersDefault int    = 2
+	ConfigWorkersDesc    string = "number of workers (default 2)"
+)
 
 func launch(cmd *cobra.Command, args []string) error {
-	configBuild := NewConfigBuilder().FromYAML(configFilename)
+	configBuild := NewConfigBuilder().FromYAML(ConfigFilename)
 
 	if configWorkers > 0 {
 		configBuild = configBuild.
@@ -29,6 +32,17 @@ func launch(cmd *cobra.Command, args []string) error {
 	fmt.Println("Config loaded with", len(config.Tasks), "tasks")
 	fmt.Println("- max workers =", config.MaxWorkers)
 
+	dispatcher := NewDispatcher(
+		context.Background(),
+		config.MaxWorkers,
+		len(config.Tasks),
+	)
+
+	for i := 0; i < len(config.Tasks); i++ {
+		dispatcher.Add(config.Tasks[i])
+	}
+
+	dispatcher.Wait()
 	return nil
 }
 
@@ -41,10 +55,10 @@ func main() {
 
 	// don't use defaulting feature from cobra
 	// precedence rules are provided by ConfigBuilder
-	cmd.Flags().IntVarP(&configWorkers, "jobs", "j", 0, configWorkersDesc)
+	cmd.Flags().IntVarP(&configWorkers, "jobs", "j", 0, ConfigWorkersDesc)
 
 	// make config flag required by cli
-	cmd.Flags().StringVarP(&configFilename, "config", "c", "", configFilenameDesc)
+	cmd.Flags().StringVarP(&ConfigFilename, "config", "c", "", ConfigFilenameDesc)
 	cmd.MarkFlagRequired("config")
 
 	err := cmd.Execute()
