@@ -37,9 +37,10 @@ func launch(cmd *cobra.Command, args []string) error {
 		config.MaxWorkers,
 		len(config.Tasks),
 	)
+	dispatcher.Log()
 
-	for i := 0; i < len(config.Tasks); i++ {
-		dispatcher.Add(config.Tasks[i])
+	for _, t := range config.Tasks {
+		dispatcher.Add(t)
 	}
 
 	dispatcher.Wait()

@@ -15,6 +15,7 @@ type TaskResult struct {
 	ID        int
 	StartTime time.Time
 	EndTime   time.Time
+	Elapsed   time.Duration
 	Status    int
 	Message   string
 }
@@ -36,6 +37,7 @@ func (t Task) Run(ctx context.Context) TaskResult {
 		ID:        t.ID,
 		StartTime: startTime,
 		EndTime:   endTime,
+		Elapsed:   endTime.Sub(startTime),
 		Status:    Succeeded,
 		Message:   string(output),
 	}
