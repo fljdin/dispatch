@@ -8,7 +8,8 @@ import (
 )
 
 type Config struct {
-	Tasks []Task `yaml:"tasks"`
+	Tasks      []Task `yaml:"tasks"`
+	MaxWorkers int    `yaml:"workers"`
 }
 
 type ConfigBuilder struct {
@@ -18,6 +19,11 @@ type ConfigBuilder struct {
 
 func NewConfigBuilder() *ConfigBuilder {
 	return &ConfigBuilder{}
+}
+
+func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
+	cb.config.MaxWorkers = value
+	return cb
 }
 
 func (cb *ConfigBuilder) WithTask(task Task) *ConfigBuilder {
@@ -47,5 +53,9 @@ func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) Build() (Config, error) {
+	if cb.config.MaxWorkers < 1 {
+		cb.config.MaxWorkers = configWorkersDefault
+	}
+
 	return cb.config, cb.Error
 }

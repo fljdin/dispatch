@@ -7,7 +7,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateConfigFromBuilder(t *testing.T) {
+func TestConfigWithDefaultMaxWorkers(t *testing.T) {
+	config, _ := NewConfigBuilder().Build()
+
+	assert.Equal(t, config.MaxWorkers, 2)
+}
+
+func TestConfigWithMaxWorkers(t *testing.T) {
+	config, _ := NewConfigBuilder().
+		WithMaxWorkers(4).
+		Build()
+
+	assert.Equal(t, config.MaxWorkers, 4)
+}
+
+func TestConfigWithTask(t *testing.T) {
 	config, _ := NewConfigBuilder().
 		WithTask(Task{
 			ID:      1,
@@ -18,8 +32,9 @@ func TestCreateConfigFromBuilder(t *testing.T) {
 	assert.Equal(t, config.Tasks[0].ID, 1)
 }
 
-func TestCreateConfigFromYAML(t *testing.T) {
+func TestConfigFromYAML(t *testing.T) {
 	yamlConfig := `
+workers: 4
 tasks:
   - id: 1
     command: echo test`
@@ -28,10 +43,22 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
+	assert.Equal(t, config.MaxWorkers, 4)
 	assert.Equal(t, config.Tasks[0].ID, 1)
 }
 
-func TestCreateConfigFromNonExistingFile(t *testing.T) {
+func TestConfigWithMaxWorkersOverrided(t *testing.T) {
+	yamlConfig := "workers: 1"
+
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		WithMaxWorkers(4).
+		Build()
+
+	assert.Equal(t, config.MaxWorkers, 4)
+}
+
+func TestConfigFromNonExistingFile(t *testing.T) {
 	yamlFilename := "test.yaml"
 
 	_, err := NewConfigBuilder().
@@ -41,7 +68,7 @@ func TestCreateConfigFromNonExistingFile(t *testing.T) {
 	assert.Contains(t, err.Error(), "no such file or directory")
 }
 
-func TestCreateConfigFromInvalidYAML(t *testing.T) {
+func TestConfigFromInvalidYAML(t *testing.T) {
 	yamlFilename := "config_*.yaml"
 	yamlContent := "<xml></xml>"
 	tempFile, _ := os.CreateTemp("", yamlFilename)
