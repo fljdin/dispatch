@@ -16,10 +16,10 @@ func TestConfigWithDefaultMaxWorkers(t *testing.T) {
 
 func TestConfigWithMaxWorkers(t *testing.T) {
 	config, _ := NewConfigBuilder().
-		WithMaxWorkers(4).
+		WithMaxWorkers(1).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 4)
+	assert.Equal(t, config.MaxWorkers, 1)
 }
 
 func TestConfigWithTask(t *testing.T) {
@@ -35,7 +35,7 @@ func TestConfigWithTask(t *testing.T) {
 
 func TestConfigFromYAML(t *testing.T) {
 	yamlConfig := `
-workers: 4
+workers: 1
 tasks:
   - id: 1
     command: echo test`
@@ -44,7 +44,7 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 4)
+	assert.Equal(t, config.MaxWorkers, 1)
 	assert.Equal(t, config.Tasks[0].ID, 1)
 }
 
@@ -102,14 +102,14 @@ tasks:
 }
 
 func TestConfigWithMaxWorkersOverrided(t *testing.T) {
-	yamlConfig := "workers: 1"
+	yamlConfig := "workers: 2"
 
 	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
-		WithMaxWorkers(4).
+		WithMaxWorkers(1).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 4)
+	assert.Equal(t, config.MaxWorkers, 1)
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
