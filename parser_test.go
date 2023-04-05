@@ -20,7 +20,7 @@ func TestParserWithSqlContent(t *testing.T) {
 }
 
 func TestParserFromSqlFile(t *testing.T) {
-	sqlFilename := "config_*.yaml"
+	sqlFilename := "queries_*.sql"
 	sqlContent := "SELECT 1;"
 	tempFile, _ := os.CreateTemp("", sqlFilename)
 

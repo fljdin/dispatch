@@ -48,7 +48,7 @@ func (t Task) VerifyRequired() error {
 
 func (t Task) VerifyType() error {
 	for _, tt := range TaskTypes {
-		if t.Type == tt {
+		if t.Type == tt || t.Type == "" {
 			return nil
 		}
 	}

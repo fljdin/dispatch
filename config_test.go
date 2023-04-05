@@ -180,3 +180,28 @@ tasks:
 		assert.Contains(t, err.Error(), "invalid type for parsing file")
 	}
 }
+
+func TestConfigLoadTasksFromFile(t *testing.T) {
+	sqlFilename := "queries_*.sql"
+	sqlContent := "SELECT 1;"
+	tempFile, _ := os.CreateTemp("", sqlFilename)
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	tempFile.Write([]byte(sqlContent))
+
+	config, _ := NewConfigBuilder().
+		WithTask(Task{
+			ID:   1,
+			Type: "psql",
+			File: tempFile.Name(),
+			URI:  "postgresql://localhost",
+		}).
+		Build()
+
+	// File task must be replaced by Command task loaded from SQL file
+	assert.Equal(t, config.Tasks[0].ID, 1)
+	assert.Equal(t, config.Tasks[0].Command, "SELECT 1;")
+	assert.Equal(t, config.Tasks[0].URI, "postgresql://localhost")
+}

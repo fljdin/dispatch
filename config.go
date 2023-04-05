@@ -63,13 +63,17 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 		cb.config.MaxWorkers = runtime.NumCPU()
 	}
 
+	var finalTasks []Task
+
 	for i, t := range cb.config.Tasks {
 		if err := t.VerifyRequired(); err != nil {
 			cb.err = err
+			break
 		}
 
 		if err := t.VerifyType(); err != nil {
 			cb.err = err
+			break
 		}
 
 		// auto-complete URI from named connections
@@ -82,6 +86,11 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 			}
 		}
 
+		// append task to final tasks
+		if t.Command != "" {
+			finalTasks = append(finalTasks, t)
+		}
+
 		// parse queries from file and append new related tasks
 		if t.Command == "" && t.File != "" {
 			parser, err := NewParserBuilder(t.Type).
@@ -92,7 +101,7 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 				cb.err = err
 			} else {
 				for _, query := range parser.Parse() {
-					cb.config.Tasks = append(cb.config.Tasks, Task{
+					finalTasks = append(finalTasks, Task{
 						ID:      t.ID,
 						Type:    t.Type,
 						Name:    fmt.Sprintf("Query loaded from %s", t.File),
@@ -103,6 +112,8 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 			}
 		}
 	}
+
+	cb.config.Tasks = finalTasks
 
 	return cb.config, cb.err
 }
