@@ -63,14 +63,36 @@ func TestPsqlTaskWihoutURI(t *testing.T) {
 	assert.Contains(t, result.Output, "test")
 }
 
+func TestTaskVerifyIDRequired(t *testing.T) {
+	task := &Task{
+		Command: "true",
+	}
+	err := task.VerifyRequired()
+
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "id is required")
+	}
+}
+
+func TestTaskVerifyCommandRequired(t *testing.T) {
+	task := &Task{
+		ID: 1,
+	}
+	err := task.VerifyRequired()
+
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "command is required")
+	}
+}
+
 func TestTaskVerifyType(t *testing.T) {
 	task := &Task{
 		ID:      1,
 		Type:    "unknown",
 		Command: "unknown",
 	}
-
 	err := task.VerifyType()
+
 	if assert.NotEqual(t, err, nil) {
 		assert.Contains(t, err.Error(), "invalid task type")
 	}

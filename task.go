@@ -33,6 +33,18 @@ type TaskResult struct {
 	Error     string
 }
 
+func (t Task) VerifyRequired() error {
+	if t.ID == 0 {
+		return fmt.Errorf("id is required")
+	}
+
+	if t.Command == "" {
+		return fmt.Errorf("command is required")
+	}
+
+	return nil
+}
+
 func (t Task) VerifyType() error {
 	for _, tt := range TaskTypes {
 		if t.Type == tt {
