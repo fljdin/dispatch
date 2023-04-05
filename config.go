@@ -64,7 +64,10 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 	}
 
 	for i, t := range cb.config.Tasks {
-		// controls types
+		if err := t.VerifyRequired(); err != nil {
+			cb.err = err
+		}
+
 		if err := t.VerifyType(); err != nil {
 			cb.err = err
 		}
