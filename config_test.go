@@ -48,7 +48,7 @@ tasks:
 	assert.Equal(t, config.Tasks[0].ID, 1)
 }
 
-func TestConfigFromYAMLWithConnectionOnTask(t *testing.T) {
+func TestConfigFromYAMLWithURIOnTask(t *testing.T) {
 	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
 	yamlConfig := `
 tasks:
@@ -56,14 +56,49 @@ tasks:
     name: use predefined db name
     type: psql
     command: SELECT 1
-    connection: "%s"
+    uri: %s
 `
 	config, err := NewConfigBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, config.Tasks[0].Connection, cnx)
+	assert.Equal(t, config.Tasks[0].URI, cnx)
+}
+
+func TestConfigFromYAMLWithConnections(t *testing.T) {
+	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
+	yamlConfig := `
+connections:
+  - name: db
+    uri: %s
+tasks:
+  - id: 1
+    name: use predefined db name
+    type: psql
+    command: SELECT 1
+    connection: db
+`
+	config, _ := NewConfigBuilder().
+		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
+		Build()
+
+	assert.Equal(t, len(config.Connections), 1)
+	assert.Equal(t, config.Tasks[0].URI, cnx)
+}
+
+func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    command: SELECT 1
+    connection: db
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	assert.Contains(t, err.Error(), "connection not found")
 }
 
 func TestConfigWithMaxWorkersOverrided(t *testing.T) {

@@ -11,16 +11,12 @@ const (
 	Succeeded
 )
 
-type Connection struct {
-	Name string `yaml:"name"`
-	URI  string `yaml:"uri"`
-}
-
 type Task struct {
 	ID         int    `yaml:"id"`
 	Type       string `yaml:"type,omitempty"`
 	Name       string `yaml:"name,omitempty"`
 	Command    string `yaml:"command"`
+	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 }
 
@@ -30,7 +26,8 @@ type TaskResult struct {
 	EndTime   time.Time
 	Elapsed   time.Duration
 	Status    int
-	Message   string
+	Output    string
+	Error     string
 }
 
 func (t Task) Run(ctx context.Context) TaskResult {
@@ -40,7 +37,7 @@ func (t Task) Run(ctx context.Context) TaskResult {
 
 	switch t.Type {
 	case "psql":
-		cmd = exec.Command("psql", "-d", t.Connection, "-c", t.Command)
+		cmd = exec.Command("psql", "-d", t.URI, "-c", t.Command)
 	default:
 		cmd = exec.Command("sh", "-c", t.Command)
 	}
@@ -54,12 +51,12 @@ func (t Task) Run(ctx context.Context) TaskResult {
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
 		Status:    Succeeded,
-		Message:   string(output),
+		Output:    string(output),
 	}
 
 	if err != nil {
 		tr.Status = Failed
-		tr.Message = err.Error()
+		tr.Error = err.Error()
 	}
 
 	return tr

@@ -24,7 +24,7 @@ func TestShellTask(t *testing.T) {
 	result := task.Run(context.Background())
 
 	assert.Equal(t, result.Status, Succeeded)
-	assert.Contains(t, result.Message, "test")
+	assert.Contains(t, result.Output, "test")
 }
 
 func TestShellTaskWithError(t *testing.T) {
@@ -39,14 +39,26 @@ func TestShellTaskWithError(t *testing.T) {
 
 func TestPsqlTask(t *testing.T) {
 	task := &Task{
-		ID:         1,
-		Name:       "Execute SQL statement",
-		Type:       "psql",
-		Command:    "CREATE TEMPORARY TABLE foo (bar smallint);",
-		Connection: "postgresql://postgres:secret@localhost:5432/postgres",
+		ID:      1,
+		Type:    "psql",
+		Command: "CREATE TEMPORARY TABLE foo (bar smallint);",
+		URI:     "postgresql://postgres:secret@localhost:5432/postgres",
 	}
 	result := task.Run(context.Background())
 
 	assert.Equal(t, result.Status, Succeeded)
-	assert.Contains(t, result.Message, "CREATE TABLE")
+	assert.Contains(t, result.Output, "CREATE TABLE")
+}
+
+func TestPsqlTaskWihoutURI(t *testing.T) {
+	task := &Task{
+		ID:      1,
+		Name:    "should connect to default socket",
+		Type:    "psql",
+		Command: "SELECT test",
+	}
+	result := task.Run(context.Background())
+
+	assert.NotEqual(t, result.Status, Succeeded)
+	assert.Contains(t, result.Output, "test")
 }
