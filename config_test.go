@@ -158,3 +158,25 @@ tasks:
 		assert.Contains(t, err.Error(), "invalid task type")
 	}
 }
+
+func TestConfigWithInvalidFileType(t *testing.T) {
+	sqlFilename := "whatever.sql"
+	tempFile, _ := os.CreateTemp("", sqlFilename)
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: sh
+    file: %s
+`
+	_, err := NewConfigBuilder().
+		WithYAML(fmt.Sprintf(yamlConfig, tempFile.Name())).
+		Build()
+
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "invalid type for parsing file")
+	}
+}
