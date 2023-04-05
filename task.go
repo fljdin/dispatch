@@ -11,6 +11,19 @@ const (
 	Succeeded
 )
 
+type Connection struct {
+	Name string `yaml:"name"`
+	URI  string `yaml:"uri"`
+}
+
+type Task struct {
+	ID         int    `yaml:"id"`
+	Type       string `yaml:"type,omitempty"`
+	Name       string `yaml:"name,omitempty"`
+	Command    string `yaml:"command"`
+	Connection string `yaml:"connection,omitempty"`
+}
+
 type TaskResult struct {
 	ID        int
 	StartTime time.Time
@@ -20,15 +33,17 @@ type TaskResult struct {
 	Message   string
 }
 
-type Task struct {
-	ID      int    `yaml:"id"`
-	Command string `yaml:"command"`
-}
-
 func (t Task) Run(ctx context.Context) TaskResult {
+	var cmd *exec.Cmd
+
 	startTime := time.Now()
 
-	cmd := exec.Command("sh", "-c", t.Command)
+	switch t.Type {
+	case "psql":
+		cmd = exec.Command("psql", "-d", t.Connection, "-c", t.Command)
+	default:
+		cmd = exec.Command("sh", "-c", t.Command)
+	}
 
 	output, err := cmd.CombinedOutput()
 	endTime := time.Now()

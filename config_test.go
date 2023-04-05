@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -45,6 +46,24 @@ tasks:
 
 	assert.Equal(t, config.MaxWorkers, 4)
 	assert.Equal(t, config.Tasks[0].ID, 1)
+}
+
+func TestConfigFromYAMLWithConnectionOnTask(t *testing.T) {
+	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
+	yamlConfig := `
+tasks:
+  - id: 1
+    name: use predefined db name
+    type: psql
+    command: SELECT 1
+    connection: "%s"
+`
+	config, err := NewConfigBuilder().
+		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
+		Build()
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, config.Tasks[0].Connection, cnx)
 }
 
 func TestConfigWithMaxWorkersOverrided(t *testing.T) {
