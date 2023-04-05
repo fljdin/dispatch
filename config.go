@@ -81,6 +81,27 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 				cb.config.Tasks[i] = t
 			}
 		}
+
+		// parse queries from file and append new related tasks
+		if t.Command == "" && t.File != "" {
+			parser, err := NewParserBuilder(t.Type).
+				FromFile(t.File).
+				Build()
+
+			if err != nil {
+				cb.err = err
+			} else {
+				for _, query := range parser.Parse() {
+					cb.config.Tasks = append(cb.config.Tasks, Task{
+						ID:      t.ID,
+						Type:    t.Type,
+						Name:    fmt.Sprintf("Query loaded from %s", t.File),
+						Command: query,
+						URI:     t.URI,
+					})
+				}
+			}
+		}
 	}
 
 	return cb.config, cb.err

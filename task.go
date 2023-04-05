@@ -19,6 +19,7 @@ type Task struct {
 	Type       string `yaml:"type,omitempty"`
 	Name       string `yaml:"name,omitempty"`
 	Command    string `yaml:"command"`
+	File       string `yaml:"file"`
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 }
@@ -38,7 +39,7 @@ func (t Task) VerifyRequired() error {
 		return fmt.Errorf("id is required")
 	}
 
-	if t.Command == "" {
+	if t.Command == "" && t.File == "" {
 		return fmt.Errorf("command is required")
 	}
 
