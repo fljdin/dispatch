@@ -14,6 +14,69 @@ type Config struct {
 	Connections Connections `yaml:"connections"`
 }
 
+func (c *Config) ConfigureWorkers() {
+	if c.MaxWorkers < 1 {
+		c.MaxWorkers = ConfigWorkersDefault
+	}
+
+	if c.MaxWorkers > runtime.NumCPU() {
+		c.MaxWorkers = runtime.NumCPU()
+	}
+}
+
+func (c *Config) FinalizeTasks() ([]Task, error) {
+	var finalTasks []Task
+
+	for _, t := range c.Tasks {
+		if err := t.VerifyRequired(); err != nil {
+			return nil, err
+		}
+
+		if err := t.VerifyType(); err != nil {
+			return nil, err
+		}
+
+		// auto-complete URI from named connections
+		if t.URI == "" && t.Connection != "" {
+			uri, err := c.Connections.GetURIByName(t.Connection)
+
+			if err != nil {
+				return nil, err
+			}
+
+			t.URI = uri
+		}
+
+		// append task to final tasks
+		if t.Command != "" {
+			finalTasks = append(finalTasks, t)
+		}
+
+		// parse queries from file and append new related tasks
+		if t.Command == "" && t.File != "" {
+			parser, err := NewParserBuilder(t.Type).
+				FromFile(t.File).
+				Build()
+
+			if err != nil {
+				return nil, err
+			}
+
+			for _, query := range parser.Parse() {
+				finalTasks = append(finalTasks, Task{
+					ID:      t.ID,
+					Type:    t.Type,
+					Name:    fmt.Sprintf("Query loaded from %s", t.File),
+					Command: query,
+					URI:     t.URI,
+				})
+			}
+		}
+	}
+
+	return finalTasks, nil
+}
+
 type ConfigBuilder struct {
 	config Config
 	err    error
@@ -55,65 +118,13 @@ func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) Build() (Config, error) {
-	if cb.config.MaxWorkers < 1 {
-		cb.config.MaxWorkers = ConfigWorkersDefault
+	// if an error has already occurred, stop here
+	if cb.err != nil {
+		return cb.config, cb.err
 	}
 
-	if cb.config.MaxWorkers > runtime.NumCPU() {
-		cb.config.MaxWorkers = runtime.NumCPU()
-	}
-
-	var finalTasks []Task
-
-	for i, t := range cb.config.Tasks {
-		if err := t.VerifyRequired(); err != nil {
-			cb.err = err
-			break
-		}
-
-		if err := t.VerifyType(); err != nil {
-			cb.err = err
-			break
-		}
-
-		// auto-complete URI from named connections
-		if t.URI == "" && t.Connection != "" {
-			if uri, err := cb.config.Connections.GetURIByName(t.Connection); err != nil {
-				cb.err = err
-			} else {
-				t.URI = uri
-				cb.config.Tasks[i] = t
-			}
-		}
-
-		// append task to final tasks
-		if t.Command != "" {
-			finalTasks = append(finalTasks, t)
-		}
-
-		// parse queries from file and append new related tasks
-		if t.Command == "" && t.File != "" {
-			parser, err := NewParserBuilder(t.Type).
-				FromFile(t.File).
-				Build()
-
-			if err != nil {
-				cb.err = err
-			} else {
-				for _, query := range parser.Parse() {
-					finalTasks = append(finalTasks, Task{
-						ID:      t.ID,
-						Type:    t.Type,
-						Name:    fmt.Sprintf("Query loaded from %s", t.File),
-						Command: query,
-						URI:     t.URI,
-					})
-				}
-			}
-		}
-	}
-
-	cb.config.Tasks = finalTasks
+	cb.config.ConfigureWorkers()
+	cb.config.Tasks, cb.err = cb.config.FinalizeTasks()
 
 	return cb.config, cb.err
 }
