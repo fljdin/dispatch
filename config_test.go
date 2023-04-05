@@ -119,7 +119,9 @@ func TestConfigFromNonExistingFile(t *testing.T) {
 		FromYAML(yamlFilename).
 		Build()
 
-	assert.Contains(t, err.Error(), "no such file or directory")
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "no such file or directory")
+	}
 }
 
 func TestConfigFromInvalidYAML(t *testing.T) {
@@ -136,5 +138,23 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 		FromYAML(tempFile.Name()).
 		Build()
 
-	assert.Contains(t, err.Error(), "cannot unmarshal")
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "cannot unmarshal")
+	}
+}
+
+func TestConfigWithInvalidType(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: unknown
+    command: unknown
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "invalid task type")
+	}
 }

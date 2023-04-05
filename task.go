@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 	"time"
 )
@@ -10,6 +11,8 @@ const (
 	Failed int = iota
 	Succeeded
 )
+
+var TaskTypes = []string{"sh", "psql"}
 
 type Task struct {
 	ID         int    `yaml:"id"`
@@ -28,6 +31,15 @@ type TaskResult struct {
 	Status    int
 	Output    string
 	Error     string
+}
+
+func (t Task) VerifyType() error {
+	for _, tt := range TaskTypes {
+		if t.Type == tt {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s is an invalid task type", t.Type)
 }
 
 func (t Task) Run(ctx context.Context) TaskResult {

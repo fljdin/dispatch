@@ -64,6 +64,11 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 	}
 
 	for i, t := range cb.config.Tasks {
+		// controls types
+		if err := t.VerifyType(); err != nil {
+			cb.err = err
+		}
+
 		// auto-complete URI from named connections
 		if t.URI == "" && t.Connection != "" {
 			if uri, err := cb.config.Connections.GetURIByName(t.Connection); err != nil {
