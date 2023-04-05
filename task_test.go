@@ -62,3 +62,16 @@ func TestPsqlTaskWihoutURI(t *testing.T) {
 	assert.NotEqual(t, result.Status, Succeeded)
 	assert.Contains(t, result.Output, "test")
 }
+
+func TestTaskVerifyType(t *testing.T) {
+	task := &Task{
+		ID:      1,
+		Type:    "unknown",
+		Command: "unknown",
+	}
+
+	err := task.VerifyType()
+	if assert.NotEqual(t, err, nil) {
+		assert.Contains(t, err.Error(), "invalid task type")
+	}
+}
