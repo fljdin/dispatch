@@ -11,24 +11,36 @@ const (
 	Succeeded
 )
 
+type Task struct {
+	ID         int    `yaml:"id"`
+	Type       string `yaml:"type,omitempty"`
+	Name       string `yaml:"name,omitempty"`
+	Command    string `yaml:"command"`
+	URI        string `yaml:"uri,omitempty"`
+	Connection string `yaml:"connection,omitempty"`
+}
+
 type TaskResult struct {
 	ID        int
 	StartTime time.Time
 	EndTime   time.Time
 	Elapsed   time.Duration
 	Status    int
-	Message   string
-}
-
-type Task struct {
-	ID      int    `yaml:"id"`
-	Command string `yaml:"command"`
+	Output    string
+	Error     string
 }
 
 func (t Task) Run(ctx context.Context) TaskResult {
+	var cmd *exec.Cmd
+
 	startTime := time.Now()
 
-	cmd := exec.Command("sh", "-c", t.Command)
+	switch t.Type {
+	case "psql":
+		cmd = exec.Command("psql", "-d", t.URI, "-c", t.Command)
+	default:
+		cmd = exec.Command("sh", "-c", t.Command)
+	}
 
 	output, err := cmd.CombinedOutput()
 	endTime := time.Now()
@@ -39,12 +51,12 @@ func (t Task) Run(ctx context.Context) TaskResult {
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
 		Status:    Succeeded,
-		Message:   string(output),
+		Output:    string(output),
 	}
 
 	if err != nil {
 		tr.Status = Failed
-		tr.Message = err.Error()
+		tr.Error = err.Error()
 	}
 
 	return tr

@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	Tasks      []Task `yaml:"tasks"`
-	MaxWorkers int    `yaml:"workers"`
+	Tasks       []Task      `yaml:"tasks"`
+	MaxWorkers  int         `yaml:"workers"`
+	Connections Connections `yaml:"connections"`
 }
 
 type ConfigBuilder struct {
@@ -60,6 +61,18 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 
 	if cb.config.MaxWorkers > runtime.NumCPU() {
 		cb.config.MaxWorkers = runtime.NumCPU()
+	}
+
+	for i, t := range cb.config.Tasks {
+		// auto-complete URI from named connections
+		if t.URI == "" && t.Connection != "" {
+			if uri, err := cb.config.Connections.GetURIByName(t.Connection); err != nil {
+				cb.err = err
+			} else {
+				t.URI = uri
+				cb.config.Tasks[i] = t
+			}
+		}
 	}
 
 	return cb.config, cb.err
