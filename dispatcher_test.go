@@ -16,5 +16,5 @@ func TestDispatcherAddTask(t *testing.T) {
 	dispatcher.Wait()
 
 	result := <-dispatcher.Results
-	assert.Equal(t, result.Status, Succeeded)
+	assert.Equal(t, Succeeded, result.Status)
 }

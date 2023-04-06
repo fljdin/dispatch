@@ -16,7 +16,7 @@ func TestParserWithSqlContent(t *testing.T) {
 
 	queries := parser.Parse()
 
-	assert.Equal(t, len(queries), 3)
+	assert.Equal(t, 3, len(queries))
 }
 
 func TestParserHandleLiterals(t *testing.T) {
@@ -32,7 +32,7 @@ func TestParserHandleLiterals(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, sqlContent[i], queries[0])
+		assert.Equal(t, queries[0], sqlContent[i])
 	}
 }
 
@@ -50,7 +50,7 @@ func TestParserHandleComments(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, sqlContent[i], queries[0])
+		assert.Equal(t, queries[0], sqlContent[i])
 	}
 }
 
@@ -68,7 +68,7 @@ func TestParserHandleTransactionBloc(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, sqlContent[i], queries[0])
+		assert.Equal(t, queries[0], sqlContent[i])
 	}
 }
 
@@ -87,14 +87,14 @@ func TestParserFromSqlFile(t *testing.T) {
 		Build()
 	queries := parser.Parse()
 
-	assert.Equal(t, len(queries), 1)
+	assert.Equal(t, 1, len(queries))
 }
 
 func TestParserFromInvalidParseType(t *testing.T) {
 	_, err := NewParserBuilder("unknown").
 		Build()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "invalid type for parsing file")
 	}
 }

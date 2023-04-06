@@ -13,7 +13,7 @@ func TestCreateTask(t *testing.T) {
 		Command: "echo test",
 	}
 
-	assert.Equal(t, task.ID, 1)
+	assert.Equal(t, 1, task.ID)
 }
 
 func TestTaskVerifyIDRequired(t *testing.T) {
@@ -22,7 +22,7 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 	}
 	err := task.VerifyRequired()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "id is required")
 	}
 }
@@ -33,7 +33,7 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 	}
 	err := task.VerifyRequired()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "command is required")
 	}
 }
@@ -46,19 +46,19 @@ func TestTaskVerifyType(t *testing.T) {
 	}
 	err := task.VerifyType()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "invalid task type")
 	}
 }
 
-func TestShellTask(t *testing.T) {
+func TestShellTaskWithOutput(t *testing.T) {
 	task := &Task{
 		ID:      1,
 		Command: "echo test",
 	}
 	result := task.Run(context.Background())
 
-	assert.Equal(t, result.Status, Succeeded)
+	assert.Equal(t, Succeeded, result.Status)
 	assert.Contains(t, result.Output, "test")
 }
 
@@ -69,5 +69,5 @@ func TestShellTaskWithError(t *testing.T) {
 	}
 	result := task.Run(context.Background())
 
-	assert.Equal(t, result.Status, Failed)
+	assert.Equal(t, Failed, result.Status)
 }

@@ -11,7 +11,7 @@ import (
 func TestConfigWithDefaultMaxWorkers(t *testing.T) {
 	config, _ := NewConfigBuilder().Build()
 
-	assert.Equal(t, config.MaxWorkers, 2)
+	assert.Equal(t, 2, config.MaxWorkers)
 }
 
 func TestConfigWithMaxWorkers(t *testing.T) {
@@ -19,7 +19,18 @@ func TestConfigWithMaxWorkers(t *testing.T) {
 		WithMaxWorkers(1).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 1)
+	assert.Equal(t, 1, config.MaxWorkers)
+}
+
+func TestConfigWithMaxWorkersOverrided(t *testing.T) {
+	yamlConfig := "workers: 2"
+
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		WithMaxWorkers(1).
+		Build()
+
+	assert.Equal(t, 1, config.MaxWorkers)
 }
 
 func TestConfigWithTask(t *testing.T) {
@@ -30,7 +41,7 @@ func TestConfigWithTask(t *testing.T) {
 		}).
 		Build()
 
-	assert.Equal(t, config.Tasks[0].ID, 1)
+	assert.Equal(t, 1, config.Tasks[0].ID)
 }
 
 func TestConfigFromYAML(t *testing.T) {
@@ -44,8 +55,8 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 1)
-	assert.Equal(t, config.Tasks[0].ID, 1)
+	assert.Equal(t, 1, config.MaxWorkers)
+	assert.Equal(t, 1, config.Tasks[0].ID)
 }
 
 func TestConfigFromYAMLWithURIOnTask(t *testing.T) {
@@ -62,8 +73,8 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, config.Tasks[0].URI, cnx)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -83,8 +94,8 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, len(config.Connections), 1)
-	assert.Equal(t, config.Tasks[0].URI, cnx)
+	assert.Equal(t, 1, len(config.Connections))
+	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -98,18 +109,9 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	assert.Contains(t, err.Error(), "connection not found")
-}
-
-func TestConfigWithMaxWorkersOverrided(t *testing.T) {
-	yamlConfig := "workers: 2"
-
-	config, _ := NewConfigBuilder().
-		WithYAML(yamlConfig).
-		WithMaxWorkers(1).
-		Build()
-
-	assert.Equal(t, config.MaxWorkers, 1)
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "connection not found")
+	}
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -119,7 +121,7 @@ func TestConfigFromNonExistingFile(t *testing.T) {
 		FromYAML(yamlFilename).
 		Build()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "no such file or directory")
 	}
 }
@@ -138,7 +140,7 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 		FromYAML(tempFile.Name()).
 		Build()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "cannot unmarshal")
 	}
 }
@@ -154,7 +156,7 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "invalid task type")
 	}
 }
@@ -176,7 +178,7 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, tempFile.Name())).
 		Build()
 
-	if assert.NotEqual(t, err, nil) {
+	if assert.NotEqual(t, nil, err) {
 		assert.Contains(t, err.Error(), "invalid type for parsing file")
 	}
 }
@@ -201,7 +203,7 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 		Build()
 
 	// File task must be replaced by Command task loaded from SQL file
-	assert.Equal(t, config.Tasks[0].ID, 1)
-	assert.Equal(t, config.Tasks[0].Command, "SELECT 1;")
-	assert.Equal(t, config.Tasks[0].URI, "postgresql://localhost")
+	assert.Equal(t, 1, config.Tasks[0].ID)
+	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
+	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
 }
