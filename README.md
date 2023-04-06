@@ -26,11 +26,11 @@ Use a valid YAML file to describe tasks.
 
 ### Tasks declaration
 
-* `tasks`: a list of tasks to run
+* `tasks`: list of tasks to run
   - `id` (required)
-  - `command` (required): will be executed
-  - `name`: attach a name or description to a task
-  - `type`: defines the execution context 
+  - `command` or `file`: instruction(s) to be executed or loaded from a file
+  - `name`: as task description
+  - `type`: execution context in following choices
     + `sh` (default)
     + `psql`: needs PostgreSQL `psql` client to be installed
   - `uri`: connection string used by `psql`'s database option (`-d`)
@@ -45,6 +45,10 @@ tasks:
     name: run this statement
     command: SELECT user;
     uri: postgresql://localhost
+  - id: 3
+    type: psql
+    name: dispatch queries from a file
+    file: queries.sql
 ```
 
 > All PostgreSQL environment variables can be used in place of `uri` as it used

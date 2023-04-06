@@ -8,12 +8,12 @@ import (
 
 func TestConnectionURIbyName(t *testing.T) {
 	var c Connections
-	given := "postgresql://localhost"
+	expected := "postgresql://localhost"
 	c = append(c, Connection{
 		Name: "db",
-		URI:  given,
+		URI:  expected,
 	})
 	uri, _ := c.GetURIByName("db")
 
-	assert.Equal(t, uri, given)
+	assert.Equal(t, expected, uri)
 }

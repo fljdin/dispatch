@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os/exec"
 	"time"
 )
@@ -11,11 +12,14 @@ const (
 	Succeeded
 )
 
+var TaskTypes = []string{"sh", "psql"}
+
 type Task struct {
 	ID         int    `yaml:"id"`
 	Type       string `yaml:"type,omitempty"`
 	Name       string `yaml:"name,omitempty"`
 	Command    string `yaml:"command"`
+	File       string `yaml:"file"`
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 }
@@ -28,6 +32,27 @@ type TaskResult struct {
 	Status    int
 	Output    string
 	Error     string
+}
+
+func (t Task) VerifyRequired() error {
+	if t.ID == 0 {
+		return fmt.Errorf("id is required")
+	}
+
+	if t.Command == "" && t.File == "" {
+		return fmt.Errorf("command is required")
+	}
+
+	return nil
+}
+
+func (t Task) VerifyType() error {
+	for _, tt := range TaskTypes {
+		if t.Type == tt || t.Type == "" {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s is an invalid task type", t.Type)
 }
 
 func (t Task) Run(ctx context.Context) TaskResult {

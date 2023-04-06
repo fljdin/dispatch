@@ -11,15 +11,26 @@ import (
 func TestConfigWithDefaultMaxWorkers(t *testing.T) {
 	config, _ := NewConfigBuilder().Build()
 
-	assert.Equal(t, config.MaxWorkers, 2)
+	assert.Equal(t, 2, config.MaxWorkers)
 }
 
 func TestConfigWithMaxWorkers(t *testing.T) {
 	config, _ := NewConfigBuilder().
-		WithMaxWorkers(4).
+		WithMaxWorkers(1).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 4)
+	assert.Equal(t, 1, config.MaxWorkers)
+}
+
+func TestConfigWithMaxWorkersOverrided(t *testing.T) {
+	yamlConfig := "workers: 2"
+
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		WithMaxWorkers(1).
+		Build()
+
+	assert.Equal(t, 1, config.MaxWorkers)
 }
 
 func TestConfigWithTask(t *testing.T) {
@@ -30,12 +41,12 @@ func TestConfigWithTask(t *testing.T) {
 		}).
 		Build()
 
-	assert.Equal(t, config.Tasks[0].ID, 1)
+	assert.Equal(t, 1, config.Tasks[0].ID)
 }
 
 func TestConfigFromYAML(t *testing.T) {
 	yamlConfig := `
-workers: 4
+workers: 1
 tasks:
   - id: 1
     command: echo test`
@@ -44,8 +55,8 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	assert.Equal(t, config.MaxWorkers, 4)
-	assert.Equal(t, config.Tasks[0].ID, 1)
+	assert.Equal(t, 1, config.MaxWorkers)
+	assert.Equal(t, 1, config.Tasks[0].ID)
 }
 
 func TestConfigFromYAMLWithURIOnTask(t *testing.T) {
@@ -62,8 +73,8 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, config.Tasks[0].URI, cnx)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -83,8 +94,8 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, len(config.Connections), 1)
-	assert.Equal(t, config.Tasks[0].URI, cnx)
+	assert.Equal(t, 1, len(config.Connections))
+	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -98,18 +109,9 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	assert.Contains(t, err.Error(), "connection not found")
-}
-
-func TestConfigWithMaxWorkersOverrided(t *testing.T) {
-	yamlConfig := "workers: 1"
-
-	config, _ := NewConfigBuilder().
-		WithYAML(yamlConfig).
-		WithMaxWorkers(4).
-		Build()
-
-	assert.Equal(t, config.MaxWorkers, 4)
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "connection not found")
+	}
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -119,7 +121,9 @@ func TestConfigFromNonExistingFile(t *testing.T) {
 		FromYAML(yamlFilename).
 		Build()
 
-	assert.Contains(t, err.Error(), "no such file or directory")
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "no such file or directory")
+	}
 }
 
 func TestConfigFromInvalidYAML(t *testing.T) {
@@ -136,5 +140,70 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 		FromYAML(tempFile.Name()).
 		Build()
 
-	assert.Contains(t, err.Error(), "cannot unmarshal")
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "cannot unmarshal")
+	}
+}
+
+func TestConfigWithInvalidType(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: unknown
+    command: unknown
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "invalid task type")
+	}
+}
+
+func TestConfigWithInvalidFileType(t *testing.T) {
+	sqlFilename := "whatever.sql"
+	tempFile, _ := os.CreateTemp("", sqlFilename)
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: sh
+    file: %s
+`
+	_, err := NewConfigBuilder().
+		WithYAML(fmt.Sprintf(yamlConfig, tempFile.Name())).
+		Build()
+
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "invalid type for parsing file")
+	}
+}
+
+func TestConfigLoadTasksFromFile(t *testing.T) {
+	sqlFilename := "queries_*.sql"
+	sqlContent := "SELECT 1;"
+	tempFile, _ := os.CreateTemp("", sqlFilename)
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	tempFile.Write([]byte(sqlContent))
+
+	config, _ := NewConfigBuilder().
+		WithTask(Task{
+			ID:   1,
+			Type: "psql",
+			File: tempFile.Name(),
+			URI:  "postgresql://localhost",
+		}).
+		Build()
+
+	// File task must be replaced by Command task loaded from SQL file
+	assert.Equal(t, 1, config.Tasks[0].ID)
+	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
+	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
 }
