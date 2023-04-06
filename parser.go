@@ -25,18 +25,48 @@ func (p Parser) VerifyType() error {
 func (p *Parser) Parse() []string {
 	var commands []string
 	var currentQuery strings.Builder
-	var inLiteral bool
+	var currentChar byte
+	var previousChar byte = 0x0
+	var currentQuote byte = 0x0
+	var currentComment byte = 0x0
 
 	for i := 0; i < len(p.Content); i++ {
-		char := p.Content[i]
-		currentQuery.WriteRune(rune(char))
+		currentChar = p.Content[i]
+		currentSymbols := string(previousChar) + string(currentChar)
+		currentQuery.WriteRune(rune(currentChar))
 
-		if currentQuery.Len() > 0 && char == ';' && !inLiteral {
+		// return complete query
+		if currentQuery.Len() > 0 && currentChar == ';' &&
+			currentComment == 0x0 && currentQuote == 0x0 {
+
 			commands = append(commands, currentQuery.String())
 			currentQuery.Reset()
-		} else if char == '\'' || char == '"' {
-			inLiteral = !inLiteral
+			continue
 		}
+
+		// ignore semicolon in litterals
+		if currentChar == '\'' || currentChar == '"' || currentSymbols == "$$" {
+			if currentQuote == 0x0 {
+				currentQuote = currentChar
+			} else if currentQuote == currentChar {
+				currentQuote = 0x0
+			}
+		}
+
+		// ignore semicolon in comments
+		if currentComment == 0x0 &&
+			(currentSymbols == "--" || currentSymbols == "/*") {
+
+			currentComment = currentChar // opening a comment
+		}
+
+		if (currentComment == '-' && currentChar == '\n') ||
+			(currentComment == '*' && currentSymbols == "*/") {
+
+			currentComment = 0x0 // ending a comment
+		}
+
+		previousChar = currentChar
 	}
 
 	return commands

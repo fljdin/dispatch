@@ -19,6 +19,49 @@ func TestParserWithSqlContent(t *testing.T) {
 	assert.Equal(t, len(queries), 3)
 }
 
+func TestParserHandleLiterals(t *testing.T) {
+	sqlContent := []string{
+		`SELECT ';"';`,
+		`SELECT 1 ";'";`,
+		`SELECT $$;$$;`,
+	}
+
+	for i, q := range sqlContent {
+		parser, _ := NewParserBuilder("psql").
+			WithContent(q).
+			Build()
+
+		queries := parser.Parse()
+		assert.Equal(t, sqlContent[i], queries[0])
+	}
+}
+
+func TestParserHandleComments(t *testing.T) {
+	sqlContent := []string{
+		"SELECT 1 /* comment ; */ + 2;",
+		"SELECT 1 /* comment ;\n comment ; */ + 2;",
+		"SELECT 1 -- comment ;\n + 2;",
+		"SELECT 1 -- /* comment ;\n +2;",
+	}
+
+	for i, q := range sqlContent {
+		parser, _ := NewParserBuilder("psql").
+			WithContent(q).
+			Build()
+
+		queries := parser.Parse()
+		assert.Equal(t, sqlContent[i], queries[0])
+	}
+}
+
+func TestParserHandleTransactionBloc(t *testing.T) {
+	// sqlContent := `
+	// BEGIN;
+	//   SELECT 1;
+	// END;
+	// `
+}
+
 func TestParserFromSqlFile(t *testing.T) {
 	sqlFilename := "queries_*.sql"
 	sqlContent := "SELECT 1;"
