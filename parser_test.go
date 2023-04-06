@@ -55,11 +55,21 @@ func TestParserHandleComments(t *testing.T) {
 }
 
 func TestParserHandleTransactionBloc(t *testing.T) {
-	// sqlContent := `
-	// BEGIN;
-	//   SELECT 1;
-	// END;
-	// `
+	sqlContent := []string{
+		"BEGIN; SELECT 1; END;",
+		"BEGIN; SELECT 1; COMMIT;",
+		"BEGIN; SELECT 1; ROLLBACK;",
+		"BEGIN; SELECT 'END'; END;",
+	}
+
+	for i, q := range sqlContent {
+		parser, _ := NewParserBuilder("psql").
+			WithContent(q).
+			Build()
+
+		queries := parser.Parse()
+		assert.Equal(t, sqlContent[i], queries[0])
+	}
 }
 
 func TestParserFromSqlFile(t *testing.T) {
