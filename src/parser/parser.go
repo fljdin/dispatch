@@ -10,9 +10,11 @@ var ParserTypes = []string{"psql"}
 type Parser struct {
 	Type    string
 	Content string
+
+	currentQuery strings.Builder
 }
 
-func (p Parser) VerifyType() error {
+func (p *Parser) VerifyType() error {
 	for _, pt := range ParserTypes {
 		if p.Type == pt {
 			return nil
@@ -21,9 +23,41 @@ func (p Parser) VerifyType() error {
 	return fmt.Errorf("%s is an invalid type for parsing file", p.Type)
 }
 
+func (p *Parser) isBeginPattern() bool {
+	queryLen := p.currentQuery.Len()
+
+	if queryLen >= 5 {
+		beginWord := p.currentQuery.String()[queryLen-5:]
+		return beginWord == "BEGIN"
+	}
+
+	return false
+}
+
+func (p *Parser) isEndPattern() bool {
+	queryLen := p.currentQuery.Len()
+	var patternFound bool = false
+
+	if queryLen >= 3 {
+		endWord := p.currentQuery.String()[queryLen-3:]
+		patternFound = patternFound || (endWord == "END")
+	}
+
+	if queryLen >= 6 {
+		endWord := p.currentQuery.String()[queryLen-6:]
+		patternFound = patternFound || (endWord == "COMMIT")
+	}
+
+	if queryLen >= 8 {
+		endWord := p.currentQuery.String()[queryLen-8:]
+		patternFound = patternFound || (endWord == "ROLLBACK")
+	}
+
+	return patternFound
+}
+
 func (p *Parser) Parse() []string {
 	var commands []string
-	var currentQuery strings.Builder
 	var currentChar byte
 	var previousChar byte = 0x0
 	var currentQuote byte = 0x0
@@ -33,14 +67,14 @@ func (p *Parser) Parse() []string {
 	for i := 0; i < len(p.Content); i++ {
 		currentChar = p.Content[i]
 		currentSymbols := string(previousChar) + string(currentChar)
-		currentQuery.WriteRune(rune(currentChar))
+		p.currentQuery.WriteRune(rune(currentChar))
 
 		// return complete query
-		if currentQuery.Len() > 0 && currentChar == ';' &&
+		if p.currentQuery.Len() > 0 && currentChar == ';' &&
 			currentComment == 0x0 && currentQuote == 0x0 && !inTrxBlock {
 
-			commands = append(commands, currentQuery.String())
-			currentQuery.Reset()
+			commands = append(commands, p.currentQuery.String())
+			p.currentQuery.Reset()
 			continue
 		}
 
@@ -67,41 +101,14 @@ func (p *Parser) Parse() []string {
 		}
 
 		// ignore semicolon in transaction block
-		var beginWord string
-		var endWord string
-		var rollbackWord string
 		var isKeyWord bool = (currentComment == 0x0 && currentQuote == 0x0)
 
-		if i >= 4 {
-			beginWord = string(p.Content[i-4:i]) + string(currentChar)
-
-			if beginWord == "BEGIN" && isKeyWord {
-				inTrxBlock = true
-			}
+		if p.isBeginPattern() && isKeyWord {
+			inTrxBlock = true
 		}
 
-		if i >= 2 {
-			endWord = string(p.Content[i-2:i]) + string(currentChar)
-
-			if endWord == "END" && isKeyWord {
-				inTrxBlock = false
-			}
-		}
-
-		if i >= 5 {
-			endWord = string(p.Content[i-5:i]) + string(currentChar)
-
-			if endWord == "COMMIT" && isKeyWord {
-				inTrxBlock = false
-			}
-		}
-
-		if i >= 7 {
-			rollbackWord = string(p.Content[i-7:i]) + string(currentChar)
-
-			if rollbackWord == "ROLLBACK" && isKeyWord {
-				inTrxBlock = false
-			}
+		if p.isEndPattern() && isKeyWord {
+			inTrxBlock = false
 		}
 
 		previousChar = currentChar

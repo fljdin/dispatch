@@ -33,7 +33,7 @@ func TestParserHandleLiterals(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
@@ -51,7 +51,7 @@ func TestParserHandleComments(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
@@ -69,7 +69,7 @@ func TestParserHandleTransactionBloc(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
