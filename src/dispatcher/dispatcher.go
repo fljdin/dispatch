@@ -1,16 +1,18 @@
-package main
+package dispatcher
 
 import (
 	"context"
 	"log"
 	"sync"
 	"time"
+
+	"github.com/fljdin/dispatch/src/models"
 )
 
 type Dispatcher struct {
 	context   context.Context
-	Tasks     chan Task
-	Results   chan TaskResult
+	Tasks     chan models.Task
+	Results   chan models.TaskResult
 	wgTasks   sync.WaitGroup
 	wgWorkers sync.WaitGroup
 	wgLogger  sync.WaitGroup
@@ -25,8 +27,8 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 		cancel:  cancel,
 	}
 
-	d.Tasks = make(chan Task, size)
-	d.Results = make(chan TaskResult, size)
+	d.Tasks = make(chan models.Task, size)
+	d.Results = make(chan models.TaskResult, size)
 
 	// launch workers
 	for i := 0; i < count; i++ {
@@ -37,7 +39,7 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 	return d
 }
 
-func (d *Dispatcher) Add(task Task) {
+func (d *Dispatcher) Add(task models.Task) {
 	d.wgTasks.Add(1)
 	d.Tasks <- task
 }
@@ -80,7 +82,7 @@ func (d *Dispatcher) logger(ctx context.Context) {
 			log.Printf(
 				"Task %d completed (success: %t, elapsed: %s)\n",
 				result.ID,
-				(result.Status == Succeeded),
+				(result.Status == models.Succeeded),
 				result.Elapsed.Round(time.Millisecond),
 			)
 		}

@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"context"
@@ -22,16 +22,6 @@ type Task struct {
 	File       string `yaml:"file"`
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
-}
-
-type TaskResult struct {
-	ID        int
-	StartTime time.Time
-	EndTime   time.Time
-	Elapsed   time.Duration
-	Status    int
-	Output    string
-	Error     string
 }
 
 func (t Task) VerifyRequired() error {

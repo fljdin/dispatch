@@ -1,9 +1,10 @@
-package main
+package models_test
 
 import (
 	"context"
 	"testing"
 
+	. "github.com/fljdin/dispatch/src/models"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,9 +1,11 @@
-package main
+package dispatcher_test
 
 import (
 	"context"
 	"testing"
 
+	. "github.com/fljdin/dispatch/src/dispatcher"
+	. "github.com/fljdin/dispatch/src/models"
 	"github.com/stretchr/testify/assert"
 )
 
