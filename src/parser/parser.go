@@ -11,7 +11,11 @@ type Parser struct {
 	Type    string
 	Content string
 
-	currentQuery strings.Builder
+	currentQuery   strings.Builder
+	currentChar    byte
+	currentComment byte // either - or *
+	currentQuote   byte // either ', " or $
+	inTransaction  bool
 }
 
 func (p *Parser) VerifyType() error {
@@ -23,34 +27,69 @@ func (p *Parser) VerifyType() error {
 	return fmt.Errorf("%s is an invalid type for parsing file", p.Type)
 }
 
-func (p *Parser) isBeginPattern() bool {
-	queryLen := p.currentQuery.Len()
-
-	if queryLen >= 5 {
-		beginWord := p.currentQuery.String()[queryLen-5:]
-		return beginWord == "BEGIN"
-	}
-
-	return false
+func (p *Parser) inComment() bool {
+	return p.currentComment != 0x0
 }
 
-func (p *Parser) isEndPattern() bool {
+func (p *Parser) handleComments() {
+	// opening a comment
+	if !p.inComment() && (p.match("--") || p.match("/*")) {
+		p.currentComment = p.currentChar
+	}
+
+	// ending a comment
+	if (p.currentComment == '-' && p.currentChar == '\n') ||
+		(p.currentComment == '*' && p.match("*/")) {
+		p.currentComment = 0x0
+	}
+}
+
+func (p *Parser) inQuotedLitteral() bool {
+	return p.currentQuote != 0x0
+}
+
+func (p *Parser) handleLitterals() {
+	if p.match("'", "\"", "$$") {
+		if !p.inQuotedLitteral() {
+			// enter into litteral
+			p.currentQuote = p.currentChar
+		} else if p.currentQuote == p.currentChar {
+			// exit a litteral
+			p.currentQuote = 0x0
+		}
+	}
+}
+
+func (p *Parser) inCommentOrLitteral() bool {
+	return p.inComment() || p.inQuotedLitteral()
+}
+
+func (p *Parser) handleTransactions() {
+	if p.match("BEGIN") && !p.inCommentOrLitteral() {
+		p.inTransaction = true
+	}
+
+	if p.match("END", "COMMIT", "ROLLBACK") && !p.inCommentOrLitteral() {
+		p.inTransaction = false
+	}
+}
+
+func (p *Parser) isQueryComplete() bool {
+	return p.currentChar == ';' &&
+		!p.inCommentOrLitteral() &&
+		!p.inTransaction
+}
+
+func (p *Parser) match(pattern ...string) bool {
 	queryLen := p.currentQuery.Len()
-	var patternFound bool = false
+	patternFound := false
 
-	if queryLen >= 3 {
-		endWord := p.currentQuery.String()[queryLen-3:]
-		patternFound = patternFound || (endWord == "END")
-	}
-
-	if queryLen >= 6 {
-		endWord := p.currentQuery.String()[queryLen-6:]
-		patternFound = patternFound || (endWord == "COMMIT")
-	}
-
-	if queryLen >= 8 {
-		endWord := p.currentQuery.String()[queryLen-8:]
-		patternFound = patternFound || (endWord == "ROLLBACK")
+	for _, pattern := range pattern {
+		if patternLen := len(pattern); queryLen >= patternLen {
+			word := p.currentQuery.String()[queryLen-patternLen:]
+			patternFound = patternFound ||
+				strings.ToUpper(word) == pattern
+		}
 	}
 
 	return patternFound
@@ -58,60 +97,20 @@ func (p *Parser) isEndPattern() bool {
 
 func (p *Parser) Parse() []string {
 	var commands []string
-	var currentChar byte
-	var previousChar byte = 0x0
-	var currentQuote byte = 0x0
-	var currentComment byte = 0x0
-	var inTrxBlock bool = false
 
 	for i := 0; i < len(p.Content); i++ {
-		currentChar = p.Content[i]
-		currentSymbols := string(previousChar) + string(currentChar)
-		p.currentQuery.WriteRune(rune(currentChar))
+		p.currentChar = p.Content[i]
+		p.currentQuery.WriteRune(rune(p.currentChar))
 
-		// return complete query
-		if p.currentQuery.Len() > 0 && currentChar == ';' &&
-			currentComment == 0x0 && currentQuote == 0x0 && !inTrxBlock {
-
+		if p.isQueryComplete() {
 			commands = append(commands, p.currentQuery.String())
 			p.currentQuery.Reset()
 			continue
 		}
 
-		// ignore semicolon in litterals
-		if currentChar == '\'' || currentChar == '"' || currentSymbols == "$$" {
-			if currentQuote == 0x0 {
-				currentQuote = currentChar
-			} else if currentQuote == currentChar {
-				currentQuote = 0x0
-			}
-		}
-
-		// ignore semicolon in comments
-		if currentComment == 0x0 &&
-			(currentSymbols == "--" || currentSymbols == "/*") {
-
-			currentComment = currentChar // opening a comment
-		}
-
-		if (currentComment == '-' && currentChar == '\n') ||
-			(currentComment == '*' && currentSymbols == "*/") {
-
-			currentComment = 0x0 // ending a comment
-		}
-
-		// ignore semicolon in transaction block
-		var isKeyWord bool = (currentComment == 0x0 && currentQuote == 0x0)
-
-		if p.isBeginPattern() && isKeyWord {
-			inTrxBlock = true
-		}
-
-		if p.isEndPattern() && isKeyWord {
-			inTrxBlock = false
-		}
-
-		previousChar = currentChar
+		p.handleLitterals()
+		p.handleComments()
+		p.handleTransactions()
 	}
 
 	return commands

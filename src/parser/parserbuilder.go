@@ -13,7 +13,11 @@ type ParserBuilder struct {
 func NewParserBuilder(pt string) *ParserBuilder {
 	return &ParserBuilder{
 		parser: Parser{
-			Type: pt,
+			Type:           pt,
+			currentChar:    0x0,
+			currentComment: 0x0,
+			currentQuote:   0x0,
+			inTransaction:  false,
 		},
 	}
 }

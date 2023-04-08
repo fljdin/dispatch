@@ -60,7 +60,7 @@ func TestParserHandleTransactionBloc(t *testing.T) {
 		"BEGIN; SELECT 1; END;",
 		"BEGIN; SELECT 1; COMMIT;",
 		"BEGIN; SELECT 1; ROLLBACK;",
-		"BEGIN; SELECT 'END'; END;",
+		"begin; SELECT 'END'; end;",
 	}
 
 	for i, q := range sqlContent {
