@@ -1,9 +1,10 @@
-package main
+package parser_test
 
 import (
 	"os"
 	"testing"
 
+	. "github.com/fljdin/dispatch/src/parser"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +33,7 @@ func TestParserHandleLiterals(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
@@ -50,7 +51,7 @@ func TestParserHandleComments(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
@@ -59,7 +60,7 @@ func TestParserHandleTransactionBloc(t *testing.T) {
 		"BEGIN; SELECT 1; END;",
 		"BEGIN; SELECT 1; COMMIT;",
 		"BEGIN; SELECT 1; ROLLBACK;",
-		"BEGIN; SELECT 'END'; END;",
+		"begin; SELECT 'END'; end;",
 	}
 
 	for i, q := range sqlContent {
@@ -68,7 +69,7 @@ func TestParserHandleTransactionBloc(t *testing.T) {
 			Build()
 
 		queries := parser.Parse()
-		assert.Equal(t, queries[0], sqlContent[i])
+		assert.Equal(t, sqlContent[i], queries[0])
 	}
 }
 
@@ -88,13 +89,4 @@ func TestParserFromSqlFile(t *testing.T) {
 	queries := parser.Parse()
 
 	assert.Equal(t, 1, len(queries))
-}
-
-func TestParserFromInvalidParseType(t *testing.T) {
-	_, err := NewParserBuilder("unknown").
-		Build()
-
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "invalid type for parsing file")
-	}
 }

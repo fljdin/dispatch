@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"os"
 
+	config "github.com/fljdin/dispatch/src/config"
+	dispatcher "github.com/fljdin/dispatch/src/dispatcher"
 	"github.com/spf13/cobra"
 )
 
 var (
-	ConfigFilename       string
-	ConfigFilenameDesc   string = "configuration file"
-	configWorkers        int
-	ConfigWorkersDefault int    = 2
-	ConfigWorkersDesc    string = "number of workers (default 2)"
+	ConfigFilename     string
+	ConfigFilenameDesc string = "configuration file"
+	configWorkers      int
+	ConfigWorkersDesc  string = "number of workers (default 2)"
 )
 
 func launch(cmd *cobra.Command, args []string) error {
-	configBuild := NewConfigBuilder().FromYAML(ConfigFilename)
+	configBuild := config.NewConfigBuilder().FromYAML(ConfigFilename)
 
 	if configWorkers > 0 {
 		configBuild = configBuild.
@@ -32,7 +33,7 @@ func launch(cmd *cobra.Command, args []string) error {
 	fmt.Println("Config loaded with", len(config.Tasks), "tasks")
 	fmt.Println("- max workers =", config.MaxWorkers)
 
-	dispatcher := NewDispatcher(
+	dispatcher := dispatcher.NewDispatcher(
 		context.Background(),
 		config.MaxWorkers,
 		len(config.Tasks),
