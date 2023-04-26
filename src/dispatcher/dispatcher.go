@@ -10,13 +10,14 @@ import (
 )
 
 type Dispatcher struct {
-	context   context.Context
-	Tasks     chan models.Task
-	Results   chan models.TaskResult
-	wgTasks   sync.WaitGroup
-	wgWorkers sync.WaitGroup
-	wgLogger  sync.WaitGroup
-	cancel    func()
+	context    context.Context
+	plan       map[int]models.TaskResult
+	readyTasks chan models.Task
+	Results    chan models.TaskResult
+	wgTasks    sync.WaitGroup
+	wgWorkers  sync.WaitGroup
+	wgObserver sync.WaitGroup
+	cancel     func()
 }
 
 func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
@@ -27,7 +28,8 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 		cancel:  cancel,
 	}
 
-	d.Tasks = make(chan models.Task, size)
+	d.plan = make(map[int]models.TaskResult)
+	d.readyTasks = make(chan models.Task, size)
 	d.Results = make(chan models.TaskResult, size)
 
 	// launch workers
@@ -40,21 +42,34 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 }
 
 func (d *Dispatcher) Add(task models.Task) {
-	d.wgTasks.Add(1)
-	d.Tasks <- task
+	var status = models.Waiting
+
+	if len(task.Depends) == 0 {
+		status = models.Ready
+		d.wgTasks.Add(1)
+		d.readyTasks <- task
+	}
+
+	d.plan[task.ID] = models.TaskResult{
+		ID:     task.ID,
+		Task:   &task,
+		Status: status,
+	}
 }
 
-// launch logger on demand
-func (d *Dispatcher) Log() {
-	d.wgLogger.Add(1)
-	go d.logger(d.context)
+func (d *Dispatcher) GetResult(ID int) models.TaskResult {
+	return d.plan[ID]
 }
 
 func (d *Dispatcher) Wait() {
-	d.wgTasks.Wait()   // wait until each task has been processed
-	d.cancel()         // warm workers to stop theirs loop
-	d.wgWorkers.Wait() // wait until each worker has been stopped
-	d.wgLogger.Wait()  // wait for logger completion
+	// launch observer for tasks completion
+	d.wgObserver.Add(1)
+	go d.observer(d.context)
+
+	d.wgTasks.Wait()    // wait until each task has been processed
+	d.cancel()          // warm workers to stop theirs loop
+	d.wgWorkers.Wait()  // wait until each worker has been stopped
+	d.wgObserver.Wait() // wait for observer
 }
 
 func (d *Dispatcher) worker(ctx context.Context) {
@@ -64,27 +79,41 @@ func (d *Dispatcher) worker(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case task := <-d.Tasks:
+		case task := <-d.readyTasks:
 			d.Results <- task.Run(ctx)
 			d.wgTasks.Done()
 		}
 	}
 }
 
-func (d *Dispatcher) logger(ctx context.Context) {
-	defer d.wgLogger.Done()
+func (d *Dispatcher) observer(ctx context.Context) {
+	defer d.wgObserver.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case result := <-d.Results:
-			log.Printf(
-				"Task %d completed (success: %t, elapsed: %s)\n",
-				result.ID,
-				(result.Status == models.Succeeded),
-				result.Elapsed.Round(time.Millisecond),
-			)
+			t := d.GetResult(result.ID)
+
+			t.StartTime = result.StartTime
+			t.EndTime = result.EndTime
+			t.Elapsed = result.Elapsed
+			t.Status = result.Status
+			t.Output = result.Output
+			t.Error = result.Error
+
+			d.plan[t.ID] = t
+			d.logger(t)
 		}
 	}
+}
+
+func (d *Dispatcher) logger(result models.TaskResult) {
+	log.Printf(
+		"Task %d completed (success: %t, elapsed: %s)\n",
+		result.ID,
+		(result.Status == models.Succeeded),
+		result.Elapsed.Round(time.Millisecond),
+	)
 }

@@ -8,7 +8,9 @@ import (
 )
 
 const (
-	Failed int = iota
+	Waiting int = iota
+	Ready
+	Failed
 	Succeeded
 )
 
@@ -22,6 +24,7 @@ type Task struct {
 	File       string `yaml:"file"`
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
+	Depends    []int  `yaml:"depends,omitempty"`
 }
 
 func (t Task) VerifyRequired() error {
