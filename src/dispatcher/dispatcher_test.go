@@ -38,5 +38,25 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	assert.Equal(t, Failed, result.Status)
 
 	result = dispatcher.GetResult(2)
-	assert.Equal(t, Waiting, result.Status)
+	assert.Equal(t, Interrupted, result.Status)
+}
+
+func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
+	dispatcher := NewDispatcher(context.Background(), 1, 2)
+	dispatcher.Add(Task{
+		ID:      1,
+		Command: "true",
+	})
+	dispatcher.Add(Task{
+		ID:      2,
+		Depends: []int{1},
+		Command: "true",
+	})
+	dispatcher.Wait()
+
+	result := dispatcher.GetResult(1)
+	assert.Equal(t, Succeeded, result.Status)
+
+	result = dispatcher.GetResult(2)
+	assert.Equal(t, Succeeded, result.Status)
 }

@@ -9,9 +9,9 @@ import (
 
 const (
 	Waiting int = iota
-	Ready
-	Failed
 	Succeeded
+	Failed
+	Interrupted
 )
 
 var TaskTypes = []string{"sh", "psql"}
