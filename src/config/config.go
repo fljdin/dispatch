@@ -28,6 +28,7 @@ func (c *Config) ConfigureWorkers() {
 
 func (c *Config) FinalizeTasks() ([]models.Task, error) {
 	var finalTasks []models.Task
+	var identifiers []int
 
 	for _, t := range c.Tasks {
 		if err := t.VerifyRequired(); err != nil {
@@ -35,6 +36,10 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 		}
 
 		if err := t.VerifyType(); err != nil {
+			return nil, err
+		}
+
+		if err := t.VerifyDependencies(identifiers); err != nil {
 			return nil, err
 		}
 
@@ -74,6 +79,9 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 				})
 			}
 		}
+
+		// append task to already knwown identifiers
+		identifiers = append(identifiers, t.ID)
 	}
 
 	return finalTasks, nil
