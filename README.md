@@ -35,24 +35,49 @@ Use a valid YAML file to describe tasks.
     + `psql`: needs PostgreSQL `psql` client to be installed
   - `uri`: connection string used by `psql`'s database option (`-d`)
   - `connection`: connection name as described below
+  - `depends_on`: a list of identifiers of others tasks declared upstream
+
+> All PostgreSQL environment variables can be used in place of `uri` as it used
+> `psql` client.
 
 ```yaml
+# run the following shell commands simultaneously
 tasks:
   - id: 1
-    command: echo test
+    command: echo foo
   - id: 2
+    command: echo bar
+```
+
+```yaml
+# execute SQL statement with psql on localhost with default credentials
+tasks:
+  - id: 1
     type: psql
     name: run this statement
     command: SELECT user;
     uri: postgresql://localhost
-  - id: 3
+```
+
+```yaml
+# run queries from a file simultaneously
+tasks:
+  - id: 1
     type: psql
     name: dispatch queries from a file
     file: queries.sql
 ```
 
-> All PostgreSQL environment variables can be used in place of `uri` as it used
-> `psql` client.
+```yaml
+# make a task dependent from another
+tasks:
+  - id: 1
+    command: echo foo
+  - id: 2
+    command: echo bar
+    depends_on: [1]
+```
+
 
 ### Named connections
 
@@ -64,13 +89,13 @@ tasks:
 connections:
   - name: db
     uri: postgresql://remote
-  
+
 tasks:
   - id: 1
     type: psql
     command: \conninfo
-    connection: db 
-``` 
+    connection: db
+```
 
 ### Parallelism
 
@@ -81,7 +106,7 @@ tasks:
 ```yaml
 workers: 1
 
-# perform the following tasks sequentially
+# run the following tasks sequentially
 tasks:
   - id: 1
     command: echo foo
