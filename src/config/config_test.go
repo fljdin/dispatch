@@ -210,12 +210,30 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
 }
 
+func TestConfigWithDependencies(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    command: true
+  - id: 2
+    command: true
+    depends_on: [1]
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	assert.Equal(t, nil, err)
+}
+
 func TestConfigWithUnknownDependency(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
     command: true
-    depends_on: [2]
+  - id: 2
+    command: true
+    depends_on: [1, 3]
 `
 	_, err := NewConfigBuilder().
 		WithYAML(yamlConfig).

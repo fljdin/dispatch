@@ -49,17 +49,22 @@ func (t Task) VerifyType() error {
 }
 
 func (t Task) VerifyDependencies(identifiers []int) error {
-	found := true
+	verified := true
+
 	for _, d := range t.Depends {
+		found := false
+
 		for _, i := range identifiers {
 			if d == i {
+				found = true
 				break
 			}
 		}
-		found = false
+
+		verified = verified && found
 	}
 
-	if !found {
+	if !verified {
 		return fmt.Errorf("task %d depends on unknown task %d", t.ID, t.Depends)
 	}
 
