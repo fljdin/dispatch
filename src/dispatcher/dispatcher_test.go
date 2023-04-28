@@ -17,8 +17,10 @@ func TestDispatcherAddTask(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	result := dispatcher.GetResult(1)
-	assert.Equal(t, Succeeded, result.Status)
+	result, ok := dispatcher.GetResult(1)
+	if assert.Equal(t, true, ok) {
+		assert.Equal(t, Succeeded, result.Status)
+	}
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
@@ -34,11 +36,15 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	result := dispatcher.GetResult(1)
-	assert.Equal(t, Failed, result.Status)
+	result, ok := dispatcher.GetResult(1)
+	if assert.Equal(t, true, ok) {
+		assert.Equal(t, Failed, result.Status)
+	}
 
-	result = dispatcher.GetResult(2)
-	assert.Equal(t, Interrupted, result.Status)
+	result, ok = dispatcher.GetResult(2)
+	if assert.Equal(t, true, ok) {
+		assert.Equal(t, Interrupted, result.Status)
+	}
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
@@ -54,9 +60,13 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	result := dispatcher.GetResult(1)
-	assert.Equal(t, Succeeded, result.Status)
+	result, ok := dispatcher.GetResult(1)
+	if assert.Equal(t, true, ok) {
+		assert.Equal(t, Succeeded, result.Status)
+	}
 
-	result = dispatcher.GetResult(2)
-	assert.Equal(t, Succeeded, result.Status)
+	result, ok = dispatcher.GetResult(2)
+	if assert.Equal(t, true, ok) {
+		assert.Equal(t, Succeeded, result.Status)
+	}
 }
