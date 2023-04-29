@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"os/exec"
 	"time"
@@ -71,7 +70,7 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	return nil
 }
 
-func (t Task) Run(ctx context.Context) TaskResult {
+func (t Task) Run() TaskResult {
 	var cmd *exec.Cmd
 
 	startTime := time.Now()

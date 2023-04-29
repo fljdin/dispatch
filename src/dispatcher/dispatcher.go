@@ -38,8 +38,12 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 
 	// launch workers
 	for i := 0; i < count; i++ {
+		worker := &Worker{
+			ID:         i,
+			dispatcher: d,
+		}
+		go worker.Start()
 		d.wgWorkers.Add(1)
-		go d.worker(ctx)
 	}
 
 	return d
@@ -62,54 +66,6 @@ func (d *Dispatcher) Wait() {
 	d.cancel()          // warm workers to stop theirs loop
 	d.wgWorkers.Wait()  // wait until each worker has been stopped
 	d.wgObserver.Wait() // wait until observer has been stopped
-}
-
-func (d *Dispatcher) worker(ctx context.Context) {
-	defer d.wgWorkers.Done()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case task := <-d.tasks:
-			if len(task.Depends) == 0 {
-				d.results <- task.Run(ctx)
-				continue
-			}
-
-			// verify if some dependencies have been completed
-			var depends = []int{}
-			var status = models.Waiting
-
-			for _, id := range task.Depends {
-				dependency, exists := d.completed.Load(id)
-
-				if !exists {
-					// dependency has not been completed yet
-					depends = append(depends, id)
-					continue
-				}
-
-				if dependency.(models.TaskResult).Status >= models.Failed {
-					status = models.Interrupted
-				}
-			}
-
-			// current task is interrupted and won't be launched
-			if status == models.Interrupted {
-				d.results <- models.TaskResult{
-					ID:      task.ID,
-					Status:  status,
-					Elapsed: 0,
-				}
-				continue
-			}
-
-			// forward task to another worker
-			task.Depends = depends
-			d.tasks <- task
-		}
-	}
 }
 
 func (d *Dispatcher) observer(ctx context.Context) {
