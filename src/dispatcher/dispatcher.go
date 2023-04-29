@@ -37,7 +37,7 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 	go d.observer(d.context)
 
 	// launch workers
-	for i := 0; i < count; i++ {
+	for i := 1; i <= count; i++ {
 		worker := &Worker{
 			ID:         i,
 			dispatcher: d,
@@ -50,8 +50,8 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 }
 
 func (d *Dispatcher) Add(task models.Task) {
-	d.wgTasks.Add(1)
 	d.tasks <- task
+	d.wgTasks.Add(1)
 }
 
 func (d *Dispatcher) GetResult(ID int) (models.TaskResult, bool) {
@@ -85,7 +85,8 @@ func (d *Dispatcher) observer(ctx context.Context) {
 
 func (d *Dispatcher) logger(result models.TaskResult) {
 	log.Printf(
-		"Task %d completed (success: %t, elapsed: %s)\n",
+		"Worker %d completed Task %d (success: %t, elapsed: %s)\n",
+		result.WorkerID,
 		result.ID,
 		(result.Status == models.Succeeded),
 		result.Elapsed.Round(time.Millisecond),

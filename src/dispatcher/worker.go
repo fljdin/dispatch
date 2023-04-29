@@ -18,7 +18,9 @@ func (w *Worker) Start() {
 			return
 		case task := <-w.dispatcher.tasks:
 			if len(task.Depends) == 0 {
-				w.dispatcher.results <- task.Run()
+				result := task.Run()
+				result.WorkerID = w.ID
+				w.dispatcher.results <- result
 				continue
 			}
 
@@ -43,9 +45,10 @@ func (w *Worker) Start() {
 			// current task is interrupted and won't be launched
 			if status == models.Interrupted {
 				w.dispatcher.results <- models.TaskResult{
-					ID:      task.ID,
-					Status:  status,
-					Elapsed: 0,
+					ID:       task.ID,
+					WorkerID: w.ID,
+					Status:   status,
+					Elapsed:  0,
 				}
 				continue
 			}
