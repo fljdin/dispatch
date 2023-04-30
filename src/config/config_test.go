@@ -39,7 +39,7 @@ func TestConfigWithTask(t *testing.T) {
 	config, _ := NewConfigBuilder().
 		WithTask(Task{
 			ID:      1,
-			Command: "echo test",
+			Command: "true",
 		}).
 		Build()
 
@@ -51,7 +51,7 @@ func TestConfigFromYAML(t *testing.T) {
 workers: 1
 tasks:
   - id: 1
-    command: echo test`
+    command: true`
 
 	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
@@ -208,4 +208,38 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, 1, config.Tasks[0].ID)
 	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
 	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
+}
+
+func TestConfigWithDependencies(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    command: true
+  - id: 2
+    command: true
+    depends_on: [1]
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	assert.Equal(t, nil, err)
+}
+
+func TestConfigWithUnknownDependency(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    command: true
+  - id: 2
+    command: true
+    depends_on: [1, 3]
+`
+	_, err := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	if assert.NotEqual(t, nil, err) {
+		assert.Contains(t, err.Error(), "depends on unknown task")
+	}
 }

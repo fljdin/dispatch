@@ -4,6 +4,7 @@ import "time"
 
 type TaskResult struct {
 	ID        int
+	WorkerID  int
 	StartTime time.Time
 	EndTime   time.Time
 	Elapsed   time.Duration

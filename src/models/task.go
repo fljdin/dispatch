@@ -1,15 +1,16 @@
 package models
 
 import (
-	"context"
 	"fmt"
 	"os/exec"
 	"time"
 )
 
 const (
-	Failed int = iota
+	Waiting int = iota
 	Succeeded
+	Failed
+	Interrupted
 )
 
 var TaskTypes = []string{"sh", "psql"}
@@ -22,6 +23,7 @@ type Task struct {
 	File       string `yaml:"file"`
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
+	Depends    []int  `yaml:"depends_on,omitempty"`
 }
 
 func (t Task) VerifyRequired() error {
@@ -45,7 +47,30 @@ func (t Task) VerifyType() error {
 	return fmt.Errorf("%s is an invalid task type", t.Type)
 }
 
-func (t Task) Run(ctx context.Context) TaskResult {
+func (t Task) VerifyDependencies(identifiers []int) error {
+	verified := true
+
+	for _, d := range t.Depends {
+		found := false
+
+		for _, i := range identifiers {
+			if d == i {
+				found = true
+				break
+			}
+		}
+
+		verified = verified && found
+	}
+
+	if !verified {
+		return fmt.Errorf("task %d depends on unknown task %d", t.ID, t.Depends)
+	}
+
+	return nil
+}
+
+func (t Task) Run() TaskResult {
 	var cmd *exec.Cmd
 
 	startTime := time.Now()

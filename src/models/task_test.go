@@ -1,7 +1,6 @@
 package models_test
 
 import (
-	"context"
 	"testing"
 
 	. "github.com/fljdin/dispatch/src/models"
@@ -57,7 +56,7 @@ func TestShellTaskWithOutput(t *testing.T) {
 		ID:      1,
 		Command: "echo test",
 	}
-	result := task.Run(context.Background())
+	result := task.Run()
 
 	assert.Equal(t, Succeeded, result.Status)
 	assert.Contains(t, result.Output, "test")
@@ -68,7 +67,7 @@ func TestShellTaskWithError(t *testing.T) {
 		ID:      1,
 		Command: "false",
 	}
-	result := task.Run(context.Background())
+	result := task.Run()
 
 	assert.Equal(t, Failed, result.Status)
 }
