@@ -209,7 +209,7 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
 	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
 
-	// Each loaded task must have a unique query ID
+	// Each loaded task must have an unique query ID
 	assert.Equal(t, 0, config.Tasks[0].QueryID)
 	assert.Equal(t, 1, config.Tasks[1].QueryID)
 }
