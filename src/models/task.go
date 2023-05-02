@@ -24,6 +24,7 @@ type Task struct {
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 	Depends    []int  `yaml:"depends_on,omitempty"`
+	QueryID    int
 }
 
 func (t Task) VerifyRequired() error {
