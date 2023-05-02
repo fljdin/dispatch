@@ -29,7 +29,7 @@ func (w *Worker) Start() {
 			var status = models.Waiting
 
 			for _, id := range task.Depends {
-				dependency, exists := w.dispatcher.completed.Load(id)
+				completed, exists := w.dispatcher.completed.Load(id)
 
 				if !exists {
 					// dependency has not been completed yet
@@ -37,7 +37,7 @@ func (w *Worker) Start() {
 					continue
 				}
 
-				if dependency.(models.TaskResult).Status >= models.Failed {
+				if completed.(int) >= models.Failed {
 					status = models.Interrupted
 				}
 			}
@@ -46,6 +46,7 @@ func (w *Worker) Start() {
 			if status == models.Interrupted {
 				w.dispatcher.results <- models.TaskResult{
 					ID:       task.ID,
+					QueryID:  task.QueryID,
 					WorkerID: w.ID,
 					Status:   status,
 					Elapsed:  0,

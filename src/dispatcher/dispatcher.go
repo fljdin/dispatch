@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"context"
 	"log"
+	"math"
 	"sync"
 	"time"
 
@@ -54,11 +55,11 @@ func (d *Dispatcher) Add(task models.Task) {
 	d.wgTasks.Add(1)
 }
 
-func (d *Dispatcher) GetResult(ID int) (models.TaskResult, bool) {
+func (d *Dispatcher) GetStatus(ID int) (int, bool) {
 	if result, ok := d.completed.Load(ID); ok {
-		return result.(models.TaskResult), ok
+		return result.(int), ok
 	}
-	return models.TaskResult{}, false
+	return models.Waiting, false
 }
 
 func (d *Dispatcher) Wait() {
@@ -76,7 +77,13 @@ func (d *Dispatcher) observer(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case result := <-d.results:
-			d.completed.Store(result.ID, result)
+			if status, ok := d.completed.Load(result.ID); ok {
+				maxStatus := int(math.Max(float64(status.(int)), float64(result.Status)))
+				d.completed.Store(result.ID, maxStatus)
+			} else {
+				d.completed.Store(result.ID, result.Status)
+			}
+
 			d.logger(result)
 			d.wgTasks.Done()
 		}
@@ -85,9 +92,10 @@ func (d *Dispatcher) observer(ctx context.Context) {
 
 func (d *Dispatcher) logger(result models.TaskResult) {
 	log.Printf(
-		"Worker %d completed Task %d (success: %t, elapsed: %s)\n",
+		"Worker %d completed Task %d (query #%d) (success: %t, elapsed: %s)\n",
 		result.WorkerID,
 		result.ID,
+		result.QueryID,
 		(result.Status == models.Succeeded),
 		result.Elapsed.Round(time.Millisecond),
 	)

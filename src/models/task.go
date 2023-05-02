@@ -88,6 +88,7 @@ func (t Task) Run() TaskResult {
 
 	tr := TaskResult{
 		ID:        t.ID,
+		QueryID:   t.QueryID,
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
