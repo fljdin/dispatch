@@ -29,15 +29,14 @@ func (w *Worker) Start() {
 			var status = models.Waiting
 
 			for _, id := range task.Depends {
-				completed, exists := w.dispatcher.completed.Load(id)
+				completed := w.dispatcher.completed.Load(id)
 
-				if !exists {
-					// dependency has not been completed yet
+				if completed == models.Waiting {
 					depends = append(depends, id)
 					continue
 				}
 
-				if completed.(int) >= models.Failed {
+				if completed >= models.Failed {
 					status = models.Interrupted
 				}
 			}
