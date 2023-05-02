@@ -10,10 +10,10 @@ import (
 )
 
 type Dispatcher struct {
+	completed  DispatcherMap
 	context    context.Context
 	tasks      chan models.Task
 	results    chan models.TaskResult
-	completed  sync.Map
 	wgTasks    sync.WaitGroup
 	wgWorkers  sync.WaitGroup
 	wgObserver sync.WaitGroup
@@ -30,7 +30,7 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 
 	d.tasks = make(chan models.Task, size)
 	d.results = make(chan models.TaskResult, size)
-	d.completed = sync.Map{}
+	d.completed = DispatcherMap{}
 
 	// launch observer
 	d.wgObserver.Add(1)
@@ -54,11 +54,8 @@ func (d *Dispatcher) Add(task models.Task) {
 	d.wgTasks.Add(1)
 }
 
-func (d *Dispatcher) GetResult(ID int) (models.TaskResult, bool) {
-	if result, ok := d.completed.Load(ID); ok {
-		return result.(models.TaskResult), ok
-	}
-	return models.TaskResult{}, false
+func (d *Dispatcher) GetStatus(ID int) int {
+	return d.completed.Load(ID)
 }
 
 func (d *Dispatcher) Wait() {
@@ -76,7 +73,7 @@ func (d *Dispatcher) observer(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case result := <-d.results:
-			d.completed.Store(result.ID, result)
+			d.completed.Store(result.ID, result.Status)
 			d.logger(result)
 			d.wgTasks.Done()
 		}
@@ -85,9 +82,10 @@ func (d *Dispatcher) observer(ctx context.Context) {
 
 func (d *Dispatcher) logger(result models.TaskResult) {
 	log.Printf(
-		"Worker %d completed Task %d (success: %t, elapsed: %s)\n",
+		"Worker %d completed Task %d (query #%d) (success: %t, elapsed: %s)\n",
 		result.WorkerID,
 		result.ID,
+		result.QueryID,
 		(result.Status == models.Succeeded),
 		result.Elapsed.Round(time.Millisecond),
 	)

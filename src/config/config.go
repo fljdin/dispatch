@@ -69,9 +69,10 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 				return nil, err
 			}
 
-			for _, query := range parser.Parse() {
+			for queryId, query := range parser.Parse() {
 				finalTasks = append(finalTasks, models.Task{
 					ID:      t.ID,
+					QueryID: queryId,
 					Type:    t.Type,
 					Name:    fmt.Sprintf("Query loaded from %s", t.File),
 					Command: query,
