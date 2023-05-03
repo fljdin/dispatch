@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -26,6 +27,7 @@ type Task struct {
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 	Depends    []int  `yaml:"depends_on,omitempty"`
+	Output     string `yaml:"output,omitempty"`
 	QueryID    int
 }
 
@@ -65,6 +67,12 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	return nil
 }
 
+func (t Task) writeOutput(output []byte) {
+	if len(t.Output) > 0 {
+		_ = os.WriteFile(t.Output, output, 0644)
+	}
+}
+
 func (t Task) Run() TaskResult {
 	var cmd *exec.Cmd
 
@@ -79,6 +87,8 @@ func (t Task) Run() TaskResult {
 
 	output, err := cmd.CombinedOutput()
 	endTime := time.Now()
+
+	t.writeOutput(output)
 
 	tr := TaskResult{
 		ID:        t.ID,

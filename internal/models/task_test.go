@@ -1,6 +1,7 @@
 package models_test
 
 import (
+	"os"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/models"
@@ -61,4 +62,23 @@ func TestShellTaskWithError(t *testing.T) {
 	result := task.Run()
 
 	assert.Equal(t, Failed, result.Status)
+}
+
+func TestWriteOutputToFile(t *testing.T) {
+	tempFile, _ := os.CreateTemp("", "task_*.out")
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	task := &Task{
+		ID:      1,
+		Command: "echo test",
+		Output:  tempFile.Name(),
+	}
+	task.Run()
+
+	data, err := os.ReadFile(tempFile.Name())
+	if assert.Equal(t, nil, err) {
+		assert.Equal(t, "test\n", string(data))
+	}
 }
