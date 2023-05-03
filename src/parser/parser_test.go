@@ -20,11 +20,13 @@ func TestParserWithSqlContent(t *testing.T) {
 	assert.Equal(t, 3, len(queries))
 }
 
-func TestParserHandleLiterals(t *testing.T) {
+func TestParserHandleStrings(t *testing.T) {
 	sqlContent := []string{
 		`SELECT ';"';`,
 		`SELECT 1 ";'";`,
-		`SELECT $$;$$;`,
+		"SELECT $$;$$;",
+		"SELECT $tag$;$tag$;",
+		"SELECT $tag$$tag;$tag$;",
 	}
 
 	for i, q := range sqlContent {
@@ -55,7 +57,25 @@ func TestParserHandleComments(t *testing.T) {
 	}
 }
 
-func TestParserHandleTransactionBloc(t *testing.T) {
+func TestParserHandleCommentsAndStringsMix(t *testing.T) {
+	sqlContent := []string{
+		`SELECT /*'*/ 1"';";`,
+		`SELECT $$/*$$ AS "$$;";`,
+		"SELECT 1 -- $tag$ ;\n +2;",
+		"SELECT /* $tag$ */$tag$;$tag$;",
+	}
+
+	for i, q := range sqlContent {
+		parser, _ := NewParserBuilder("psql").
+			WithContent(q).
+			Build()
+
+		queries := parser.Parse()
+		assert.Equal(t, sqlContent[i], queries[0])
+	}
+}
+
+func TestParserHandleTransactionBlock(t *testing.T) {
 	sqlContent := []string{
 		"BEGIN; SELECT 1; END;",
 		"BEGIN; SELECT 1; COMMIT;",

@@ -11,10 +11,12 @@ type Parser struct {
 	Type    string
 	Content string
 
-	currentQuery   strings.Builder
 	currentChar    byte
-	currentComment byte // either - or *
 	currentQuote   byte // either ', " or $
+	currentComment byte // either - or *
+	currentTag     string
+	activeTag      strings.Builder
+	currentQuery   strings.Builder
 	inTransaction  bool
 }
 
@@ -31,9 +33,27 @@ func (p *Parser) inComment() bool {
 	return p.currentComment != 0x0
 }
 
+func (p *Parser) inQuotedString() bool {
+	return p.currentQuote != 0x0
+}
+
+func (p *Parser) inCommentOrString() bool {
+	return p.inComment() || p.inQuotedString()
+}
+
+func (p *Parser) handleTransactions() {
+	if p.match("BEGIN") && !p.inCommentOrString() {
+		p.inTransaction = true
+	}
+
+	if p.match("END", "COMMIT", "ROLLBACK") && !p.inCommentOrString() {
+		p.inTransaction = false
+	}
+}
+
 func (p *Parser) handleComments() {
 	// opening a comment
-	if !p.inComment() && (p.match("--") || p.match("/*")) {
+	if p.match("--", "/*") && !p.inCommentOrString() {
 		p.currentComment = p.currentChar
 	}
 
@@ -44,39 +64,74 @@ func (p *Parser) handleComments() {
 	}
 }
 
-func (p *Parser) inQuotedLiteral() bool {
-	return p.currentQuote != 0x0
+func (p *Parser) handleStrings() {
+	p.handleQuotedStrings()
+	p.handleDollarQuotedStrings()
 }
 
-func (p *Parser) handleLiterals() {
-	if p.match("'", "\"", "$$") {
-		if !p.inQuotedLiteral() {
-			// enter into litteral
+func (p *Parser) handleQuotedStrings() {
+	if p.match("'", "\"") {
+		if !p.inCommentOrString() {
+			// enter into string
 			p.currentQuote = p.currentChar
 		} else if p.currentQuote == p.currentChar {
-			// exit a litteral
+			// exit a string
 			p.currentQuote = 0x0
 		}
 	}
 }
 
-func (p *Parser) inCommentOrLiteral() bool {
-	return p.inComment() || p.inQuotedLiteral()
+func (p *Parser) handleDollarQuotedStrings() {
+	if p.match("$") {
+		if !p.inCommentOrString() {
+			if p.activeTag.Len() > 0 {
+				// first tag occurrence has been found
+				// enter into string
+				p.updateActiveTag()
+				p.currentTag = p.activeTag.String()
+				p.currentQuote = p.currentChar
+				p.activeTag.Reset()
+			} else {
+				// initialize first tag with a dollar sign
+				p.updateActiveTag()
+			}
+
+		} else if p.currentQuote == p.currentChar {
+			if p.activeTag.Len() > 0 {
+				p.updateActiveTag()
+				if p.activeTag.String() == p.currentTag {
+					// second tag occurrence has been found
+					// exit a string
+					p.currentQuote = 0x0
+					p.activeTag.Reset()
+				}
+			} else {
+				// initialize second tag with a dollar sign
+				p.updateActiveTag()
+			}
+		}
+	}
+
+	if p.activeTag.Len() > 0 && p.isValidIdentifier(p.currentChar) {
+		// construct active tag with any valid identifier
+		p.updateActiveTag()
+	}
 }
 
-func (p *Parser) handleTransactions() {
-	if p.match("BEGIN") && !p.inCommentOrLiteral() {
-		p.inTransaction = true
-	}
+func (p *Parser) updateActiveTag() {
+	p.activeTag.WriteRune(rune(p.currentChar))
+}
 
-	if p.match("END", "COMMIT", "ROLLBACK") && !p.inCommentOrLiteral() {
-		p.inTransaction = false
-	}
+func (p *Parser) isValidIdentifier(c byte) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		(c >= '0' && c <= '9') ||
+		c == '_'
 }
 
 func (p *Parser) isQueryComplete() bool {
 	return p.currentChar == ';' &&
-		!p.inCommentOrLiteral() &&
+		!p.inCommentOrString() &&
 		!p.inTransaction
 }
 
@@ -108,7 +163,7 @@ func (p *Parser) Parse() []string {
 			continue
 		}
 
-		p.handleLiterals()
+		p.handleStrings()
 		p.handleComments()
 		p.handleTransactions()
 	}
