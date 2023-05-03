@@ -35,6 +35,7 @@ Use a valid YAML file to describe tasks.
     + `psql`: needs PostgreSQL `psql` client to be installed
   - `uri`: connection string used by `psql`'s database option (`-d`)
   - `connection`: connection name as described below
+  - `output`: output file name as described below
   - `depends_on`: a list of identifiers of others tasks declared upstream
 
 > All PostgreSQL environment variables can be used in place of `uri` as it used
@@ -78,6 +79,20 @@ tasks:
     depends_on: [1]
 ```
 
+### Result output
+
+* `output` accepts several wildcards
+  - `{id}`: task identifier
+  - `{queryid}`: query identifier
+
+```yaml
+# write psql output in a dedicated file per query
+tasks:
+  - id: 1
+    type: psql
+    file: queries.sql
+    output: result_{queryid}.out
+```
 
 ### Named connections
 

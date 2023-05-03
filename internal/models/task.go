@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"golang.org/x/exp/slices"
@@ -29,6 +30,13 @@ type Task struct {
 	Depends    []int  `yaml:"depends_on,omitempty"`
 	Output     string `yaml:"output,omitempty"`
 	QueryID    int
+}
+
+func (t Task) GetOutput() string {
+	output := strings.Replace(t.Output, "{id}", fmt.Sprintf("%d", t.ID), -1)
+	output = strings.Replace(output, "{queryid}", fmt.Sprintf("%d", t.QueryID), -1)
+
+	return output
 }
 
 func (t Task) VerifyRequired() error {
@@ -67,10 +75,11 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	return nil
 }
 
-func (t Task) writeOutput(output []byte) {
-	if len(t.Output) > 0 {
-		_ = os.WriteFile(t.Output, output, 0644)
+func (t Task) writeOutput(output []byte) error {
+	if len(t.Output) == 0 {
+		return nil
 	}
+	return os.WriteFile(t.GetOutput(), output, 0644)
 }
 
 func (t Task) Run() TaskResult {
@@ -88,8 +97,6 @@ func (t Task) Run() TaskResult {
 	output, err := cmd.CombinedOutput()
 	endTime := time.Now()
 
-	t.writeOutput(output)
-
 	tr := TaskResult{
 		ID:        t.ID,
 		QueryID:   t.QueryID,
@@ -103,6 +110,14 @@ func (t Task) Run() TaskResult {
 	if err != nil {
 		tr.Status = Failed
 		tr.Error = err.Error()
+	}
+
+	if err = t.writeOutput(output); err != nil {
+		if len(tr.Error) > 0 {
+			tr.Error += "\n" + err.Error()
+		} else {
+			tr.Error = err.Error()
+		}
 	}
 
 	return tr

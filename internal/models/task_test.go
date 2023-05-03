@@ -82,3 +82,14 @@ func TestWriteOutputToFile(t *testing.T) {
 		assert.Equal(t, "test\n", string(data))
 	}
 }
+
+func TestOutputWithWildcards(t *testing.T) {
+	task := &Task{
+		ID:      1,
+		QueryID: 0,
+		Command: "true",
+		Output:  "task_{id}_{queryid}.out",
+	}
+
+	assert.Equal(t, "task_1_0.out", task.GetOutput())
+}
