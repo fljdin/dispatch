@@ -20,11 +20,13 @@ func TestParserWithSqlContent(t *testing.T) {
 	assert.Equal(t, 3, len(queries))
 }
 
-func TestParserHandleLiterals(t *testing.T) {
+func TestParserHandleStrings(t *testing.T) {
 	sqlContent := []string{
 		`SELECT ';"';`,
 		`SELECT 1 ";'";`,
 		`SELECT $$;$$;`,
+		`SELECT $tag$;$tag$;`,
+		`SELECT $tag$$tag;$tag$;`,
 	}
 
 	for i, q := range sqlContent {

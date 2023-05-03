@@ -11,10 +11,12 @@ type Parser struct {
 	Type    string
 	Content string
 
-	currentQuery   strings.Builder
 	currentChar    byte
-	currentComment byte // either - or *
 	currentQuote   byte // either ', " or $
+	currentComment byte // either - or *
+	currentTag     string
+	activeTag      strings.Builder
+	currentQuery   strings.Builder
 	inTransaction  bool
 }
 
@@ -48,8 +50,8 @@ func (p *Parser) inQuotedLiteral() bool {
 	return p.currentQuote != 0x0
 }
 
-func (p *Parser) handleLiterals() {
-	if p.match("'", "\"", "$$") {
+func (p *Parser) handleQuotedString() {
+	if p.match("'", "\"") {
 		if !p.inQuotedLiteral() {
 			// enter into litteral
 			p.currentQuote = p.currentChar
@@ -58,6 +60,63 @@ func (p *Parser) handleLiterals() {
 			p.currentQuote = 0x0
 		}
 	}
+}
+
+func (p *Parser) handleDollarQuotedString() {
+	if p.match("$") {
+		if !p.inQuotedLiteral() {
+			if p.activeTag.Len() > 0 {
+				p.activeTag.WriteRune(rune(p.currentChar))
+				p.currentTag = p.activeTag.String()
+				p.currentQuote = p.currentChar
+				p.activeTag.Reset()
+				return
+			} else {
+				p.activeTag.WriteRune(rune(p.currentChar))
+				return
+			}
+
+		} else if p.currentQuote == p.currentChar {
+			if p.activeTag.Len() == 0 {
+				p.activeTag.WriteRune(rune(p.currentChar))
+				return
+			} else {
+				p.activeTag.WriteRune(rune(p.currentChar))
+				if p.activeTag.String() == p.currentTag {
+					p.currentQuote = 0x0
+					p.activeTag.Reset()
+					return
+				}
+			}
+		}
+	}
+
+	if p.activeTag.Len() > 0 && p.isValidIdentifier(p.currentChar) {
+		p.activeTag.WriteRune(rune(p.currentChar))
+	}
+}
+
+func (p *Parser) handleString() {
+	p.handleQuotedString()
+	p.handleDollarQuotedString()
+}
+
+/*
+ * The tag, if any, of a dollar-quoted string follows the same rules as an
+ * unquoted identifier, except that it cannot contain a dollar sign.
+ *
+ * Source https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+ *
+ * SQL identifiers and key words must begin with a letter (a-z, but also letters
+ * with diacritical marks and non-Latin letters) or an underscore (_).
+ *
+ * Source https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+ */
+func (p *Parser) isValidIdentifier(c byte) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		(c >= '0' && c <= '9') ||
+		c == '_'
 }
 
 func (p *Parser) inCommentOrLiteral() bool {
@@ -108,7 +167,7 @@ func (p *Parser) Parse() []string {
 			continue
 		}
 
-		p.handleLiterals()
+		p.handleString()
 		p.handleComments()
 		p.handleTransactions()
 	}
