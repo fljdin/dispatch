@@ -33,6 +33,24 @@ func (p *Parser) inComment() bool {
 	return p.currentComment != 0x0
 }
 
+func (p *Parser) inQuotedString() bool {
+	return p.currentQuote != 0x0
+}
+
+func (p *Parser) inCommentOrString() bool {
+	return p.inComment() || p.inQuotedString()
+}
+
+func (p *Parser) handleTransactions() {
+	if p.match("BEGIN") && !p.inCommentOrString() {
+		p.inTransaction = true
+	}
+
+	if p.match("END", "COMMIT", "ROLLBACK") && !p.inCommentOrString() {
+		p.inTransaction = false
+	}
+}
+
 func (p *Parser) handleComments() {
 	// opening a comment
 	if !p.inComment() && (p.match("--") || p.match("/*")) {
@@ -46,13 +64,14 @@ func (p *Parser) handleComments() {
 	}
 }
 
-func (p *Parser) inQuotedLiteral() bool {
-	return p.currentQuote != 0x0
+func (p *Parser) handleStrings() {
+	p.handleQuotedStrings()
+	p.handleDollarQuotedStrings()
 }
 
 func (p *Parser) handleQuotedStrings() {
 	if p.match("'", "\"") {
-		if !p.inQuotedLiteral() {
+		if !p.inCommentOrString() {
 			// enter into string
 			p.currentQuote = p.currentChar
 		} else if p.currentQuote == p.currentChar {
@@ -64,7 +83,7 @@ func (p *Parser) handleQuotedStrings() {
 
 func (p *Parser) handleDollarQuotedStrings() {
 	if p.match("$") {
-		if !p.inQuotedLiteral() {
+		if !p.inCommentOrString() {
 			if p.activeTag.Len() > 0 {
 				// first tag occurrence has been found
 				// enter into string
@@ -103,28 +122,16 @@ func (p *Parser) updateActiveTag() {
 	p.activeTag.WriteRune(rune(p.currentChar))
 }
 
-func (p *Parser) handleStrings() {
-	p.handleQuotedStrings()
-	p.handleDollarQuotedStrings()
-}
-
-func (p *Parser) inCommentOrLiteral() bool {
-	return p.inComment() || p.inQuotedLiteral()
-}
-
-func (p *Parser) handleTransactions() {
-	if p.match("BEGIN") && !p.inCommentOrLiteral() {
-		p.inTransaction = true
-	}
-
-	if p.match("END", "COMMIT", "ROLLBACK") && !p.inCommentOrLiteral() {
-		p.inTransaction = false
-	}
+func (p *Parser) isValidIdentifier(c byte) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		(c >= '0' && c <= '9') ||
+		c == '_'
 }
 
 func (p *Parser) isQueryComplete() bool {
 	return p.currentChar == ';' &&
-		!p.inCommentOrLiteral() &&
+		!p.inCommentOrString() &&
 		!p.inTransaction
 }
 
@@ -141,13 +148,6 @@ func (p *Parser) match(pattern ...string) bool {
 	}
 
 	return patternFound
-}
-
-func (p *Parser) isValidIdentifier(c byte) bool {
-	return (c >= 'a' && c <= 'z') ||
-		(c >= 'A' && c <= 'Z') ||
-		(c >= '0' && c <= '9') ||
-		c == '_'
 }
 
 func (p *Parser) Parse() []string {

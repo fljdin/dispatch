@@ -25,8 +25,10 @@ func TestParserHandleStrings(t *testing.T) {
 		`SELECT ';"';`,
 		`SELECT 1 ";'";`,
 		`SELECT $$;$$;`,
+		`SELECT /*'*/ 1"';";`,
 		`SELECT $tag$;$tag$;`,
 		`SELECT $tag$$tag;$tag$;`,
+		`SELECT /* $tag$ */$tag$;$tag$;`,
 	}
 
 	for i, q := range sqlContent {
