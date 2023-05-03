@@ -53,7 +53,7 @@ func (p *Parser) handleTransactions() {
 
 func (p *Parser) handleComments() {
 	// opening a comment
-	if !p.inComment() && (p.match("--") || p.match("/*")) {
+	if p.match("--", "/*") && !p.inCommentOrString() {
 		p.currentComment = p.currentChar
 	}
 
