@@ -50,7 +50,7 @@ func (p *Parser) inQuotedLiteral() bool {
 	return p.currentQuote != 0x0
 }
 
-func (p *Parser) handleQuotedString() {
+func (p *Parser) handleQuotedStrings() {
 	if p.match("'", "\"") {
 		if !p.inQuotedLiteral() {
 			// enter into string
@@ -62,24 +62,24 @@ func (p *Parser) handleQuotedString() {
 	}
 }
 
-func (p *Parser) handleDollarQuotedString() {
+func (p *Parser) handleDollarQuotedStrings() {
 	if p.match("$") {
 		if !p.inQuotedLiteral() {
 			if p.activeTag.Len() > 0 {
 				// first tag occurrence has been found
 				// enter into string
-				p.activeTag.WriteRune(rune(p.currentChar))
+				p.updateActiveTag()
 				p.currentTag = p.activeTag.String()
 				p.currentQuote = p.currentChar
 				p.activeTag.Reset()
 			} else {
 				// initialize first tag with a dollar sign
-				p.activeTag.WriteRune(rune(p.currentChar))
+				p.updateActiveTag()
 			}
 
 		} else if p.currentQuote == p.currentChar {
 			if p.activeTag.Len() > 0 {
-				p.activeTag.WriteRune(rune(p.currentChar))
+				p.updateActiveTag()
 				if p.activeTag.String() == p.currentTag {
 					// second tag occurrence has been found
 					// exit a string
@@ -88,20 +88,24 @@ func (p *Parser) handleDollarQuotedString() {
 				}
 			} else {
 				// initialize second tag with a dollar sign
-				p.activeTag.WriteRune(rune(p.currentChar))
+				p.updateActiveTag()
 			}
 		}
 	}
 
 	if p.activeTag.Len() > 0 && p.isValidIdentifier(p.currentChar) {
 		// construct active tag with any valid identifier
-		p.activeTag.WriteRune(rune(p.currentChar))
+		p.updateActiveTag()
 	}
 }
 
-func (p *Parser) handleString() {
-	p.handleQuotedString()
-	p.handleDollarQuotedString()
+func (p *Parser) updateActiveTag() {
+	p.activeTag.WriteRune(rune(p.currentChar))
+}
+
+func (p *Parser) handleStrings() {
+	p.handleQuotedStrings()
+	p.handleDollarQuotedStrings()
 }
 
 func (p *Parser) inCommentOrLiteral() bool {
@@ -139,17 +143,6 @@ func (p *Parser) match(pattern ...string) bool {
 	return patternFound
 }
 
-/*
- * The tag, if any, of a dollar-quoted string follows the same rules as an
- * unquoted identifier, except that it cannot contain a dollar sign.
- *
- * Source https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
- *
- * SQL identifiers and key words must begin with a letter (a-z, but also letters
- * with diacritical marks and non-Latin letters) or an underscore (_).
- *
- * Source https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
- */
 func (p *Parser) isValidIdentifier(c byte) bool {
 	return (c >= 'a' && c <= 'z') ||
 		(c >= 'A' && c <= 'Z') ||
@@ -170,7 +163,7 @@ func (p *Parser) Parse() []string {
 			continue
 		}
 
-		p.handleString()
+		p.handleStrings()
 		p.handleComments()
 		p.handleTransactions()
 	}
