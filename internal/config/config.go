@@ -14,6 +14,7 @@ type Config struct {
 	Tasks       []models.Task      `yaml:"tasks"`
 	MaxWorkers  int                `yaml:"workers"`
 	Connections models.Connections `yaml:"connections"`
+	Summary     string             `yaml:"summary"`
 }
 
 func (c *Config) ConfigureWorkers() {

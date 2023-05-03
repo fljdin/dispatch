@@ -79,9 +79,16 @@ tasks:
     depends_on: [1]
 ```
 
-### Result output
+### Traces
 
-* `output` accepts several wildcards
+* `summary`: summary of the tasks execution (default: disabled)
+  - must be a valid path
+
+```yaml
+summary: result.out
+```
+
+* task `output` accepts several wildcards
   - `{id}`: task identifier
   - `{queryid}`: query identifier
 

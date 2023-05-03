@@ -2,7 +2,9 @@ package dispatcher
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -18,6 +20,7 @@ type Dispatcher struct {
 	wgWorkers  sync.WaitGroup
 	wgObserver sync.WaitGroup
 	cancel     func()
+	trace      *os.File
 }
 
 func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
@@ -54,6 +57,20 @@ func (d *Dispatcher) Add(task models.Task) {
 	d.wgTasks.Add(1)
 }
 
+func (d *Dispatcher) TraceTo(filename string) error {
+	var err error
+	const flag int = os.O_APPEND | os.O_TRUNC | os.O_CREATE | os.O_WRONLY
+
+	if len(filename) > 0 {
+		d.trace, err = os.OpenFile(filename, flag, 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (d *Dispatcher) GetStatus(ID int) int {
 	return d.completed.Load(ID)
 }
@@ -67,6 +84,7 @@ func (d *Dispatcher) Wait() {
 
 func (d *Dispatcher) observer(ctx context.Context) {
 	defer d.wgObserver.Done()
+	defer d.trace.Close()
 
 	for {
 		select {
@@ -75,6 +93,7 @@ func (d *Dispatcher) observer(ctx context.Context) {
 		case result := <-d.results:
 			d.completed.Store(result.ID, result.Status)
 			d.logger(result)
+			d.tracer(result)
 			d.wgTasks.Done()
 		}
 	}
@@ -89,4 +108,32 @@ func (d *Dispatcher) logger(result models.TaskResult) {
 		(result.Status == models.Succeeded),
 		result.Elapsed.Round(time.Millisecond),
 	)
+}
+
+func (d *Dispatcher) tracer(result models.TaskResult) {
+	if d.trace != nil {
+		template := `===== Task %d (query #%d) (success: %t, elapsed: %s) =====
+Started at: %s
+Ended at:   %s
+Error: %s
+Output:
+%s
+`
+		report := fmt.Sprintf(
+			template,
+			result.ID,
+			result.QueryID,
+			(result.Status == models.Succeeded),
+			result.Elapsed.Round(time.Millisecond),
+			result.StartTime.String(),
+			result.EndTime.String(),
+			result.Error,
+			result.Output,
+		)
+
+		_, err := d.trace.Write([]byte(report))
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }

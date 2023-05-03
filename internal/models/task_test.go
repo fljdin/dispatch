@@ -83,7 +83,7 @@ func TestWriteOutputToFile(t *testing.T) {
 	}
 }
 
-func TestOutputWithWildcards(t *testing.T) {
+func TestTaskOutputWithWildcards(t *testing.T) {
 	task := &Task{
 		ID:      1,
 		QueryID: 0,

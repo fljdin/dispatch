@@ -2,6 +2,7 @@ package dispatcher_test
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
@@ -69,4 +70,25 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	dispatcher.Wait()
 
 	assert.Equal(t, Failed, dispatcher.GetStatus(1))
+}
+
+func TestDispatcherTraceToFile(t *testing.T) {
+	tempFile, _ := os.CreateTemp("", "trace_*.out")
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	dispatcher := NewDispatcher(context.Background(), 1, 1)
+	dispatcher.TraceTo(tempFile.Name())
+
+	dispatcher.Add(Task{
+		ID:      1,
+		Command: "echo test",
+	})
+	dispatcher.Wait()
+
+	data, err := os.ReadFile(tempFile.Name())
+	if assert.Equal(t, nil, err) {
+		assert.Contains(t, string(data), "test\n")
+	}
 }

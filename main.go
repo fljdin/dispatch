@@ -39,6 +39,11 @@ func launch(cmd *cobra.Command, args []string) error {
 		len(config.Tasks),
 	)
 
+	err = dispatcher.TraceTo(config.Summary)
+	if err != nil {
+		return err
+	}
+
 	for _, t := range config.Tasks {
 		dispatcher.Add(t)
 	}
