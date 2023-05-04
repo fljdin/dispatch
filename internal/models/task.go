@@ -10,13 +10,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const (
-	Waiting int = iota
-	Succeeded
-	Failed
-	Interrupted
-)
-
 var TaskTypes = []string{"sh", "psql"}
 
 type Task struct {

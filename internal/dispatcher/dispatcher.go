@@ -12,7 +12,7 @@ import (
 )
 
 type Dispatcher struct {
-	completed  DispatcherMap
+	statuses   models.StatusMap
 	context    context.Context
 	tasks      chan models.Task
 	results    chan models.TaskResult
@@ -27,19 +27,20 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 	ctx, cancel := context.WithCancel(ctx)
 
 	d := &Dispatcher{
-		context: ctx,
-		cancel:  cancel,
+		context:  ctx,
+		cancel:   cancel,
+		tasks:    make(chan models.Task, size),
+		results:  make(chan models.TaskResult, size),
+		statuses: models.StatusMap{},
 	}
 
-	d.tasks = make(chan models.Task, size)
-	d.results = make(chan models.TaskResult, size)
-	d.completed = DispatcherMap{}
+	launchObserver(d)
+	launchWorkers(count, d)
 
-	// launch observer
-	d.wgObserver.Add(1)
-	go d.observer(d.context)
+	return d
+}
 
-	// launch workers
+func launchWorkers(count int, d *Dispatcher) {
 	for i := 1; i <= count; i++ {
 		worker := &Worker{
 			ID:         i,
@@ -48,8 +49,11 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 		go worker.Start()
 		d.wgWorkers.Add(1)
 	}
+}
 
-	return d
+func launchObserver(d *Dispatcher) {
+	go d.observer(d.context)
+	d.wgObserver.Add(1)
 }
 
 func (d *Dispatcher) Add(task models.Task) {
@@ -72,7 +76,7 @@ func (d *Dispatcher) TraceTo(filename string) error {
 }
 
 func (d *Dispatcher) GetStatus(ID int) int {
-	return d.completed.Load(ID)
+	return d.statuses.Load(ID)
 }
 
 func (d *Dispatcher) Wait() {
@@ -91,7 +95,7 @@ func (d *Dispatcher) observer(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case result := <-d.results:
-			d.completed.Store(result.ID, result.Status)
+			d.statuses.Store(result.ID, result.Status)
 			d.logger(result)
 			d.tracer(result)
 			d.wgTasks.Done()

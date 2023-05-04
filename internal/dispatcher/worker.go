@@ -26,28 +26,28 @@ func (w *Worker) Start() {
 
 			// verify if some dependencies have been completed
 			var depends = []int{}
-			var status = models.Waiting
+			var currentStatus = models.Waiting
 
 			for _, id := range task.Depends {
-				completed := w.dispatcher.completed.Load(id)
+				parentStatus := w.dispatcher.statuses.Load(id)
 
-				if completed == models.Waiting {
+				if parentStatus == models.Waiting {
 					depends = append(depends, id)
 					continue
 				}
 
-				if completed >= models.Failed {
-					status = models.Interrupted
+				if parentStatus >= models.Failed {
+					currentStatus = models.Interrupted
 				}
 			}
 
 			// current task is interrupted and won't be launched
-			if status == models.Interrupted {
+			if currentStatus == models.Interrupted {
 				w.dispatcher.results <- models.TaskResult{
 					ID:       task.ID,
 					QueryID:  task.QueryID,
 					WorkerID: w.ID,
-					Status:   status,
+					Status:   currentStatus,
 					Elapsed:  0,
 				}
 				continue
