@@ -8,6 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateTask(t *testing.T) {
+	task := &Task{
+		ID:      1,
+		Command: "echo test",
+	}
+	err := task.VerifyRequired()
+
+	assert.Equal(t, nil, err)
+}
+
 func TestTaskVerifyIDRequired(t *testing.T) {
 	task := &Task{
 		Command: "true",
