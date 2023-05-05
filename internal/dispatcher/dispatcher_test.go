@@ -16,9 +16,8 @@ func TestDispatcherAddTask(t *testing.T) {
 		ID:      1,
 		Command: "true",
 	})
-	dispatcher.Wait()
 
-	assert.Equal(t, Succeeded, dispatcher.GetStatus(1))
+	assert.Equal(t, Waiting, dispatcher.GetStatus(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {

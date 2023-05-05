@@ -12,14 +12,10 @@ import (
 )
 
 type Dispatcher struct {
-	statuses   models.StatusMap
-	context    context.Context
-	tasks      chan models.Task
-	results    chan models.TaskResult
-	wgTasks    sync.WaitGroup
-	wgWorkers  sync.WaitGroup
-	wgObserver sync.WaitGroup
 	cancel     func()
+	context    context.Context
+	wgObserver sync.WaitGroup
+	workMem    *WorkerMem
 	trace      *os.File
 }
 
@@ -27,38 +23,36 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 	ctx, cancel := context.WithCancel(ctx)
 
 	d := &Dispatcher{
-		context:  ctx,
-		cancel:   cancel,
-		tasks:    make(chan models.Task, size),
-		results:  make(chan models.TaskResult, size),
-		statuses: models.StatusMap{},
+		context: ctx,
+		cancel:  cancel,
 	}
 
-	launchObserver(d)
-	launchWorkers(count, d)
+	go d.observer(d.context)
+
+	d.launchWorkers(count, size)
 
 	return d
 }
 
-func launchWorkers(count int, d *Dispatcher) {
+func (d *Dispatcher) launchWorkers(count int, size int) {
+	d.workMem = &WorkerMem{
+		tasks:   make(chan models.Task, size),
+		results: make(chan models.TaskResult, size),
+	}
+
 	for i := 1; i <= count; i++ {
 		worker := &Worker{
-			ID:         i,
-			dispatcher: d,
+			ID:  i,
+			mem: d.workMem,
+			ctx: d.context,
 		}
 		go worker.Start()
-		d.wgWorkers.Add(1)
 	}
 }
 
-func launchObserver(d *Dispatcher) {
-	go d.observer(d.context)
-	d.wgObserver.Add(1)
-}
-
 func (d *Dispatcher) Add(task models.Task) {
-	d.tasks <- task
-	d.wgTasks.Add(1)
+	d.workMem.tasks <- task
+	d.workMem.wgTasks.Add(1)
 }
 
 func (d *Dispatcher) TraceTo(filename string) error {
@@ -76,17 +70,18 @@ func (d *Dispatcher) TraceTo(filename string) error {
 }
 
 func (d *Dispatcher) GetStatus(ID int) int {
-	return d.statuses.Load(ID)
+	return d.workMem.statuses.Load(ID)
 }
 
 func (d *Dispatcher) Wait() {
-	d.wgTasks.Wait()    // wait until each task has been processed
-	d.cancel()          // warm workers to stop theirs loop
-	d.wgWorkers.Wait()  // wait until each worker has been stopped
-	d.wgObserver.Wait() // wait until observer has been stopped
+	d.workMem.wgTasks.Wait()   // wait until each task has been processed
+	d.cancel()                 // warm workers to stop theirs loop
+	d.workMem.wgWorkers.Wait() // wait until each worker has been stopped
+	d.wgObserver.Wait()        // wait until observer has been stopped
 }
 
 func (d *Dispatcher) observer(ctx context.Context) {
+	d.wgObserver.Add(1)
 	defer d.wgObserver.Done()
 	defer d.trace.Close()
 
@@ -94,11 +89,11 @@ func (d *Dispatcher) observer(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case result := <-d.results:
-			d.statuses.Store(result.ID, result.Status)
+		case result := <-d.workMem.results:
+			d.workMem.statuses.Store(result.ID, result.Status)
 			d.logger(result)
 			d.tracer(result)
-			d.wgTasks.Done()
+			d.workMem.wgTasks.Done()
 		}
 	}
 }

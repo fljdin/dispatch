@@ -1,26 +1,38 @@
 package dispatcher
 
 import (
+	"context"
+	"sync"
+
 	"github.com/fljdin/dispatch/internal/models"
 )
 
+type WorkerMem struct {
+	wgTasks   sync.WaitGroup
+	wgWorkers sync.WaitGroup
+	statuses  models.StatusMap
+	tasks     chan models.Task
+	results   chan models.TaskResult
+}
 type Worker struct {
-	ID         int
-	dispatcher *Dispatcher
+	ID  int
+	mem *WorkerMem
+	ctx context.Context
 }
 
 func (w *Worker) Start() {
-	defer w.dispatcher.wgWorkers.Done()
+	w.mem.wgWorkers.Add(1)
+	defer w.mem.wgWorkers.Done()
 
 	for {
 		select {
-		case <-w.dispatcher.context.Done():
+		case <-w.ctx.Done():
 			return
-		case task := <-w.dispatcher.tasks:
+		case task := <-w.mem.tasks:
 			if len(task.Depends) == 0 {
 				result := task.Run()
 				result.WorkerID = w.ID
-				w.dispatcher.results <- result
+				w.mem.results <- result
 				continue
 			}
 
@@ -29,7 +41,7 @@ func (w *Worker) Start() {
 			var currentStatus = models.Waiting
 
 			for _, id := range task.Depends {
-				parentStatus := w.dispatcher.statuses.Load(id)
+				parentStatus := w.mem.statuses.Load(id)
 
 				if parentStatus == models.Waiting {
 					depends = append(depends, id)
@@ -43,7 +55,7 @@ func (w *Worker) Start() {
 
 			// current task is interrupted and won't be launched
 			if currentStatus == models.Interrupted {
-				w.dispatcher.results <- models.TaskResult{
+				w.mem.results <- models.TaskResult{
 					ID:       task.ID,
 					QueryID:  task.QueryID,
 					WorkerID: w.ID,
@@ -55,7 +67,7 @@ func (w *Worker) Start() {
 
 			// forward task to another worker
 			task.Depends = depends
-			w.dispatcher.tasks <- task
+			w.mem.tasks <- task
 		}
 	}
 }
