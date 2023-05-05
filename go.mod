@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.2
+	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	gopkg.in/yaml.v2 v2.4.0
 )
 

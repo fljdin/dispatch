@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fljdin/dispatch/src/models"
+	"github.com/fljdin/dispatch/internal/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,6 +28,9 @@ func (cb *ConfigBuilder) WithTask(task models.Task) *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
+	if cb.err != nil {
+		return cb
+	}
 	var config Config
 	err := yaml.Unmarshal([]byte(yamlString), &config)
 	if err != nil {
@@ -39,6 +42,9 @@ func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
+	if cb.err != nil {
+		return cb
+	}
 	data, err := os.ReadFile(yamlFilename)
 	if err != nil {
 		cb.err = fmt.Errorf("error reading yaml file: %w", err)

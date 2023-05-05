@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/fljdin/dispatch/src/models"
-	"github.com/fljdin/dispatch/src/parser"
+	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/parser"
 )
 
 var ConfigWorkersDefault int = 2

@@ -1,7 +1,7 @@
 package dispatcher
 
 import (
-	"github.com/fljdin/dispatch/src/models"
+	"github.com/fljdin/dispatch/internal/models"
 )
 
 type Worker struct {

@@ -3,18 +3,9 @@ package models_test
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/src/models"
+	. "github.com/fljdin/dispatch/internal/models"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestCreateTask(t *testing.T) {
-	task := &Task{
-		ID:      1,
-		Command: "echo test",
-	}
-
-	assert.Equal(t, 1, task.ID)
-}
 
 func TestTaskVerifyIDRequired(t *testing.T) {
 	task := &Task{

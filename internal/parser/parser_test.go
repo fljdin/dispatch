@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/fljdin/dispatch/src/parser"
+	. "github.com/fljdin/dispatch/internal/parser"
 	"github.com/stretchr/testify/assert"
 )
 

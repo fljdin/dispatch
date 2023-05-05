@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	config "github.com/fljdin/dispatch/src/config"
-	dispatcher "github.com/fljdin/dispatch/src/dispatcher"
+	"github.com/fljdin/dispatch/internal/config"
+	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/spf13/cobra"
 )
 
