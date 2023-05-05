@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os/exec"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -40,28 +42,20 @@ func (t Task) VerifyRequired() error {
 }
 
 func (t Task) VerifyType() error {
-	for _, tt := range TaskTypes {
-		if t.Type == tt || t.Type == "" {
-			return nil
-		}
+	if "" == t.Type {
+		return nil
 	}
-	return fmt.Errorf("%s is an invalid task type", t.Type)
+	if !slices.Contains(TaskTypes, t.Type) {
+		return fmt.Errorf("%s is an invalid task type", t.Type)
+	}
+	return nil
 }
 
 func (t Task) VerifyDependencies(identifiers []int) error {
 	verified := true
 
 	for _, d := range t.Depends {
-		found := false
-
-		for _, i := range identifiers {
-			if d == i {
-				found = true
-				break
-			}
-		}
-
-		verified = verified && found
+		verified = verified && slices.Contains(identifiers, d)
 	}
 
 	if !verified {
