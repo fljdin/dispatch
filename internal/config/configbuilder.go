@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fljdin/dispatch/src/models"
+	"github.com/fljdin/dispatch/internal/models"
 	"gopkg.in/yaml.v2"
 )
 

@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/fljdin/dispatch/src/config"
-	. "github.com/fljdin/dispatch/src/models"
+	. "github.com/fljdin/dispatch/internal/config"
+	. "github.com/fljdin/dispatch/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 

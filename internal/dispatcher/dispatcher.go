@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fljdin/dispatch/src/models"
+	"github.com/fljdin/dispatch/internal/models"
 )
 
 type Dispatcher struct {
