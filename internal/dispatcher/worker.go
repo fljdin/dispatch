@@ -2,18 +2,10 @@ package dispatcher
 
 import (
 	"context"
-	"sync"
 
 	"github.com/fljdin/dispatch/internal/models"
 )
 
-type WorkerMem struct {
-	wgTasks   sync.WaitGroup
-	wgWorkers sync.WaitGroup
-	statuses  models.StatusMap
-	tasks     chan models.Task
-	results   chan models.TaskResult
-}
 type Worker struct {
 	ID  int
 	mem *WorkerMem

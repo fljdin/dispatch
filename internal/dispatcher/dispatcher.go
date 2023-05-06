@@ -2,21 +2,25 @@ package dispatcher
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/fljdin/dispatch/internal/models"
 )
 
+type WorkerMem struct {
+	wgTasks   sync.WaitGroup
+	wgWorkers sync.WaitGroup
+	statuses  models.StatusMap
+	tasks     chan models.Task
+	results   chan models.TaskResult
+	trace     *os.File
+}
+
 type Dispatcher struct {
-	cancel     func()
-	context    context.Context
-	wgObserver sync.WaitGroup
-	workMem    *WorkerMem
-	trace      *os.File
+	cancel  func()
+	context context.Context
+	workMem *WorkerMem
 }
 
 func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
@@ -27,18 +31,24 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 		cancel:  cancel,
 	}
 
-	go d.observer(d.context)
-
 	d.launchWorkers(count, size)
 
 	return d
 }
 
 func (d *Dispatcher) launchWorkers(count int, size int) {
+
 	d.workMem = &WorkerMem{
 		tasks:   make(chan models.Task, size),
 		results: make(chan models.TaskResult, size),
 	}
+
+	observer := &Observer{
+		mem: d.workMem,
+		ctx: d.context,
+	}
+
+	go observer.Start()
 
 	for i := 1; i <= count; i++ {
 		worker := &Worker{
@@ -55,12 +65,16 @@ func (d *Dispatcher) Add(task models.Task) {
 	d.workMem.wgTasks.Add(1)
 }
 
+func (d *Dispatcher) GetStatus(ID int) int {
+	return d.workMem.statuses.Load(ID)
+}
+
 func (d *Dispatcher) TraceTo(filename string) error {
 	var err error
 	const flag int = os.O_APPEND | os.O_TRUNC | os.O_CREATE | os.O_WRONLY
 
 	if len(filename) > 0 {
-		d.trace, err = os.OpenFile(filename, flag, 0644)
+		d.workMem.trace, err = os.OpenFile(filename, flag, 0644)
 		if err != nil {
 			return err
 		}
@@ -69,70 +83,8 @@ func (d *Dispatcher) TraceTo(filename string) error {
 	return nil
 }
 
-func (d *Dispatcher) GetStatus(ID int) int {
-	return d.workMem.statuses.Load(ID)
-}
-
 func (d *Dispatcher) Wait() {
 	d.workMem.wgTasks.Wait()   // wait until each task has been processed
 	d.cancel()                 // warm workers to stop theirs loop
 	d.workMem.wgWorkers.Wait() // wait until each worker has been stopped
-	d.wgObserver.Wait()        // wait until observer has been stopped
-}
-
-func (d *Dispatcher) observer(ctx context.Context) {
-	d.wgObserver.Add(1)
-	defer d.wgObserver.Done()
-	defer d.trace.Close()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case result := <-d.workMem.results:
-			d.workMem.statuses.Store(result.ID, result.Status)
-			d.logger(result)
-			d.tracer(result)
-			d.workMem.wgTasks.Done()
-		}
-	}
-}
-
-func (d *Dispatcher) logger(result models.TaskResult) {
-	log.Printf(
-		"Worker %d completed Task %d (query #%d) (success: %t, elapsed: %s)\n",
-		result.WorkerID,
-		result.ID,
-		result.QueryID,
-		(result.Status == models.Succeeded),
-		result.Elapsed.Round(time.Millisecond),
-	)
-}
-
-func (d *Dispatcher) tracer(result models.TaskResult) {
-	if d.trace != nil {
-		template := `===== Task %d (query #%d) (success: %t, elapsed: %s) =====
-Started at: %s
-Ended at:   %s
-Error: %s
-Output:
-%s
-`
-		report := fmt.Sprintf(
-			template,
-			result.ID,
-			result.QueryID,
-			(result.Status == models.Succeeded),
-			result.Elapsed.Round(time.Millisecond),
-			result.StartTime.String(),
-			result.EndTime.String(),
-			result.Error,
-			result.Output,
-		)
-
-		_, err := d.trace.Write([]byte(report))
-		if err != nil {
-			log.Println(err)
-		}
-	}
 }
