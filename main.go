@@ -45,7 +45,7 @@ func launch(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, t := range config.Tasks {
-		dispatcher.Add(t)
+		dispatcher.AddTask(t)
 	}
 
 	dispatcher.Wait()

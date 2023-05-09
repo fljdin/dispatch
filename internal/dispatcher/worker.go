@@ -7,59 +7,69 @@ import (
 )
 
 type Worker struct {
-	ID  int
-	mem *WorkerMem
-	ctx context.Context
+	ID      int
+	memory  *SharedMemory
+	context context.Context
 }
 
 func (w *Worker) Start() {
-	w.mem.wgWorkers.Add(1)
-	defer w.mem.wgWorkers.Done()
+	w.memory.StartWorker()
+	defer w.memory.EndWorker()
 
 	for {
 		select {
-		case <-w.ctx.Done():
+		case <-w.context.Done():
 			return
-		case task := <-w.mem.tasks:
-			if len(task.Depends) == 0 {
+		case task := <-w.memory.tasks:
+			task, result := w.verifyStatus(task)
+
+			if result.Status == models.Ready {
 				result := task.Run()
 				result.WorkerID = w.ID
-				w.mem.results <- result
+				w.memory.results <- result
 				continue
 			}
 
-			// verify if some dependencies have been completed
-			var depends = []int{}
-			var currentStatus = models.Waiting
-
-			for _, id := range task.Depends {
-				parentStatus := w.mem.statuses.Load(id)
-
-				if parentStatus == models.Waiting {
-					depends = append(depends, id)
-					continue
-				}
-
-				if parentStatus >= models.Failed {
-					currentStatus = models.Interrupted
-				}
-			}
-
-			// current task is interrupted and won't be launched
-			if currentStatus == models.Interrupted {
-				w.mem.results <- models.TaskResult{
-					ID:       task.ID,
-					QueryID:  task.QueryID,
-					WorkerID: w.ID,
-					Status:   currentStatus,
-					Elapsed:  0,
-				}
+			if result.Status == models.Interrupted {
+				w.memory.results <- result
 				continue
 			}
 
-			// forward task to another worker
-			task.Depends = depends
-			w.mem.tasks <- task
+			w.memory.ForwardTask(task)
 		}
 	}
+}
+
+func (w *Worker) verifyStatus(task models.Task) (models.Task, models.TaskResult) {
+	var depends = []int{}
+	var result models.TaskResult = models.TaskResult{
+		Status: models.Waiting,
+	}
+
+	for _, id := range task.Depends {
+		parentStatus := w.memory.GetStatus(id)
+
+		if parentStatus == models.Waiting {
+			depends = append(depends, id)
+			continue
+		}
+
+		if parentStatus >= models.Failed {
+			return task, models.TaskResult{
+				ID:       task.ID,
+				QueryID:  task.QueryID,
+				WorkerID: w.ID,
+				Status:   models.Interrupted,
+				Elapsed:  0,
+			}
+		}
+	}
+
+	task.Depends = depends
+
+	if len(depends) == 0 {
+		result.Status = models.Ready
+	}
+
+	return task, result
 }

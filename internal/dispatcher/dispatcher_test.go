@@ -12,7 +12,7 @@ import (
 
 func TestDispatcherAddTask(t *testing.T) {
 	dispatcher := NewDispatcher(context.Background(), 1, 1)
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
 	})
@@ -22,11 +22,11 @@ func TestDispatcherAddTask(t *testing.T) {
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "false",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: "true",
@@ -39,11 +39,11 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: "true",
@@ -56,12 +56,12 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 0,
 		Command: "false",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 1,
 		Command: "true",
@@ -80,7 +80,7 @@ func TestDispatcherTraceToFile(t *testing.T) {
 	dispatcher := NewDispatcher(context.Background(), 1, 1)
 	dispatcher.TraceTo(tempFile.Name())
 
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "echo test",
 	})

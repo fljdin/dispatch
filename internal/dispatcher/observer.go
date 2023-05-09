@@ -10,24 +10,24 @@ import (
 )
 
 type Observer struct {
-	mem *WorkerMem
-	ctx context.Context
+	memory  *SharedMemory
+	context context.Context
 }
 
 func (o *Observer) Start() {
-	o.mem.wgWorkers.Add(1)
-	defer o.mem.wgWorkers.Done()
-	defer o.mem.trace.Close()
+	o.memory.StartWorker()
+	defer o.memory.EndWorker()
+	defer o.memory.trace.Close()
 
 	for {
 		select {
-		case <-o.ctx.Done():
+		case <-o.context.Done():
 			return
-		case result := <-o.mem.results:
-			o.mem.statuses.Store(result.ID, result.Status)
+		case result := <-o.memory.results:
+			o.memory.statuses.Store(result.ID, result.Status)
 			o.logger(result)
 			o.tracer(result)
-			o.mem.wgTasks.Done()
+			o.memory.wgTasks.Done()
 		}
 	}
 }
@@ -44,7 +44,7 @@ func (o *Observer) logger(result models.TaskResult) {
 }
 
 func (o *Observer) tracer(result models.TaskResult) {
-	if o.mem.trace != nil {
+	if o.memory.trace != nil {
 		template := `===== Task %d (query #%d) (success: %t, elapsed: %s) =====
 Started at: %s
 Ended at:   %s
@@ -64,7 +64,7 @@ Output:
 			result.Output,
 		)
 
-		_, err := o.mem.trace.Write([]byte(report))
+		_, err := o.memory.trace.Write([]byte(report))
 		if err != nil {
 			log.Println(err)
 		}

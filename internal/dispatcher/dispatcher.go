@@ -3,24 +3,14 @@ package dispatcher
 import (
 	"context"
 	"os"
-	"sync"
 
 	"github.com/fljdin/dispatch/internal/models"
 )
 
-type WorkerMem struct {
-	wgTasks   sync.WaitGroup
-	wgWorkers sync.WaitGroup
-	statuses  models.StatusMap
-	tasks     chan models.Task
-	results   chan models.TaskResult
-	trace     *os.File
-}
-
 type Dispatcher struct {
 	cancel  func()
 	context context.Context
-	workMem *WorkerMem
+	memory  *SharedMemory
 }
 
 func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
@@ -31,42 +21,43 @@ func NewDispatcher(ctx context.Context, count int, size int) *Dispatcher {
 		cancel:  cancel,
 	}
 
+	d.memory = &SharedMemory{
+		tasks:   make(chan models.Task, size),
+		results: make(chan models.TaskResult, size),
+	}
+
+	d.launchOberserver()
 	d.launchWorkers(count, size)
 
 	return d
 }
 
-func (d *Dispatcher) launchWorkers(count int, size int) {
-
-	d.workMem = &WorkerMem{
-		tasks:   make(chan models.Task, size),
-		results: make(chan models.TaskResult, size),
-	}
-
+func (d *Dispatcher) launchOberserver() {
 	observer := &Observer{
-		mem: d.workMem,
-		ctx: d.context,
+		memory:  d.memory,
+		context: d.context,
 	}
 
 	go observer.Start()
+}
 
+func (d *Dispatcher) launchWorkers(count int, size int) {
 	for i := 1; i <= count; i++ {
 		worker := &Worker{
-			ID:  i,
-			mem: d.workMem,
-			ctx: d.context,
+			ID:      i,
+			memory:  d.memory,
+			context: d.context,
 		}
 		go worker.Start()
 	}
 }
 
-func (d *Dispatcher) Add(task models.Task) {
-	d.workMem.tasks <- task
-	d.workMem.wgTasks.Add(1)
+func (d *Dispatcher) AddTask(task models.Task) {
+	d.memory.AddTask(task)
 }
 
 func (d *Dispatcher) GetStatus(ID int) int {
-	return d.workMem.statuses.Load(ID)
+	return d.memory.GetStatus(ID)
 }
 
 func (d *Dispatcher) TraceTo(filename string) error {
@@ -74,7 +65,7 @@ func (d *Dispatcher) TraceTo(filename string) error {
 	const flag int = os.O_APPEND | os.O_TRUNC | os.O_CREATE | os.O_WRONLY
 
 	if len(filename) > 0 {
-		d.workMem.trace, err = os.OpenFile(filename, flag, 0644)
+		d.memory.trace, err = os.OpenFile(filename, flag, 0644)
 		if err != nil {
 			return err
 		}
@@ -84,7 +75,7 @@ func (d *Dispatcher) TraceTo(filename string) error {
 }
 
 func (d *Dispatcher) Wait() {
-	d.workMem.wgTasks.Wait()   // wait until each task has been processed
-	d.cancel()                 // warm workers to stop theirs loop
-	d.workMem.wgWorkers.Wait() // wait until each worker has been stopped
+	d.memory.wgTasks.Wait()   // wait until each task has been processed
+	d.cancel()                // warm workers to stop theirs loop
+	d.memory.wgWorkers.Wait() // wait until each worker has been stopped
 }
