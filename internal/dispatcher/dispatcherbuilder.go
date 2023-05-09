@@ -67,8 +67,12 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		context: db.dispatcher.context,
 	}
 
-	if err := db.dispatcher.observer.TraceTo(db.traceFilename); err != nil {
+	if err := db.dispatcher.observer.WithTrace(db.traceFilename); err != nil {
 		db.err = err
+	}
+
+	if db.dispatcher.consoleEnabled {
+		db.dispatcher.observer.WithConsole()
 	}
 
 	return db.dispatcher, db.err
