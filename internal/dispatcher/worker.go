@@ -49,7 +49,7 @@ func (w *Worker) verifyStatus(task models.Task) (models.Task, models.TaskResult)
 	for _, id := range task.Depends {
 		parentStatus := w.memory.GetStatus(id)
 
-		if parentStatus == models.Waiting {
+		if parentStatus < models.Succeeded {
 			depends = append(depends, id)
 			continue
 		}

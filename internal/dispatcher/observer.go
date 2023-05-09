@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/fljdin/dispatch/internal/models"
@@ -12,12 +13,13 @@ import (
 type Observer struct {
 	memory  *SharedMemory
 	context context.Context
+	trace   *os.File
 }
 
 func (o *Observer) Start() {
 	o.memory.StartWorker()
 	defer o.memory.EndWorker()
-	defer o.memory.trace.Close()
+	defer o.trace.Close()
 
 	for {
 		select {
@@ -25,14 +27,32 @@ func (o *Observer) Start() {
 			return
 		case result := <-o.memory.results:
 			o.memory.statuses.Store(result.ID, result.Status)
-			o.logger(result)
-			o.tracer(result)
+			o.Log(result)
 			o.memory.wgTasks.Done()
 		}
 	}
 }
 
-func (o *Observer) logger(result models.TaskResult) {
+func (o *Observer) TraceTo(filename string) error {
+	var err error
+	const flag int = os.O_APPEND | os.O_TRUNC | os.O_CREATE | os.O_WRONLY
+
+	if len(filename) > 0 {
+		o.trace, err = os.OpenFile(filename, flag, 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *Observer) Log(result models.TaskResult) {
+	o.console(result)
+	o.tracer(result)
+}
+
+func (o *Observer) console(result models.TaskResult) {
 	log.Printf(
 		"Worker %d completed Task %d (query #%d) (success: %t, elapsed: %s)\n",
 		result.WorkerID,
@@ -44,7 +64,7 @@ func (o *Observer) logger(result models.TaskResult) {
 }
 
 func (o *Observer) tracer(result models.TaskResult) {
-	if o.memory.trace != nil {
+	if o.trace != nil {
 		template := `===== Task %d (query #%d) (success: %t, elapsed: %s) =====
 Started at: %s
 Ended at:   %s
@@ -64,7 +84,7 @@ Output:
 			result.Output,
 		)
 
-		_, err := o.memory.trace.Write([]byte(report))
+		_, err := o.trace.Write([]byte(report))
 		if err != nil {
 			log.Println(err)
 		}

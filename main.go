@@ -33,13 +33,13 @@ func launch(cmd *cobra.Command, args []string) error {
 	fmt.Println("Config loaded with", len(config.Tasks), "tasks")
 	fmt.Println("- max workers =", config.MaxWorkers)
 
-	dispatcher := dispatcher.NewDispatcher(
-		context.Background(),
-		config.MaxWorkers,
-		len(config.Tasks),
-	)
+	dispatcher, err := dispatcher.NewDispatcherBuilder(context.Background()).
+		WithWorkerNumber(config.MaxWorkers).
+		WithMemorySize(len(config.Tasks)).
+		WithTraceFile(config.Summary).
+		WithConsole().
+		Build()
 
-	err = dispatcher.TraceTo(config.Summary)
 	if err != nil {
 		return err
 	}

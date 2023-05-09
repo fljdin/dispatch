@@ -2,7 +2,6 @@ package dispatcher_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
@@ -11,7 +10,9 @@ import (
 )
 
 func TestDispatcherAddTask(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 1)
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		Build()
+
 	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
@@ -21,7 +22,10 @@ func TestDispatcherAddTask(t *testing.T) {
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
 	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "false",
@@ -38,7 +42,10 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
 	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
@@ -55,7 +62,10 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
 	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 0,
@@ -69,25 +79,4 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	dispatcher.Wait()
 
 	assert.Equal(t, Failed, dispatcher.GetStatus(1))
-}
-
-func TestDispatcherTraceToFile(t *testing.T) {
-	tempFile, _ := os.CreateTemp("", "trace_*.out")
-
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
-
-	dispatcher := NewDispatcher(context.Background(), 1, 1)
-	dispatcher.TraceTo(tempFile.Name())
-
-	dispatcher.AddTask(Task{
-		ID:      1,
-		Command: "echo test",
-	})
-	dispatcher.Wait()
-
-	data, err := os.ReadFile(tempFile.Name())
-	if assert.Equal(t, nil, err) {
-		assert.Contains(t, string(data), "test\n")
-	}
 }

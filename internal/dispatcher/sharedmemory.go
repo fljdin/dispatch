@@ -1,7 +1,6 @@
 package dispatcher
 
 import (
-	"os"
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/models"
@@ -13,7 +12,6 @@ type SharedMemory struct {
 	statuses  models.StatusMap
 	tasks     chan models.Task
 	results   chan models.TaskResult
-	trace     *os.File
 }
 
 func (s *SharedMemory) AddTask(task models.Task) {
