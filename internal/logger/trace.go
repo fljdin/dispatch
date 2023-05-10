@@ -6,6 +6,14 @@ import (
 	"github.com/fljdin/dispatch/internal/models"
 )
 
+const TraceTemplate string = `===== Task {{.ID}} (query #{{.QueryID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}}) =====
+Started at: {{.StartTime}}
+Ended at:   {{.EndTime}}
+Error: {{.Error}}
+Output:
+{{.Output}}
+`
+
 type Trace struct {
 	Filename string
 	file     *os.File

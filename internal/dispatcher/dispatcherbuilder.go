@@ -8,10 +8,11 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher    Dispatcher
-	traceFilename string
-	memorySize    int
-	err           error
+	dispatcher     Dispatcher
+	traceFilename  string
+	memorySize     int
+	consoleEnabled bool
+	err            error
 }
 
 func NewDispatcherBuilder(ctx context.Context) *DispatcherBuilder {
@@ -19,12 +20,12 @@ func NewDispatcherBuilder(ctx context.Context) *DispatcherBuilder {
 
 	return &DispatcherBuilder{
 		dispatcher: Dispatcher{
-			context:        ctx,
-			cancel:         cancel,
-			workers:        1,
-			consoleEnabled: false,
+			context: ctx,
+			cancel:  cancel,
+			workers: 1,
 		},
-		memorySize: 1,
+		memorySize:     1,
+		consoleEnabled: false,
 	}
 }
 
@@ -34,7 +35,7 @@ func (db *DispatcherBuilder) WithTraceFile(filename string) *DispatcherBuilder {
 }
 
 func (db *DispatcherBuilder) WithConsole() *DispatcherBuilder {
-	db.dispatcher.consoleEnabled = true
+	db.consoleEnabled = true
 	return db
 }
 
@@ -71,7 +72,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		db.err = err
 	}
 
-	if db.dispatcher.consoleEnabled {
+	if db.consoleEnabled {
 		db.dispatcher.observer.WithConsole()
 	}
 

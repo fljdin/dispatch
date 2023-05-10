@@ -12,8 +12,6 @@ type Dispatcher struct {
 	workers  int
 	observer *Observer
 	memory   *SharedMemory
-
-	consoleEnabled bool
 }
 
 func (d *Dispatcher) Wait() {
