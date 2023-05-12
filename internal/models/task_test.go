@@ -6,6 +6,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateTask(t *testing.T) {
@@ -24,9 +25,8 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 	}
 	err := task.VerifyRequired()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "id is required")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "id is required")
 }
 
 func TestTaskVerifyCommandRequired(t *testing.T) {
@@ -35,9 +35,8 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 	}
 	err := task.VerifyRequired()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "command is required")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "command is required")
 }
 
 func TestTaskVerifyType(t *testing.T) {
@@ -48,9 +47,8 @@ func TestTaskVerifyType(t *testing.T) {
 	}
 	err := task.VerifyType()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "invalid task type")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "invalid task type")
 }
 
 func TestShellTaskWithOutput(t *testing.T) {

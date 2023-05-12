@@ -8,7 +8,7 @@ import (
 )
 
 func TestStatusMapLoad(t *testing.T) {
-	sm := &StatusMap{}
+	sm := StatusMap{}
 
 	status := sm.Load(1)
 
@@ -16,7 +16,7 @@ func TestStatusMapLoad(t *testing.T) {
 }
 
 func TestStatusMapStore(t *testing.T) {
-	sm := &StatusMap{}
+	sm := StatusMap{}
 	expected := Succeeded
 
 	sm.Store(1, Succeeded)
@@ -26,7 +26,7 @@ func TestStatusMapStore(t *testing.T) {
 }
 
 func TestStatusMapUpdate(t *testing.T) {
-	sm := &StatusMap{}
+	sm := StatusMap{}
 
 	expected := Succeeded
 	sm.Store(1, Waiting)

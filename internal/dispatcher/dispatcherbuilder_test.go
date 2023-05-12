@@ -6,6 +6,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
@@ -13,9 +14,8 @@ func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
 		WithMemorySize(0).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "need a positive memory size")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "need a positive memory size")
 }
 
 func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
@@ -23,9 +23,8 @@ func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
 		WithTraceFile("not/exists.out").
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "no such file or directory")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "no such file or directory")
 }
 
 func TestDispatcherBuilderWithNegativeWorkerNumber(t *testing.T) {
@@ -33,7 +32,6 @@ func TestDispatcherBuilderWithNegativeWorkerNumber(t *testing.T) {
 		WithWorkerNumber(0).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "need a positive worker number")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "need a positive worker number")
 }
