@@ -88,9 +88,9 @@ tasks:
 summary: result.out
 ```
 
-* task `output` accepts several wildcards
-  - `{id}`: task identifier
-  - `{queryid}`: query identifier
+* task `output`: writes command's output in a file
+  - accept standard templating syntax on this task's context
+  - does not interrupt others workers if file could not be created or written
 
 ```yaml
 # write psql output in a dedicated file per query
@@ -98,7 +98,7 @@ tasks:
   - id: 1
     type: psql
     file: queries.sql
-    output: result_{queryid}.out
+    output: result_{{.ID}}_{{.QueryID}}.out
 ```
 
 ### Named connections

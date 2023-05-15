@@ -10,7 +10,7 @@ import (
 )
 
 func TestCreateTask(t *testing.T) {
-	task := &Task{
+	task := Task{
 		ID:      1,
 		Command: "echo test",
 	}
@@ -20,7 +20,7 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestTaskVerifyIDRequired(t *testing.T) {
-	task := &Task{
+	task := Task{
 		Command: "true",
 	}
 	err := task.VerifyRequired()
@@ -30,7 +30,7 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 }
 
 func TestTaskVerifyCommandRequired(t *testing.T) {
-	task := &Task{
+	task := Task{
 		ID: 1,
 	}
 	err := task.VerifyRequired()
@@ -40,7 +40,7 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 }
 
 func TestTaskVerifyType(t *testing.T) {
-	task := &Task{
+	task := Task{
 		ID:      1,
 		Type:    "unknown",
 		Command: "unknown",
@@ -52,7 +52,7 @@ func TestTaskVerifyType(t *testing.T) {
 }
 
 func TestShellTaskWithOutput(t *testing.T) {
-	task := &Task{
+	task := Task{
 		ID:      1,
 		Command: "echo test",
 	}
@@ -63,7 +63,7 @@ func TestShellTaskWithOutput(t *testing.T) {
 }
 
 func TestShellTaskWithError(t *testing.T) {
-	task := &Task{
+	task := Task{
 		ID:      1,
 		Command: "false",
 	}
@@ -78,7 +78,7 @@ func TestWriteOutputToFile(t *testing.T) {
 	defer tempFile.Close()
 	defer os.Remove(tempFile.Name())
 
-	task := &Task{
+	task := Task{
 		ID:      1,
 		Command: "echo test",
 		Output:  tempFile.Name(),
@@ -91,13 +91,27 @@ func TestWriteOutputToFile(t *testing.T) {
 	}
 }
 
-func TestTaskOutputWithWildcards(t *testing.T) {
-	task := &Task{
+func TestTaskOutputWithInvalidTemplating(t *testing.T) {
+	task := Task{
+		ID:      1,
+		Command: "true",
+		Output:  "task_{{with .Invalid}}.out",
+	}
+	err := task.VerifyOutput()
+
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "unexpected")
+}
+
+func TestTaskOutputWithTemplating(t *testing.T) {
+	task := Task{
 		ID:      1,
 		QueryID: 0,
 		Command: "true",
-		Output:  "task_{id}_{queryid}.out",
+		Output:  "task_{{.ID}}_{{.QueryID}}.out",
 	}
+	err := task.VerifyOutput()
 
+	require.Nil(t, err)
 	assert.Equal(t, "task_1_0.out", task.GetOutput())
 }

@@ -1,10 +1,11 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
+	"text/template"
 	"time"
 
 	"golang.org/x/exp/slices"
@@ -25,13 +26,6 @@ type Task struct {
 	QueryID    int
 }
 
-func (t Task) GetOutput() string {
-	output := strings.Replace(t.Output, "{id}", fmt.Sprintf("%d", t.ID), -1)
-	output = strings.Replace(output, "{queryid}", fmt.Sprintf("%d", t.QueryID), -1)
-
-	return output
-}
-
 func (t Task) VerifyRequired() error {
 	if t.ID == 0 {
 		return fmt.Errorf("id is required")
@@ -45,7 +39,7 @@ func (t Task) VerifyRequired() error {
 }
 
 func (t Task) VerifyType() error {
-	if "" == t.Type {
+	if t.Type == "" {
 		return nil
 	}
 	if !slices.Contains(TaskTypes, t.Type) {
@@ -66,6 +60,28 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	}
 
 	return nil
+}
+
+func (t Task) VerifyOutput() error {
+	if t.Output == "" {
+		return nil
+	}
+
+	_, err := template.New("ouptut").Parse(t.Output)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t Task) GetOutput() string {
+	var buf bytes.Buffer
+
+	tmpl, _ := template.New("ouptut").Parse(t.Output)
+	tmpl.Execute(&buf, t)
+
+	return buf.String()
 }
 
 func (t Task) writeOutput(output []byte) error {
