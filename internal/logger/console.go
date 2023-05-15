@@ -1,7 +1,8 @@
 package logger
 
 import (
-	"os"
+	"bytes"
+	"log"
 
 	"github.com/fljdin/dispatch/internal/models"
 )
@@ -11,13 +12,27 @@ const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (que
 
 type Console struct{}
 
-func (c *Console) Render(result models.TaskResult) {
+func (c *Console) Parse(result models.TaskResult) (string, error) {
 	tmpl := newTemplate("console")
 	tmpl, err := tmpl.Parse(ConsoleTemplate)
 
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	tmpl.Execute(os.Stdout, result)
+	var buf bytes.Buffer
+	tmpl.Execute(&buf, result)
+
+	return buf.String(), nil
+}
+
+func (c *Console) Render(result models.TaskResult) error {
+	data, err := c.Parse(result)
+
+	if err != nil {
+		return err
+	}
+
+	log.Print(data)
+	return nil
 }

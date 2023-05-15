@@ -1,7 +1,6 @@
 package logger_test
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -11,14 +10,8 @@ import (
 )
 
 func TestTraceRender(t *testing.T) {
-	tempFile, _ := os.CreateTemp("", "trace_*.out")
-
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
-
-	trace := &Trace{Filename: tempFile.Name()}
-	trace.Open()
-	trace.Render(TaskResult{
+	trace := Trace{Filename: "dummy.txt"}
+	data, _ := trace.Parse(TaskResult{
 		ID:        1,
 		WorkerID:  1,
 		QueryID:   0,
@@ -29,8 +22,5 @@ func TestTraceRender(t *testing.T) {
 		Output:    "test\n",
 	})
 
-	data, err := os.ReadFile(tempFile.Name())
-	if assert.Equal(t, nil, err) {
-		assert.Contains(t, string(data), "Output:\ntest\n")
-	}
+	assert.Contains(t, data, "Output:\ntest\n")
 }

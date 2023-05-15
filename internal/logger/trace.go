@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"bytes"
 	"os"
 
 	"github.com/fljdin/dispatch/internal/models"
@@ -31,13 +32,26 @@ func (t *Trace) Open() error {
 	return nil
 }
 
-func (t *Trace) Render(result models.TaskResult) {
+func (t *Trace) Parse(result models.TaskResult) (string, error) {
 	tmpl := newTemplate("trace")
 	tmpl, err := tmpl.Parse(TraceTemplate)
 
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	tmpl.Execute(t.file, result)
+	var buf bytes.Buffer
+	tmpl.Execute(&buf, result)
+
+	return buf.String(), nil
+}
+
+func (t *Trace) Render(result models.TaskResult) error {
+	data, err := t.Parse(result)
+	if err != nil {
+		return nil
+	}
+
+	_, err = t.file.Write([]byte(data))
+	return err
 }
