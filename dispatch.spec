@@ -1,9 +1,9 @@
 Name:           dispatch
-Version:        0.3
+Version:        0.5
 Release:        1%{?dist}
 Summary:        Provides an easy-to-use command to dispatch tasks described in a YAML file
+License:        MIT
 
-License:        GPLv3
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  golang
@@ -23,6 +23,8 @@ Provides an easy-to-use command to dispatch tasks described in a YAML file
 go build -v -o %{name}
 
 %install
+mkdir -p %{buildroot}/usr/bin/
+install -m 755 %{name} %{buildroot}/usr/bin/%{name}
 
 %check
 
@@ -31,5 +33,6 @@ go build -v -o %{name}
 %preun
 
 %files
+/usr/bin/%{name}
 
 %changelog
