@@ -16,15 +16,18 @@ jobs:
       - name: Install nfpm
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
       
+      - name: Build from sources
+        run: go build
+      
       - name: Package with nfpm
         run: >-
-          mkdir -p build ;
+          mkdir -p packages ;
           for p in rpm deb ; do 
-            nfpm package --packager $p --target build ;
+            nfpm package --packager $p --target packages ;
           done
       
       - name: Upload
         uses: actions/upload-artifact@v3
         with:
           name: packages
-          path: build
+          path: packages
