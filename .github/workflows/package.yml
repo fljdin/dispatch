@@ -17,13 +17,13 @@ jobs:
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
       
       - name: Package with nfpm
-        run: |
-          mkdir -p build \
-          for p in rpm deb ; do \
-            nfpm package --packager $p --target build \
+        run: >-
+          mkdir -p build ;
+          for p in rpm deb ; do 
+            nfpm package --packager $p --target build ;
           done
       
-      - name: Archive production artifacts
+      - name: Upload
         uses: actions/upload-artifact@v3
         with:
           name: packages
