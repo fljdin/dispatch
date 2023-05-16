@@ -1,4 +1,4 @@
-name: check-quality
+name: go-test
 
 on: [push]
 
