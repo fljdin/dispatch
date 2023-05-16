@@ -17,7 +17,7 @@ jobs:
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
       
       - name: Package with nfpm
-      - run: |
+        run: |
           mkdir -p build \
           for p in rpm deb ; do \
             nfpm package --packager $p --target build \
