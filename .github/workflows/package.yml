@@ -5,14 +5,27 @@ on:
 
 jobs:
   build:
-    name: Create RPM binary
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@main
 
-      - name: build RPM package
-        id: rpm_build
-        uses: naveenrajm7/rpmbuild@master
+      - name: Setup Go
+        uses: actions/setup-go@v4
         with:
-          spec_file: "dispatch.spec"
+          go-version: '1.20.x'
+
+      - name: Install nfpm
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+      
+      - name: Package with nfpm
+      - run: |
+          mkdir -p build/
+          for p in rpm deb ; do
+            nfpm package --packager $p --target build/
+          done
+      
+      - name: Archive production artifacts
+            uses: actions/upload-artifact@v3
+            with:
+              name: packages
+              path: build/
