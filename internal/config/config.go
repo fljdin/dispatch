@@ -14,6 +14,7 @@ type Config struct {
 	Tasks       []models.Task      `yaml:"tasks"`
 	MaxWorkers  int                `yaml:"workers"`
 	Connections models.Connections `yaml:"connections"`
+	Summary     string             `yaml:"summary"`
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -77,6 +78,7 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 					Name:    fmt.Sprintf("Query loaded from %s", t.File),
 					Command: query,
 					URI:     t.URI,
+					Output:  t.Output,
 				})
 			}
 		}

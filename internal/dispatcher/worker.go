@@ -1,61 +1,75 @@
 package dispatcher
 
 import (
+	"context"
+
 	"github.com/fljdin/dispatch/internal/models"
 )
 
 type Worker struct {
-	ID         int
-	dispatcher *Dispatcher
+	ID      int
+	memory  *SharedMemory
+	context context.Context
 }
 
 func (w *Worker) Start() {
-	defer w.dispatcher.wgWorkers.Done()
+	w.memory.StartWorker()
+	defer w.memory.EndWorker()
 
 	for {
 		select {
-		case <-w.dispatcher.context.Done():
+		case <-w.context.Done():
 			return
-		case task := <-w.dispatcher.tasks:
-			if len(task.Depends) == 0 {
+		case task := <-w.memory.tasks:
+			task, result := w.verifyStatus(task)
+
+			if result.Status == models.Ready {
 				result := task.Run()
 				result.WorkerID = w.ID
-				w.dispatcher.results <- result
+				w.memory.results <- result
 				continue
 			}
 
-			// verify if some dependencies have been completed
-			var depends = []int{}
-			var status = models.Waiting
-
-			for _, id := range task.Depends {
-				completed := w.dispatcher.completed.Load(id)
-
-				if completed == models.Waiting {
-					depends = append(depends, id)
-					continue
-				}
-
-				if completed >= models.Failed {
-					status = models.Interrupted
-				}
-			}
-
-			// current task is interrupted and won't be launched
-			if status == models.Interrupted {
-				w.dispatcher.results <- models.TaskResult{
-					ID:       task.ID,
-					QueryID:  task.QueryID,
-					WorkerID: w.ID,
-					Status:   status,
-					Elapsed:  0,
-				}
+			if result.Status == models.Interrupted {
+				w.memory.results <- result
 				continue
 			}
 
-			// forward task to another worker
-			task.Depends = depends
-			w.dispatcher.tasks <- task
+			w.memory.ForwardTask(task)
 		}
 	}
+}
+
+func (w *Worker) verifyStatus(task models.Task) (models.Task, models.TaskResult) {
+	var depends = []int{}
+	var result models.TaskResult = models.TaskResult{
+		Status: models.Waiting,
+	}
+
+	for _, id := range task.Depends {
+		parentStatus := w.memory.GetStatus(id)
+
+		if parentStatus < models.Succeeded {
+			depends = append(depends, id)
+			continue
+		}
+
+		if parentStatus >= models.Failed {
+			return task, models.TaskResult{
+				ID:       task.ID,
+				QueryID:  task.QueryID,
+				WorkerID: w.ID,
+				Status:   models.Interrupted,
+				Elapsed:  0,
+			}
+		}
+	}
+
+	task.Depends = depends
+
+	if len(depends) == 0 {
+		result.Status = models.Ready
+	}
+
+	return task, result
 }

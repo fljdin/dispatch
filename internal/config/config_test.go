@@ -8,6 +8,7 @@ import (
 	. "github.com/fljdin/dispatch/internal/config"
 	. "github.com/fljdin/dispatch/internal/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfigWithDefaultMaxWorkers(t *testing.T) {
@@ -75,7 +76,7 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, nil, err)
+	require.Nil(t, err)
 	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
@@ -111,9 +112,8 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "connection not found")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "connection not found")
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -123,9 +123,8 @@ func TestConfigFromNonExistingFile(t *testing.T) {
 		FromYAML(yamlFilename).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "no such file or directory")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "no such file or directory")
 }
 
 func TestConfigFromInvalidYAML(t *testing.T) {
@@ -142,9 +141,8 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 		FromYAML(tempFile.Name()).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "cannot unmarshal")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot unmarshal")
 }
 
 func TestConfigWithInvalidType(t *testing.T) {
@@ -158,9 +156,8 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "invalid task type")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "invalid task type")
 }
 
 func TestConfigWithInvalidFileType(t *testing.T) {
@@ -180,9 +177,8 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, tempFile.Name())).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "invalid type for parsing file")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "invalid type for parsing file")
 }
 
 func TestConfigLoadTasksFromFile(t *testing.T) {
@@ -197,10 +193,11 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 
 	config, _ := NewConfigBuilder().
 		WithTask(Task{
-			ID:   1,
-			Type: "psql",
-			File: tempFile.Name(),
-			URI:  "postgresql://localhost",
+			ID:     1,
+			Type:   "psql",
+			File:   tempFile.Name(),
+			URI:    "postgresql://localhost",
+			Output: "task.out",
 		}).
 		Build()
 
@@ -208,6 +205,7 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, 1, config.Tasks[0].ID)
 	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
 	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
+	assert.Equal(t, "task.out", config.Tasks[0].Output)
 
 	// Each loaded task must have an unique query ID
 	assert.Equal(t, 0, config.Tasks[0].QueryID)
@@ -243,7 +241,6 @@ tasks:
 		WithYAML(yamlConfig).
 		Build()
 
-	if assert.NotEqual(t, nil, err) {
-		assert.Contains(t, err.Error(), "depends on unknown task")
-	}
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "depends on unknown task")
 }

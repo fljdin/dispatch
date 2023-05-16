@@ -10,23 +10,27 @@ import (
 )
 
 func TestDispatcherAddTask(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 1)
-	dispatcher.Add(Task{
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		Build()
+
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
 	})
-	dispatcher.Wait()
 
-	assert.Equal(t, Succeeded, dispatcher.GetStatus(1))
+	assert.Equal(t, Waiting, dispatcher.GetStatus(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "false",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: "true",
@@ -38,12 +42,15 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
+	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: "true",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: "true",
@@ -55,13 +62,16 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
-	dispatcher := NewDispatcher(context.Background(), 1, 2)
-	dispatcher.Add(Task{
+	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+		WithMemorySize(2).
+		Build()
+
+	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 0,
 		Command: "false",
 	})
-	dispatcher.Add(Task{
+	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 1,
 		Command: "true",

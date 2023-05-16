@@ -1,18 +1,14 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
+	"text/template"
 	"time"
 
 	"golang.org/x/exp/slices"
-)
-
-const (
-	Waiting int = iota
-	Succeeded
-	Failed
-	Interrupted
 )
 
 var TaskTypes = []string{"sh", "psql"}
@@ -26,6 +22,7 @@ type Task struct {
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 	Depends    []int  `yaml:"depends_on,omitempty"`
+	Output     string `yaml:"output,omitempty"`
 	QueryID    int
 }
 
@@ -42,7 +39,7 @@ func (t Task) VerifyRequired() error {
 }
 
 func (t Task) VerifyType() error {
-	if "" == t.Type {
+	if t.Type == "" {
 		return nil
 	}
 	if !slices.Contains(TaskTypes, t.Type) {
@@ -63,6 +60,35 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	}
 
 	return nil
+}
+
+func (t Task) VerifyOutput() error {
+	if t.Output == "" {
+		return nil
+	}
+
+	_, err := template.New("ouptut").Parse(t.Output)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t Task) GetOutput() string {
+	var buf bytes.Buffer
+
+	tmpl, _ := template.New("ouptut").Parse(t.Output)
+	tmpl.Execute(&buf, t)
+
+	return buf.String()
+}
+
+func (t Task) writeOutput(output []byte) error {
+	if len(t.Output) == 0 {
+		return nil
+	}
+	return os.WriteFile(t.GetOutput(), output, 0644)
 }
 
 func (t Task) Run() TaskResult {
@@ -93,6 +119,14 @@ func (t Task) Run() TaskResult {
 	if err != nil {
 		tr.Status = Failed
 		tr.Error = err.Error()
+	}
+
+	if err = t.writeOutput(output); err != nil {
+		if len(tr.Error) > 0 {
+			tr.Error += "\n" + err.Error()
+		} else {
+			tr.Error = err.Error()
+		}
 	}
 
 	return tr
