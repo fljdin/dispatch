@@ -18,6 +18,8 @@ jobs:
       
       - name: Build from sources
         run: go build
+        env:
+          CGO_ENABLED: 0
       
       - name: Package with nfpm
         run: >-
