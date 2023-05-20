@@ -1,5 +1,7 @@
 # Simple task dispatcher
 
+[![go-test](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml)
+
 Provides an easy-to-use command to dispatch tasks described in a YAML file.
 
 Common use cases:

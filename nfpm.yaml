@@ -1,0 +1,58 @@
+# Name. (required)
+name: dispatch
+
+# Architecture. (required)
+arch: amd64
+
+# Platform.
+platform: linux
+
+# Version. (required)
+# Hence, you should not prefix the version with 'v'.
+version: 0.5
+
+# Version Prerelease.
+prerelease: alpha1
+
+# Version Release, aka revision.
+release: 1
+
+# Priority.
+priority: extra
+
+# Maintainer. (required)
+maintainer: Florent Jardin <https://github.com/fljdin>
+
+# Description.
+description: Provides an easy-to-use command to dispatch tasks described in a YAML file
+
+# Vendor.
+vendor: GoReleaser
+
+# Package's homepage.
+homepage: https://github.com/fljdin/dispatch
+
+# License.
+license: MIT
+
+# Disables globbing for files, config_files, etc.
+disable_globbing: false
+
+# Packages it provides. (overridable)
+provides:
+  - dispatch
+
+# Contents to add to the package
+# This can be binaries or any other files.
+contents:
+  - src: dispatch
+    dst: /usr/bin/dispatch
+
+rpm:
+  # The packager is used to identify the organization that actually packaged
+  # the software, as opposed to the author of the software.
+  packager: GoReleaser <staff@goreleaser.com>
+
+deb:
+  fields:
+    Bugs: https://github.com/fljdin/dispatch/issues
