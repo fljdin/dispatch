@@ -38,6 +38,10 @@ func (pb *ParserBuilder) FromFile(filename string) *ParserBuilder {
 }
 
 func (pb *ParserBuilder) Build() (Parser, error) {
+	if pb.parser.Type == "" {
+		pb.parser.Type = "sh"
+	}
+
 	if err := pb.parser.VerifyType(); err != nil {
 		pb.err = err
 	}

@@ -54,7 +54,6 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 
 	for queryId, query := range parser.Parse() {
 		finalTasks = append(finalTasks, models.Task{
-			ID:      0,
 			QueryID: queryId,
 			Type:    "psql",
 			Name:    fmt.Sprintf("Query loaded from %s", filename),
