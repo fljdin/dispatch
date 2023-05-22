@@ -14,12 +14,15 @@ Common use cases:
 
 ```sh
 Usage:
-  dispatch -c config [-j 2] [flags]
+  dispatch run [flags]
 
 Flags:
+  -h, --help       help for run
+  -j, --jobs int   number of workers (default 2)
+
+Global Flags:
   -c, --config string   configuration file
-  -h, --help            help for dispatch
-  -j, --jobs int        number of workers (default 2)
+  -v, --verbose         verbose mode
 ```
 
 ## Configuration
