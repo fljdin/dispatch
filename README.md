@@ -134,12 +134,20 @@ tasks:
 
 * `connections`: declares named connections used by tasks
   * `name`: connection name
-  * `uri`: connection string used by `psql`'s database option (`-d`)
+  * `uri`: a valid connection URI, takes precedence over following values
+  * `host`: database server host or socket directory
+  * `port`: database server port
+  * `dbname`: database name to connect to
+  * `user`: database user name
+  * `password`: user password
 
 ```yaml
 connections:
   - name: db
     uri: postgresql://remote
+  - name: otherdb
+    host: localhost
+    dbname: otherdb
 
 tasks:
   - id: 1
