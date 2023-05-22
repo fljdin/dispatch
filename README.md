@@ -9,6 +9,7 @@ Common use cases:
 * Launching multiple elementary tasks in parallel
 * Add a condition with a task dependent on another
 * Split SQL files to execute statements as elementary tasks
+* Behave as `\gexec` on multiple connections
 
 ## Usage
 
@@ -17,13 +18,30 @@ Usage:
   dispatch run [flags]
 
 Flags:
-  -h, --help       help for run
-  -j, --jobs int   number of workers (default 2)
+  -f, --file string   file containing SQL statements
+  -h, --help          help for run
+  -j, --jobs int      number of workers (default 2)
 
 Global Flags:
   -c, --config string   configuration file
   -v, --verbose         verbose mode
 ```
+
+### Examples
+
+```sh
+psql -At -c "SELECT format('VACUUM ANALYZE %I.%I;', schemaname, relname) FROM pg_stat_user_tables WHERE last_analyze IS NULL" > statements.sql
+dispatch run -j 2 -f statements.sql
+```
+
+```text
+2023/05/22 18:19:08 Worker 1 completed Task 0 (query #1) (success: true, elapsed: 12ms)
+2023/05/22 18:19:08 Worker 2 completed Task 0 (query #0) (success: true, elapsed: 12ms)
+```
+
+## Query parsing
+
+An internal parser is used to load semicolon-separated queries as `psql`'s tasks. It provides correct detection of transaction blocks and anonymous code blocks.
 
 ## Configuration
 

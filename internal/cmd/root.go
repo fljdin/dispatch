@@ -8,12 +8,14 @@ import (
 )
 
 var (
-	configFilename     string
-	configFilenameDesc string = "configuration file"
-	configWorkers      int
-	configWorkersDesc  string = "number of workers (default 2)"
-	argVerbose         bool
-	argVerboseDesc     string = "verbose mode"
+	argConfigFilename     string
+	argConfigFilenameDesc string = "configuration file"
+	argMaxWorkers         int
+	argMaxWorkersDesc     string = "number of workers (default 2)"
+	argVerbose            bool
+	argVerboseDesc        string = "verbose mode"
+	argSqlFilename        string
+	argSqlFilenameDesc    string = "file containing SQL statements"
 )
 
 var rootCmd = &cobra.Command{
@@ -35,7 +37,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&configFilename, "config", "c", "", configFilenameDesc)
+	rootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
 	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }

@@ -6,6 +6,8 @@ import (
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
+	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -18,13 +20,13 @@ var runCmd = &cobra.Command{
 func newConfig() (config.Config, error) {
 	configBuild := config.NewConfigBuilder()
 
-	if len(configFilename) > 0 {
-		configBuild.FromYAML(configFilename)
+	if len(argConfigFilename) > 0 {
+		configBuild.FromYAML(argConfigFilename)
 	}
 
-	if configWorkers > 0 {
+	if argMaxWorkers > 0 {
 		configBuild = configBuild.
-			WithMaxWorkers(configWorkers)
+			WithMaxWorkers(argMaxWorkers)
 	}
 
 	return configBuild.Build()
@@ -39,10 +41,42 @@ func newDispatcher(config config.Config) (dispatcher.Dispatcher, error) {
 		Build()
 }
 
+func parseSqlFile(filename string) ([]models.Task, error) {
+	var finalTasks []models.Task
+
+	parser, err := parser.NewParserBuilder("psql").
+		FromFile(filename).
+		Build()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for queryId, query := range parser.Parse() {
+		finalTasks = append(finalTasks, models.Task{
+			ID:      0,
+			QueryID: queryId,
+			Type:    "psql",
+			Name:    fmt.Sprintf("Query loaded from %s", filename),
+			Command: query,
+		})
+	}
+
+	return finalTasks, nil
+}
+
 func launch(cmd *cobra.Command, args []string) error {
 	config, err := newConfig()
 	if err != nil {
 		return err
+	}
+
+	if len(argSqlFilename) > 0 {
+		tasks, err := parseSqlFile(argSqlFilename)
+		if err != nil {
+			return err
+		}
+		config.Tasks = append(config.Tasks, tasks...)
 	}
 
 	if len(config.Tasks) == 0 {
@@ -68,7 +102,8 @@ func launch(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(runCmd)
 
-	// don't use defaulting feature from cobra
-	// precedence rules are provided by ConfigBuilder
-	runCmd.Flags().IntVarP(&configWorkers, "jobs", "j", 0, configWorkersDesc)
+	// don't use defaulting feature from cobra as precedence rules are
+	// provided by ConfigBuilder
+	runCmd.Flags().IntVarP(&argMaxWorkers, "jobs", "j", 0, argMaxWorkersDesc)
+	runCmd.Flags().StringVarP(&argSqlFilename, "file", "f", "", argSqlFilenameDesc)
 }
