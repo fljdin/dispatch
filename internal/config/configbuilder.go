@@ -18,12 +18,26 @@ func NewConfigBuilder() *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
+	if value < 1 {
+		return cb
+	}
+
 	cb.config.MaxWorkers = value
 	return cb
 }
 
 func (cb *ConfigBuilder) WithTask(task models.Task) *ConfigBuilder {
 	cb.config.Tasks = append(cb.config.Tasks, task)
+	return cb
+}
+
+func (cb *ConfigBuilder) WithDefaultConnection(cnx models.Connection) *ConfigBuilder {
+	cb.config.DefaultConnection = cnx
+	return cb
+}
+
+func (cb *ConfigBuilder) WithLogfile(filename string) *ConfigBuilder {
+	cb.config.Logfile = filename
 	return cb
 }
 
@@ -45,6 +59,10 @@ func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 	if cb.err != nil {
 		return cb
 	}
+	if len(yamlFilename) == 0 {
+		return cb
+	}
+
 	data, err := os.ReadFile(yamlFilename)
 	if err != nil {
 		cb.err = fmt.Errorf("error reading yaml file: %w", err)

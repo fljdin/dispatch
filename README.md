@@ -9,18 +9,51 @@ Common use cases:
 * Launching multiple elementary tasks in parallel
 * Add a condition with a task dependent on another
 * Split SQL files to execute statements as elementary tasks
+* Behave as `\gexec` on multiple connections
 
 ## Usage
 
 ```sh
 Usage:
-  dispatch -c config [-j 2] [flags]
+  dispatch run [flags]
 
 Flags:
+  -f, --file string   file containing SQL statements
+  -j, --jobs int      number of workers (default 2)
+
+Global Flags:
   -c, --config string   configuration file
-  -h, --help            help for dispatch
-  -j, --jobs int        number of workers (default 2)
+  -d, --dbname string   database name to connect to
+      --help            show help
+  -h, --host string     database server host or socket directory
+  -l, --log string      log file
+  -W, --password        force password prompt
+  -p, --port int        database server port
+  -U, --user string     database user name
+  -v, --verbose         verbose mode
 ```
+
+### Examples
+
+```sh
+cat <<EOF | psql -At > statements.sql
+SELECT format('VACUUM ANALYZE %I.%I;', schemaname, relname)
+  FROM pg_stat_user_tables WHERE last_analyze IS NULL
+EOF
+
+dispatch run -j 2 -f statements.sql
+```
+
+```text
+2023/05/22 18:19:08 Worker 1 completed Task 0 (query #1) (success: true, elapsed: 12ms)
+2023/05/22 18:19:08 Worker 2 completed Task 0 (query #0) (success: true, elapsed: 12ms)
+```
+
+## Query parsing
+
+An internal parser is used to load semicolon-separated queries as `psql`'s
+tasks. It provides correct detection of transaction blocks and anonymous code
+blocks.
 
 ## Configuration
 
@@ -83,11 +116,11 @@ tasks:
 
 ### Traces
 
-* `summary`: summary of the tasks execution (default: disabled)
+* `logfile`: summary of the tasks execution (default: disabled)
   - must be a valid path
 
 ```yaml
-summary: result.out
+logfile: result.out
 ```
 
 * task `output`: writes command's output in a file
@@ -107,12 +140,20 @@ tasks:
 
 * `connections`: declares named connections used by tasks
   * `name`: connection name
-  * `uri`: connection string used by `psql`'s database option (`-d`)
+  * `uri`: a valid connection URI, takes precedence over following values
+  * `host`: database server host or socket directory
+  * `port`: database server port
+  * `dbname`: database name to connect to
+  * `user`: database user name
+  * `password`: user password
 
 ```yaml
 connections:
   - name: db
     uri: postgresql://remote
+  - name: otherdb
+    host: localhost
+    dbname: otherdb
 
 tasks:
   - id: 1

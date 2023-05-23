@@ -116,6 +116,28 @@ tasks:
 	assert.Contains(t, err.Error(), "connection not found")
 }
 
+func TestConfigFromYAMLWithCombinedURIConnection(t *testing.T) {
+	yamlConfig := `
+connections:
+  - name: db
+    host: localhost
+    port: 5433
+    dbname: db
+tasks:
+  - id: 1
+    type: psql
+    command: SELECT 1
+    connection: db
+`
+
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	expected := "postgresql://?dbname=db&host=localhost&port=5433"
+	assert.Equal(t, expected, config.Tasks[0].URI)
+}
+
 func TestConfigFromNonExistingFile(t *testing.T) {
 	yamlFilename := "test.yaml"
 
@@ -158,27 +180,6 @@ tasks:
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "invalid task type")
-}
-
-func TestConfigWithInvalidFileType(t *testing.T) {
-	sqlFilename := "whatever.sql"
-	tempFile, _ := os.CreateTemp("", sqlFilename)
-
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
-
-	yamlConfig := `
-tasks:
-  - id: 1
-    type: sh
-    file: %s
-`
-	_, err := NewConfigBuilder().
-		WithYAML(fmt.Sprintf(yamlConfig, tempFile.Name())).
-		Build()
-
-	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid type for parsing file")
 }
 
 func TestConfigLoadTasksFromFile(t *testing.T) {
@@ -243,4 +244,28 @@ tasks:
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "depends on unknown task")
+}
+
+func TestConfigWithDefaultConnection(t *testing.T) {
+	yamlConfig := `
+connections:
+  - name: anotherdb
+    uri: postgresql://?host=localhost
+tasks:
+  - id: 1
+    type: psql
+    command: SELECT 1
+  - id: 2
+    type: psql
+    command: SELECT 2
+    connection: anotherdb
+`
+	cnx := Connection{Host: "remote", User: "postgres"}
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		WithDefaultConnection(cnx).
+		Build()
+
+	assert.Equal(t, "postgresql://?host=remote&user=postgres", config.Tasks[0].URI)
+	assert.Equal(t, "postgresql://?host=localhost", config.Tasks[1].URI)
 }

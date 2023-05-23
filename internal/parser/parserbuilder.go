@@ -11,14 +11,19 @@ type ParserBuilder struct {
 }
 
 func NewParserBuilder(pt string) *ParserBuilder {
+	var err error
+	if pt != "psql" {
+		err = fmt.Errorf("only psql type is supported")
+	}
+
 	return &ParserBuilder{
 		parser: Parser{
-			Type:           pt,
 			currentChar:    0x0,
 			currentComment: 0x0,
 			currentQuote:   0x0,
 			inTransaction:  false,
 		},
+		err: err,
 	}
 }
 
@@ -38,9 +43,5 @@ func (pb *ParserBuilder) FromFile(filename string) *ParserBuilder {
 }
 
 func (pb *ParserBuilder) Build() (Parser, error) {
-	if err := pb.parser.VerifyType(); err != nil {
-		pb.err = err
-	}
-
 	return pb.parser, pb.err
 }

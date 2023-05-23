@@ -20,7 +20,7 @@ func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
 
 func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
 	_, err := NewDispatcherBuilder(context.Background()).
-		WithTraceFile("not/exists.out").
+		WithLogfile("not/exists.out").
 		Build()
 
 	require.NotNil(t, err)

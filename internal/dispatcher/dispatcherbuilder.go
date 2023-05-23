@@ -9,7 +9,7 @@ import (
 
 type DispatcherBuilder struct {
 	dispatcher     Dispatcher
-	traceFilename  string
+	logfileName    string
 	memorySize     int
 	consoleEnabled bool
 	err            error
@@ -29,8 +29,8 @@ func NewDispatcherBuilder(ctx context.Context) *DispatcherBuilder {
 	}
 }
 
-func (db *DispatcherBuilder) WithTraceFile(filename string) *DispatcherBuilder {
-	db.traceFilename = filename
+func (db *DispatcherBuilder) WithLogfile(filename string) *DispatcherBuilder {
+	db.logfileName = filename
 	return db
 }
 
@@ -68,7 +68,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		context: db.dispatcher.context,
 	}
 
-	if err := db.dispatcher.observer.WithTrace(db.traceFilename); err != nil {
+	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
 		db.err = err
 	}
 
