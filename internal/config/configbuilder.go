@@ -18,9 +18,11 @@ func NewConfigBuilder() *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
-	if value > 0 {
-		cb.config.MaxWorkers = value
+	if value < 1 {
+		return cb
 	}
+
+	cb.config.MaxWorkers = value
 	return cb
 }
 

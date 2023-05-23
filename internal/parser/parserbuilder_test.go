@@ -13,13 +13,5 @@ func TestParserWithInvalidParseType(t *testing.T) {
 		Build()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid type for parsing file")
-}
-
-func TestParserWithNullParseTYpe(t *testing.T) {
-	pb, err := NewParserBuilder("").
-		Build()
-
-	require.NotNil(t, err)
-	assert.Equal(t, "sh", pb.Type)
+	assert.Contains(t, err.Error(), "only psql type is supported")
 }

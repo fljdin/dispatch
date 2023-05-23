@@ -62,12 +62,12 @@ func TestConnectionCombinedURI(t *testing.T) {
 }
 
 func TestConnectionCombinedURIbyName(t *testing.T) {
-	var c Connections
-	expected := "postgresql://?host=localhost"
-	c = append(c, Connection{
+	c := Connections{Connection{
 		Name: "db",
 		Host: "localhost",
-	})
+	}}
+
+	expected := "postgresql://?host=localhost"
 	uri, _ := c.GetURIByName("db")
 
 	assert.Equal(t, expected, uri)

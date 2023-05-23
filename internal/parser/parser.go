@@ -1,14 +1,10 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 )
 
-var ParserTypes = []string{"psql"}
-
 type Parser struct {
-	Type    string
 	Content string
 
 	currentChar    byte
@@ -18,15 +14,6 @@ type Parser struct {
 	activeTag      strings.Builder
 	currentQuery   strings.Builder
 	inTransaction  bool
-}
-
-func (p *Parser) VerifyType() error {
-	for _, pt := range ParserTypes {
-		if p.Type == pt {
-			return nil
-		}
-	}
-	return fmt.Errorf("%s is an invalid type for parsing file", p.Type)
 }
 
 func (p *Parser) inComment() bool {
