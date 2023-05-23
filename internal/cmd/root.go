@@ -14,16 +14,18 @@ import (
 var (
 	argConfigFilename     string
 	argConfigFilenameDesc string = "configuration file"
+	argLogfile            string
+	argLogfileDesc        string = "log file"
 	argMaxWorkers         int
 	argMaxWorkersDesc     string = "number of workers (default 2)"
 	argPgDbname           string
 	argPgDbnameDesc       string = "database name to connect to"
 	argPgHost             string
 	argPgHostDesc         string = "database server host or socket directory"
-	argPgPwdPrompt        bool
-	argPgPwdPromptdDesc   string = "force password prompt"
 	argPgPort             int
 	argPgPortDesc         string = "database server port"
+	argPgPwdPrompt        bool
+	argPgPwdPromptdDesc   string = "force password prompt"
 	argPgUser             string
 	argPgUserDesc         string = "database user name"
 	argSqlFilename        string
@@ -81,6 +83,8 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
 	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
+	rootCmd.PersistentFlags().StringVarP(&argLogfile, "log", "l", "", argLogfileDesc)
+
 	rootCmd.PersistentFlags().StringVarP(&argPgHost, "host", "h", "", argPgHostDesc)
 	rootCmd.PersistentFlags().IntVarP(&argPgPort, "port", "p", 0, argPgPortDesc)
 	rootCmd.PersistentFlags().StringVarP(&argPgDbname, "dbname", "d", "", argPgDbnameDesc)

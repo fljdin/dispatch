@@ -13,7 +13,7 @@ var ConfigWorkersDefault int = 2
 type Config struct {
 	Tasks             []models.Task      `yaml:"tasks"`
 	MaxWorkers        int                `yaml:"workers"`
-	Summary           string             `yaml:"summary"`
+	Logfile           string             `yaml:"logfile"`
 	Connections       models.Connections `yaml:"connections"`
 	DefaultConnection models.Connection
 }

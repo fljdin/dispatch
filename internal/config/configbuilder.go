@@ -32,6 +32,11 @@ func (cb *ConfigBuilder) WithDefaultConnection(cnx models.Connection) *ConfigBui
 	return cb
 }
 
+func (cb *ConfigBuilder) WithLogfile(filename string) *ConfigBuilder {
+	cb.config.Logfile = filename
+	return cb
+}
+
 func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 	if cb.err != nil {
 		return cb

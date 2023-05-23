@@ -19,11 +19,17 @@ Usage:
 
 Flags:
   -f, --file string   file containing SQL statements
-  -h, --help          help for run
   -j, --jobs int      number of workers (default 2)
 
 Global Flags:
   -c, --config string   configuration file
+  -d, --dbname string   database name to connect to
+      --help            show help
+  -h, --host string     database server host or socket directory
+  -l, --log string      log file
+  -W, --password        force password prompt
+  -p, --port int        database server port
+  -U, --user string     database user name
   -v, --verbose         verbose mode
 ```
 
@@ -110,11 +116,11 @@ tasks:
 
 ### Traces
 
-* `summary`: summary of the tasks execution (default: disabled)
+* `logfile`: summary of the tasks execution (default: disabled)
   - must be a valid path
 
 ```yaml
-summary: result.out
+logfile: result.out
 ```
 
 * task `output`: writes command's output in a file

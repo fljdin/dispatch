@@ -31,6 +31,8 @@ func newConfig() (config.Config, error) {
 			WithMaxWorkers(argMaxWorkers)
 	}
 
+	configBuild.WithLogfile(argLogfile)
+
 	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
 	defaultConnection = models.Connection{
 		Host:     argPgHost,
@@ -48,7 +50,7 @@ func newDispatcher(config config.Config) (dispatcher.Dispatcher, error) {
 	return dispatcher.NewDispatcherBuilder(context.Background()).
 		WithWorkerNumber(config.MaxWorkers).
 		WithMemorySize(len(config.Tasks)).
-		WithTraceFile(config.Summary).
+		WithLogfile(config.Logfile).
 		WithConsole().
 		Build()
 }
