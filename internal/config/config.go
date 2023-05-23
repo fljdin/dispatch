@@ -11,10 +11,11 @@ import (
 var ConfigWorkersDefault int = 2
 
 type Config struct {
-	Tasks       []models.Task      `yaml:"tasks"`
-	MaxWorkers  int                `yaml:"workers"`
-	Connections models.Connections `yaml:"connections"`
-	Summary     string             `yaml:"summary"`
+	Tasks             []models.Task      `yaml:"tasks"`
+	MaxWorkers        int                `yaml:"workers"`
+	Summary           string             `yaml:"summary"`
+	Connections       models.Connections `yaml:"connections"`
+	DefaultConnection models.Connection
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -53,6 +54,11 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 			}
 
 			t.URI = uri
+		}
+
+		// use default connection if no URI is provided
+		if t.URI == "" {
+			t.URI = c.DefaultConnection.CombinedURI()
 		}
 
 		// append task to final tasks

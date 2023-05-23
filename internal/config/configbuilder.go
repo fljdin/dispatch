@@ -27,6 +27,11 @@ func (cb *ConfigBuilder) WithTask(task models.Task) *ConfigBuilder {
 	return cb
 }
 
+func (cb *ConfigBuilder) WithDefaultConnection(cnx models.Connection) *ConfigBuilder {
+	cb.config.DefaultConnection = cnx
+	return cb
+}
+
 func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 	if cb.err != nil {
 		return cb

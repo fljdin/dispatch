@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
@@ -12,10 +16,20 @@ var (
 	argConfigFilenameDesc string = "configuration file"
 	argMaxWorkers         int
 	argMaxWorkersDesc     string = "number of workers (default 2)"
-	argVerbose            bool
-	argVerboseDesc        string = "verbose mode"
+	argPgDbname           string
+	argPgDbnameDesc       string = "database name to connect to"
+	argPgHost             string
+	argPgHostDesc         string = "database server host or socket directory"
+	argPgPwdPrompt        bool
+	argPgPwdPromptdDesc   string = "force password prompt"
+	argPgPort             int
+	argPgPortDesc         string = "database server port"
+	argPgUser             string
+	argPgUserDesc         string = "database user name"
 	argSqlFilename        string
 	argSqlFilenameDesc    string = "file containing SQL statements"
+	argVerbose            bool
+	argVerboseDesc        string = "verbose mode"
 )
 
 var rootCmd = &cobra.Command{
@@ -30,6 +44,34 @@ func Debug(data ...any) {
 	}
 }
 
+func ReadInput(prompt string, condition bool) string {
+	var value string
+	if condition {
+		fmt.Print(prompt)
+
+		reader := bufio.NewReader(os.Stdin)
+		value, _ = reader.ReadString('\n')
+		value = strings.TrimSpace(value)
+	}
+	return value
+}
+
+func ReadHiddenInput(prompt string, condition bool) string {
+	var value string
+	if condition {
+		fmt.Print(prompt)
+
+		reader, err := term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			return value
+		}
+		value = string(reader)
+		value = strings.TrimSpace(value)
+		fmt.Print("\n")
+	}
+	return value
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -39,5 +81,12 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
 	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
+	rootCmd.PersistentFlags().StringVarP(&argPgHost, "host", "h", "", argPgHostDesc)
+	rootCmd.PersistentFlags().IntVarP(&argPgPort, "port", "p", 0, argPgPortDesc)
+	rootCmd.PersistentFlags().StringVarP(&argPgDbname, "dbname", "d", "", argPgDbnameDesc)
+	rootCmd.PersistentFlags().StringVarP(&argPgUser, "user", "U", "", argPgUserDesc)
+	rootCmd.PersistentFlags().BoolVarP(&argPgPwdPrompt, "password", "W", false, argPgPwdPromptdDesc)
+
+	rootCmd.PersistentFlags().Bool("help", false, "show help")
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }

@@ -17,6 +17,8 @@ var runCmd = &cobra.Command{
 	RunE:  launch,
 }
 
+var defaultConnection models.Connection
+
 func newConfig() (config.Config, error) {
 	configBuild := config.NewConfigBuilder()
 
@@ -28,6 +30,16 @@ func newConfig() (config.Config, error) {
 		configBuild = configBuild.
 			WithMaxWorkers(argMaxWorkers)
 	}
+
+	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
+	defaultConnection = models.Connection{
+		Host:     argPgHost,
+		Port:     argPgPort,
+		Dbname:   argPgDbname,
+		User:     argPgUser,
+		Password: argPgPassword,
+	}
+	configBuild.WithDefaultConnection(defaultConnection)
 
 	return configBuild.Build()
 }
@@ -57,6 +69,7 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 			QueryID: queryId,
 			Type:    "psql",
 			Name:    fmt.Sprintf("Query loaded from %s", filename),
+			URI:     defaultConnection.CombinedURI(),
 			Command: query,
 		})
 	}

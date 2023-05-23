@@ -266,3 +266,27 @@ tasks:
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "depends on unknown task")
 }
+
+func TestConfigWithDefaultConnection(t *testing.T) {
+	yamlConfig := `
+connections:
+  - name: anotherdb
+    uri: postgresql://?host=localhost
+tasks:
+  - id: 1
+    type: psql
+    command: SELECT 1
+  - id: 2
+    type: psql
+    command: SELECT 2
+    connection: anotherdb
+`
+	cnx := Connection{Host: "remote", User: "postgres"}
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		WithDefaultConnection(cnx).
+		Build()
+
+	assert.Equal(t, "postgresql://?host=remote&user=postgres", config.Tasks[0].URI)
+	assert.Equal(t, "postgresql://?host=localhost", config.Tasks[1].URI)
+}
