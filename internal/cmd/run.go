@@ -20,20 +20,8 @@ var runCmd = &cobra.Command{
 var defaultConnection models.Connection
 
 func newConfig() (config.Config, error) {
-	configBuild := config.NewConfigBuilder()
-
-	if len(argConfigFilename) > 0 {
-		configBuild.FromYAML(argConfigFilename)
-	}
-
-	if argMaxWorkers > 0 {
-		configBuild = configBuild.
-			WithMaxWorkers(argMaxWorkers)
-	}
-
-	configBuild.WithLogfile(argLogfile)
-
 	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
+
 	defaultConnection = models.Connection{
 		Host:     argPgHost,
 		Port:     argPgPort,
@@ -41,9 +29,13 @@ func newConfig() (config.Config, error) {
 		User:     argPgUser,
 		Password: argPgPassword,
 	}
-	configBuild.WithDefaultConnection(defaultConnection)
 
-	return configBuild.Build()
+	return config.NewConfigBuilder().
+		FromYAML(argConfigFilename).
+		WithMaxWorkers(argMaxWorkers).
+		WithLogfile(argLogfile).
+		WithDefaultConnection(defaultConnection).
+		Build()
 }
 
 func newDispatcher(config config.Config) (dispatcher.Dispatcher, error) {

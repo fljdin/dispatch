@@ -18,7 +18,9 @@ func NewConfigBuilder() *ConfigBuilder {
 }
 
 func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
-	cb.config.MaxWorkers = value
+	if value > 0 {
+		cb.config.MaxWorkers = value
+	}
 	return cb
 }
 
@@ -55,6 +57,10 @@ func (cb *ConfigBuilder) FromYAML(yamlFilename string) *ConfigBuilder {
 	if cb.err != nil {
 		return cb
 	}
+	if len(yamlFilename) == 0 {
+		return cb
+	}
+
 	data, err := os.ReadFile(yamlFilename)
 	if err != nil {
 		cb.err = fmt.Errorf("error reading yaml file: %w", err)
