@@ -83,6 +83,7 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 	}
 
 	cb.config.ConfigureWorkers()
+	cb.config.ConfigureConnections()
 	cb.config.Tasks, cb.err = cb.config.FinalizeTasks()
 
 	return cb.config, cb.err

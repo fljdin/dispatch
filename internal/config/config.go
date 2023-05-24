@@ -28,6 +28,15 @@ func (c *Config) ConfigureWorkers() {
 	}
 }
 
+func (c *Config) ConfigureConnections() {
+	if _, err := c.Connections.GetURIByName("default"); err != nil {
+		c.Connections = append(c.Connections, models.Connection{
+			Name: "default",
+			URI:  c.DefaultConnection.CombinedURI(),
+		})
+	}
+}
+
 func (c *Config) FinalizeTasks() ([]models.Task, error) {
 	var finalTasks []models.Task
 	var identifiers []int
@@ -58,7 +67,7 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 
 		// use default connection if no URI is provided
 		if t.URI == "" {
-			t.URI = c.DefaultConnection.CombinedURI()
+			t.URI, _ = c.Connections.GetURIByName("default")
 		}
 
 		// append task to final tasks

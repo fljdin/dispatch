@@ -80,6 +80,24 @@ tasks:
 	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
+func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
+	yamlConfig := `
+connections:
+  - name: default
+    uri: postgresql://?host=remote
+tasks:
+  - id: 1
+    type: psql
+    command: SELECT 1
+`
+	config, _ := NewConfigBuilder().
+		WithYAML(yamlConfig).
+		Build()
+
+	assert.Equal(t, 1, len(config.Connections))
+	assert.Equal(t, "postgresql://?host=remote", config.Tasks[0].URI)
+}
+
 func TestConfigFromYAMLWithConnections(t *testing.T) {
 	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
 	yamlConfig := `
@@ -97,7 +115,7 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, 1, len(config.Connections))
+	assert.Equal(t, "db", config.Tasks[0].Connection)
 	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 
