@@ -93,7 +93,6 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 					Name:    fmt.Sprintf("Query loaded from %s", t.File),
 					Command: query,
 					URI:     t.URI,
-					Output:  t.Output,
 				})
 			}
 		}

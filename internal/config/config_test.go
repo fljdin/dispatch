@@ -211,11 +211,10 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 
 	config, _ := NewConfigBuilder().
 		WithTask(Task{
-			ID:     1,
-			Type:   "psql",
-			File:   tempFile.Name(),
-			URI:    "postgresql://localhost",
-			Output: "task.out",
+			ID:   1,
+			Type: "psql",
+			File: tempFile.Name(),
+			URI:  "postgresql://localhost",
 		}).
 		Build()
 
@@ -223,7 +222,6 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, 1, config.Tasks[0].ID)
 	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
 	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
-	assert.Equal(t, "task.out", config.Tasks[0].Output)
 
 	// Each loaded task must have an unique query ID
 	assert.Equal(t, 0, config.Tasks[0].QueryID)
