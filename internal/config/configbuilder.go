@@ -37,6 +37,10 @@ func (cb *ConfigBuilder) WithDefaultConnection(cnx models.Connection) *ConfigBui
 }
 
 func (cb *ConfigBuilder) WithLogfile(filename string) *ConfigBuilder {
+	if len(filename) == 0 {
+		return cb
+	}
+
 	cb.config.Logfile = filename
 	return cb
 }
