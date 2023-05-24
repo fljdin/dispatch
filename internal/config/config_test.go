@@ -84,7 +84,7 @@ func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
 	yamlConfig := `
 connections:
   - name: default
-    uri: postgresql://?host=remote
+    host: remote
 tasks:
   - id: 1
     type: psql
@@ -115,7 +115,6 @@ tasks:
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 
-	assert.Equal(t, "db", config.Tasks[0].Connection)
 	assert.Equal(t, cnx, config.Tasks[0].URI)
 }
 

@@ -58,7 +58,7 @@ func TestConnectionsURIbyNameNotFound(t *testing.T) {
 		URI:  "postgresql://localhost",
 	})
 	_, err := c.GetURIByName("nowhere")
-	require.Error(t, err)
+	require.NotNil(t, err)
 }
 
 func TestConnectionsCombinedURIbyName(t *testing.T) {
