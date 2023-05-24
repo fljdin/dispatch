@@ -139,7 +139,7 @@ tasks:
 ### Named connections
 
 * `connections`: declares named connections used by tasks
-  * `name`: connection name
+  * `name`: connection name (`default` applied to any unattached tasks)
   * `uri`: a valid connection URI, takes precedence over following values
   * `host`: database server host or socket directory
   * `port`: database server port
@@ -151,9 +151,10 @@ tasks:
 connections:
   - name: db
     uri: postgresql://remote
-  - name: otherdb
+  - name: default
     host: localhost
-    dbname: otherdb
+    dbname: postgres
+    user: postgres
 
 tasks:
   - id: 1
