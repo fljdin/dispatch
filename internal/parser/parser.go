@@ -2,7 +2,11 @@ package parser
 
 import (
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
+
+var SupportedCommands = []string{"g", "gdesc", "gexec", "gx", "crosstabview"}
 
 type Parser struct {
 	Content string
@@ -12,8 +16,10 @@ type Parser struct {
 	currentComment byte // either - or *
 	currentTag     string
 	activeTag      strings.Builder
+	activeCommand  strings.Builder
 	currentQuery   strings.Builder
 	inTransaction  bool
+	inCommand      bool
 }
 
 func (p *Parser) inComment() bool {
@@ -109,6 +115,17 @@ func (p *Parser) updateActiveTag() {
 	p.activeTag.WriteRune(rune(p.currentChar))
 }
 
+func (p *Parser) handleCommand() {
+	if p.match("\\") && !p.inCommentOrString() {
+		p.inCommand = true
+		return
+	}
+
+	if p.inCommand {
+		p.activeCommand.WriteRune(rune(p.currentChar))
+	}
+}
+
 func (p *Parser) isValidIdentifier(c byte) bool {
 	return (c >= 'a' && c <= 'z') ||
 		(c >= 'A' && c <= 'Z') ||
@@ -116,10 +133,31 @@ func (p *Parser) isValidIdentifier(c byte) bool {
 		c == '_'
 }
 
+func (p *Parser) retrieveCommand() string {
+	c := p.activeCommand.String()
+	r := strings.Fields(c)
+	if len(r) > 0 {
+		return r[0]
+	}
+	return ""
+}
+
+func (p *Parser) isCommandComplete() bool {
+	if p.currentChar == '\n' && p.inCommand {
+		command := p.retrieveCommand()
+		p.inCommand = false
+		p.activeCommand.Reset()
+		return slices.Contains(SupportedCommands, command)
+	}
+	return false
+}
+
 func (p *Parser) isQueryComplete() bool {
-	return p.currentChar == ';' &&
-		!p.inCommentOrString() &&
-		!p.inTransaction
+	if p.inTransaction || p.inCommentOrString() {
+		return false
+	}
+
+	return p.currentChar == ';' || p.isCommandComplete()
 }
 
 func (p *Parser) match(pattern ...string) bool {
@@ -151,6 +189,7 @@ func (p *Parser) Parse() []string {
 		}
 
 		p.handleStrings()
+		p.handleCommand()
 		p.handleComments()
 		p.handleTransactions()
 	}
