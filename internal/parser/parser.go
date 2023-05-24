@@ -155,5 +155,9 @@ func (p *Parser) Parse() []string {
 		p.handleTransactions()
 	}
 
+	if p.currentQuery.Len() > 0 {
+		commands = append(commands, p.currentQuery.String())
+	}
+
 	return commands
 }

@@ -20,6 +20,18 @@ func TestParserWithSqlContent(t *testing.T) {
 	assert.Equal(t, 3, len(queries))
 }
 
+func TestParserWithNoSeparatorEndingContent(t *testing.T) {
+	sqlContent := "SELECT 1; SELECT 2"
+
+	parser, _ := NewParserBuilder("psql").
+		WithContent(sqlContent).
+		Build()
+
+	queries := parser.Parse()
+
+	assert.Equal(t, 2, len(queries))
+}
+
 func TestParserHandleStrings(t *testing.T) {
 	sqlContent := []string{
 		`SELECT ';"';`,
@@ -106,6 +118,18 @@ func TestParserFromSqlFile(t *testing.T) {
 	parser, _ := NewParserBuilder("psql").
 		FromFile(tempFile.Name()).
 		Build()
+	queries := parser.Parse()
+
+	assert.Equal(t, 1, len(queries))
+}
+
+func TestParserGSeparator(t *testing.T) {
+	sqlContent := "SELECT 1 \\g\n"
+
+	parser, _ := NewParserBuilder("psql").
+		WithContent(sqlContent).
+		Build()
+
 	queries := parser.Parse()
 
 	assert.Equal(t, 1, len(queries))
