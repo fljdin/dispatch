@@ -69,7 +69,7 @@ Use a valid YAML file to describe tasks.
     + `sh` (default)
     + `psql`: needs PostgreSQL `psql` client to be installed
   - `uri`: connection string used by `psql`'s database option (`-d`)
-  - `connection`: connection name as described below
+  - `connection`: connection name as described below, overrides `uri`
   - `depends_on`: a list of identifiers of others tasks declared upstream
 
 > All PostgreSQL environment variables can be used in place of `uri` as it used

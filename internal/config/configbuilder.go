@@ -26,8 +26,8 @@ func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
 	return cb
 }
 
-func (cb *ConfigBuilder) WithTask(task models.Task) *ConfigBuilder {
-	cb.config.Tasks = append(cb.config.Tasks, task)
+func (cb *ConfigBuilder) WithTask(task YamlTask) *ConfigBuilder {
+	cb.config.DeclaredTasks = append(cb.config.DeclaredTasks, task)
 	return cb
 }
 
@@ -84,7 +84,6 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 
 	cb.config.ConfigureWorkers()
 	cb.config.ConfigureConnections()
-	cb.config.Tasks, cb.err = cb.config.FinalizeTasks()
 
 	return cb.config, cb.err
 }

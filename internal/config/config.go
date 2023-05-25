@@ -10,8 +10,19 @@ import (
 
 var ConfigWorkersDefault int = 2
 
+type YamlTask struct {
+	ID         int    `yaml:"id"`
+	Type       string `yaml:"type,omitempty"`
+	Name       string `yaml:"name,omitempty"`
+	Command    string `yaml:"command"`
+	File       string `yaml:"file"`
+	URI        string `yaml:"uri,omitempty"`
+	Connection string `yaml:"connection,omitempty"`
+	Depends    []int  `yaml:"depends_on,omitempty"`
+}
+
 type Config struct {
-	Tasks             []models.Task      `yaml:"tasks"`
+	DeclaredTasks     []YamlTask         `yaml:"tasks"`
 	MaxWorkers        int                `yaml:"workers"`
 	Logfile           string             `yaml:"logfile"`
 	Connections       models.Connections `yaml:"connections"`
@@ -37,16 +48,29 @@ func (c *Config) ConfigureConnections() {
 	}
 }
 
-func (c *Config) FinalizeTasks() ([]models.Task, error) {
+func (c Config) GetTasks() ([]models.Task, error) {
 	var finalTasks []models.Task
 	var identifiers []int
 
-	for _, t := range c.Tasks {
+	for _, t := range c.DeclaredTasks {
+		t := models.Task{
+			ID:   t.ID,
+			Name: t.Name,
+			Command: models.Command{
+				Text:       t.Command,
+				File:       t.File,
+				Type:       t.Type,
+				URI:        t.URI,
+				Connection: t.Connection,
+			},
+			Depends: t.Depends,
+		}
+
 		if err := t.VerifyRequired(); err != nil {
 			return nil, err
 		}
 
-		if err := t.VerifyType(); err != nil {
+		if err := t.Command.VerifyType(); err != nil {
 			return nil, err
 		}
 
@@ -55,30 +79,30 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 		}
 
 		// auto-complete URI from named connections
-		if t.URI == "" && t.Connection != "" {
-			uri, err := c.Connections.GetURIByName(t.Connection)
+		if t.Command.Connection != "" {
+			uri, err := c.Connections.GetURIByName(t.Command.Connection)
 
 			if err != nil {
 				return nil, err
 			}
 
-			t.URI = uri
+			t.Command.URI = uri
 		}
 
 		// use default connection if no URI is provided
-		if t.URI == "" {
-			t.URI, _ = c.Connections.GetURIByName("default")
+		if t.Command.URI == "" {
+			t.Command.URI, _ = c.Connections.GetURIByName("default")
 		}
 
 		// append task to final tasks
-		if t.Command != "" {
+		if t.Command.Text != "" {
 			finalTasks = append(finalTasks, t)
 		}
 
 		// parse queries from file and append new related tasks
-		if t.Command == "" && t.File != "" {
-			parser, err := parser.NewParserBuilder(t.Type).
-				FromFile(t.File).
+		if t.Command.File != "" {
+			parser, err := parser.NewParserBuilder(t.Command.Type).
+				FromFile(t.Command.File).
 				Build()
 
 			if err != nil {
@@ -89,10 +113,12 @@ func (c *Config) FinalizeTasks() ([]models.Task, error) {
 				finalTasks = append(finalTasks, models.Task{
 					ID:      t.ID,
 					QueryID: queryId,
-					Type:    t.Type,
-					Name:    fmt.Sprintf("Query loaded from %s", t.File),
-					Command: query,
-					URI:     t.URI,
+					Name:    fmt.Sprintf("Query loaded from %s", t.Command.File),
+					Command: models.Command{
+						Text: query,
+						Type: t.Command.Type,
+						URI:  t.Command.URI,
+					},
 				})
 			}
 		}

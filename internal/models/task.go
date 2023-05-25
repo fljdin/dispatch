@@ -2,24 +2,16 @@ package models
 
 import (
 	"fmt"
-	"os/exec"
-	"time"
 
 	"golang.org/x/exp/slices"
 )
 
-var TaskTypes = []string{"sh", "psql"}
-
 type Task struct {
-	ID         int    `yaml:"id"`
-	Type       string `yaml:"type,omitempty"`
-	Name       string `yaml:"name,omitempty"`
-	Command    string `yaml:"command"`
-	File       string `yaml:"file"`
-	URI        string `yaml:"uri,omitempty"`
-	Connection string `yaml:"connection,omitempty"`
-	Depends    []int  `yaml:"depends_on,omitempty"`
-	QueryID    int
+	ID      int
+	Name    string
+	Command Command
+	Depends []int
+	QueryID int
 }
 
 func (t Task) VerifyRequired() error {
@@ -27,20 +19,10 @@ func (t Task) VerifyRequired() error {
 		return fmt.Errorf("id is required")
 	}
 
-	if t.Command == "" && t.File == "" {
+	if t.Command.Text == "" && t.Command.File == "" {
 		return fmt.Errorf("command is required")
 	}
 
-	return nil
-}
-
-func (t Task) VerifyType() error {
-	if t.Type == "" {
-		return nil
-	}
-	if !slices.Contains(TaskTypes, t.Type) {
-		return fmt.Errorf("%s is an invalid task type", t.Type)
-	}
 	return nil
 }
 
@@ -56,37 +38,4 @@ func (t Task) VerifyDependencies(identifiers []int) error {
 	}
 
 	return nil
-}
-
-func (t Task) Run() TaskResult {
-	var cmd *exec.Cmd
-
-	startTime := time.Now()
-
-	switch t.Type {
-	case "psql":
-		cmd = exec.Command("psql", "-d", t.URI, "-c", t.Command)
-	default:
-		cmd = exec.Command("sh", "-c", t.Command)
-	}
-
-	output, err := cmd.CombinedOutput()
-	endTime := time.Now()
-
-	tr := TaskResult{
-		ID:        t.ID,
-		QueryID:   t.QueryID,
-		StartTime: startTime,
-		EndTime:   endTime,
-		Elapsed:   endTime.Sub(startTime),
-		Status:    Succeeded,
-		Output:    string(output),
-	}
-
-	if err != nil {
-		tr.Status = Failed
-		tr.Error = err.Error()
-	}
-
-	return tr
 }

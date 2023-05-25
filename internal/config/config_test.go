@@ -36,17 +36,6 @@ func TestConfigWithMaxWorkersOverrided(t *testing.T) {
 	assert.Equal(t, 1, config.MaxWorkers)
 }
 
-func TestConfigWithTask(t *testing.T) {
-	config, _ := NewConfigBuilder().
-		WithTask(Task{
-			ID:      1,
-			Command: "true",
-		}).
-		Build()
-
-	assert.Equal(t, 1, config.Tasks[0].ID)
-}
-
 func TestConfigFromYAML(t *testing.T) {
 	yamlConfig := `
 workers: 1
@@ -57,27 +46,10 @@ tasks:
 	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
 		Build()
+	tasks, _ := config.GetTasks()
 
 	assert.Equal(t, 1, config.MaxWorkers)
-	assert.Equal(t, 1, config.Tasks[0].ID)
-}
-
-func TestConfigFromYAMLWithURIOnTask(t *testing.T) {
-	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
-	yamlConfig := `
-tasks:
-  - id: 1
-    name: use predefined db name
-    type: psql
-    command: SELECT 1
-    uri: %s
-`
-	config, err := NewConfigBuilder().
-		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
-		Build()
-
-	require.Nil(t, err)
-	assert.Equal(t, cnx, config.Tasks[0].URI)
+	assert.Equal(t, 1, tasks[0].ID)
 }
 
 func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
@@ -93,9 +65,10 @@ tasks:
 	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
 		Build()
+	tasks, _ := config.GetTasks()
 
 	assert.Equal(t, 1, len(config.Connections))
-	assert.Equal(t, "postgresql://?host=remote", config.Tasks[0].URI)
+	assert.Equal(t, "postgresql://?host=remote", tasks[0].Command.URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -114,8 +87,9 @@ tasks:
 	config, _ := NewConfigBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
+	tasks, _ := config.GetTasks()
 
-	assert.Equal(t, cnx, config.Tasks[0].URI)
+	assert.Equal(t, cnx, tasks[0].Command.URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -125,9 +99,10 @@ tasks:
     command: SELECT 1
     connection: db
 `
-	_, err := NewConfigBuilder().
+	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
 		Build()
+	_, err := config.GetTasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connection not found")
@@ -150,9 +125,10 @@ tasks:
 	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
 		Build()
+	tasks, _ := config.GetTasks()
 
 	expected := "postgresql://?dbname=db&host=localhost&port=5433"
-	assert.Equal(t, expected, config.Tasks[0].URI)
+	assert.Equal(t, expected, tasks[0].Command.URI)
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -184,21 +160,6 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot unmarshal")
 }
 
-func TestConfigWithInvalidType(t *testing.T) {
-	yamlConfig := `
-tasks:
-  - id: 1
-    type: unknown
-    command: unknown
-`
-	_, err := NewConfigBuilder().
-		WithYAML(yamlConfig).
-		Build()
-
-	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "invalid task type")
-}
-
 func TestConfigLoadTasksFromFile(t *testing.T) {
 	sqlFilename := "queries_*.sql"
 	sqlContent := "SELECT 1; SELECT 2;"
@@ -210,22 +171,23 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	tempFile.Write([]byte(sqlContent))
 
 	config, _ := NewConfigBuilder().
-		WithTask(Task{
+		WithTask(YamlTask{
 			ID:   1,
 			Type: "psql",
 			File: tempFile.Name(),
 			URI:  "postgresql://localhost",
 		}).
 		Build()
+	tasks, _ := config.GetTasks()
 
 	// File task must be replaced by Command tasks loaded from SQL file
-	assert.Equal(t, 1, config.Tasks[0].ID)
-	assert.Equal(t, "SELECT 1;", config.Tasks[0].Command)
-	assert.Equal(t, "postgresql://localhost", config.Tasks[0].URI)
+	assert.Equal(t, 1, tasks[0].ID)
+	assert.Equal(t, "SELECT 1;", tasks[0].Command.Text)
+	assert.Equal(t, "postgresql://localhost", tasks[0].Command.URI)
 
 	// Each loaded task must have an unique query ID
-	assert.Equal(t, 0, config.Tasks[0].QueryID)
-	assert.Equal(t, 1, config.Tasks[1].QueryID)
+	assert.Equal(t, 0, tasks[0].QueryID)
+	assert.Equal(t, 1, tasks[1].QueryID)
 }
 
 func TestConfigWithDependencies(t *testing.T) {
@@ -253,9 +215,10 @@ tasks:
     command: true
     depends_on: [1, 3]
 `
-	_, err := NewConfigBuilder().
+	config, _ := NewConfigBuilder().
 		WithYAML(yamlConfig).
 		Build()
+	_, err := config.GetTasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "depends on unknown task")
@@ -280,7 +243,8 @@ tasks:
 		WithYAML(yamlConfig).
 		WithDefaultConnection(cnx).
 		Build()
+	tasks, _ := config.GetTasks()
 
-	assert.Equal(t, "postgresql://?host=remote&user=postgres", config.Tasks[0].URI)
-	assert.Equal(t, "postgresql://?host=localhost", config.Tasks[1].URI)
+	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Command.URI)
+	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
 }

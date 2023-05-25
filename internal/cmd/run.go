@@ -38,15 +38,6 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func newDispatcher(config config.Config) (dispatcher.Dispatcher, error) {
-	return dispatcher.NewDispatcherBuilder(context.Background()).
-		WithWorkerNumber(config.MaxWorkers).
-		WithMemorySize(len(config.Tasks)).
-		WithLogfile(config.Logfile).
-		WithConsole().
-		Build()
-}
-
 func parseSqlFile(filename string) ([]models.Task, error) {
 	var finalTasks []models.Task
 
@@ -61,10 +52,12 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 	for queryId, query := range parser.Parse() {
 		finalTasks = append(finalTasks, models.Task{
 			QueryID: queryId,
-			Type:    "psql",
 			Name:    fmt.Sprintf("Query loaded from %s", filename),
-			URI:     defaultConnection.CombinedURI(),
-			Command: query,
+			Command: models.Command{
+				Text: query,
+				Type: "psql",
+				URI:  defaultConnection.CombinedURI(),
+			},
 		})
 	}
 
@@ -77,28 +70,39 @@ func launch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(argSqlFilename) > 0 {
-		tasks, err := parseSqlFile(argSqlFilename)
-		if err != nil {
-			return err
-		}
-		config.Tasks = append(config.Tasks, tasks...)
-	}
-
-	if len(config.Tasks) == 0 {
-		return fmt.Errorf("no task to perform")
-	}
-
-	dispatcher, err := newDispatcher(config)
+	tasks, err := config.GetTasks()
 	if err != nil {
 		return err
 	}
 
-	for _, t := range config.Tasks {
+	if len(argSqlFilename) > 0 {
+		loadedTasks, err := parseSqlFile(argSqlFilename)
+		if err != nil {
+			return err
+		}
+		tasks = append(tasks, loadedTasks...)
+	}
+
+	if len(tasks) == 0 {
+		return fmt.Errorf("no task to perform")
+	}
+
+	dispatcher, err := dispatcher.NewDispatcherBuilder(context.Background()).
+		WithWorkerNumber(config.MaxWorkers).
+		WithMemorySize(len(tasks)).
+		WithLogfile(config.Logfile).
+		WithConsole().
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	for _, t := range tasks {
 		dispatcher.AddTask(t)
 	}
 
-	Debug("loaded tasks =", len(config.Tasks))
+	Debug("loaded tasks =", len(tasks))
 	Debug("max workers =", config.MaxWorkers)
 
 	dispatcher.Wait()
