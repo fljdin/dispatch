@@ -15,7 +15,7 @@ func TestDispatcherAddTask(t *testing.T) {
 
 	dispatcher.AddTask(Task{
 		ID:      1,
-		Command: "true",
+		Command: Command{Text: "true"},
 	})
 
 	assert.Equal(t, Waiting, dispatcher.GetStatus(1))
@@ -28,12 +28,12 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 
 	dispatcher.AddTask(Task{
 		ID:      1,
-		Command: "false",
+		Command: Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: "true",
+		Command: Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -48,12 +48,12 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 
 	dispatcher.AddTask(Task{
 		ID:      1,
-		Command: "true",
+		Command: Command{Text: "true"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: "true",
+		Command: Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -69,12 +69,12 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 0,
-		Command: "false",
+		Command: Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      1,
 		QueryID: 1,
-		Command: "true",
+		Command: Command{Text: "true"},
 	})
 	dispatcher.Wait()
 

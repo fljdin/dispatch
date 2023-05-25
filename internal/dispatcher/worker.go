@@ -24,7 +24,9 @@ func (w *Worker) Start() {
 			task, result := w.verifyStatus(task)
 
 			if result.Status == models.Ready {
-				result := task.Run()
+				result := task.Command.Run()
+				result.ID = task.ID
+				result.QueryID = task.QueryID
 				result.WorkerID = w.ID
 				w.memory.results <- result
 				continue
