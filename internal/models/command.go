@@ -18,6 +18,22 @@ type Command struct {
 	Connection string
 }
 
+func (c Command) getExecCommand() *exec.Cmd {
+	switch c.Type {
+	case "psql":
+		cmd := exec.Command("psql", "-d", c.URI)
+
+		// use standard input to handle \g meta-commands
+		textPipe, _ := cmd.StdinPipe()
+		fmt.Fprintf(textPipe, c.Text)
+		defer textPipe.Close()
+
+		return cmd
+	default:
+		return exec.Command("sh", "-c", c.Text)
+	}
+}
+
 func (c Command) VerifyType() error {
 	if c.Type == "" {
 		return nil
@@ -29,21 +45,13 @@ func (c Command) VerifyType() error {
 }
 
 func (c Command) Run() TaskResult {
-	var cmd *exec.Cmd
+	cmd := c.getExecCommand()
 
 	startTime := time.Now()
-
-	switch c.Type {
-	case "psql":
-		cmd = exec.Command("psql", "-d", c.URI, "-c", c.Text)
-	default:
-		cmd = exec.Command("sh", "-c", c.Text)
-	}
-
 	output, err := cmd.CombinedOutput()
 	endTime := time.Now()
 
-	tr := TaskResult{
+	result := TaskResult{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
@@ -52,9 +60,9 @@ func (c Command) Run() TaskResult {
 	}
 
 	if err != nil {
-		tr.Status = Failed
-		tr.Error = err.Error()
+		result.Status = Failed
+		result.Error = err.Error()
 	}
 
-	return tr
+	return result
 }
