@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os/exec"
@@ -22,7 +23,8 @@ type Command struct {
 func (c Command) getExecCommand() *exec.Cmd {
 	switch c.Type {
 	case "psql":
-		cmd := exec.Command("psql", "-d", c.URI)
+		// ON_ERROR_STOP is used to retrieve the correct exit code
+		cmd := exec.Command("psql", "-v", "ON_ERROR_STOP=1", "-d", c.URI)
 
 		// use input pipe to handle \g meta-commands
 		textPipe, _ := cmd.StdinPipe()
@@ -48,10 +50,14 @@ func (c Command) VerifyType() error {
 }
 
 func (c Command) Run() TaskResult {
-	cmd := c.getExecCommand()
-
 	startTime := time.Now()
-	output, err := cmd.CombinedOutput()
+
+	var stdout, stderr bytes.Buffer
+	cmd := c.getExecCommand()
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+
 	endTime := time.Now()
 
 	result := TaskResult{
@@ -59,12 +65,12 @@ func (c Command) Run() TaskResult {
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
 		Status:    Succeeded,
-		Output:    string(output),
+		Output:    stdout.String(),
+		Error:     stderr.String(),
 	}
 
 	if err != nil {
 		result.Status = Failed
-		result.Error = err.Error()
 	}
 
 	return result
