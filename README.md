@@ -36,12 +36,10 @@ Global Flags:
 ### Examples
 
 ```sh
-cat <<EOF | psql -At > statements.sql
+cat <<EOF | psql -At | dispatch run -j 2
 SELECT format('VACUUM ANALYZE %I.%I;', schemaname, relname)
   FROM pg_stat_user_tables WHERE last_analyze IS NULL
 EOF
-
-dispatch run -j 2 -f statements.sql
 ```
 
 ```text
@@ -52,7 +50,8 @@ dispatch run -j 2 -f statements.sql
 ## Query parsing
 
 An internal parser is used to load queries as `psql`'s tasks. Theses queries are
-semicolon-separated or could be termined by a `psql` meta-command, like `\g` or `\gexec`.
+semicolon-separated or could be termined by a `psql` meta-command, like `\g` or
+`\gexec`.
 
 Parsing provides correct detection of transaction blocks and anonymous code
 blocks.

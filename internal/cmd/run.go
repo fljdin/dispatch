@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
@@ -38,21 +41,33 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func parseSqlFile(filename string) ([]models.Task, error) {
+func newFileReader() (io.Reader, error) {
+	if len(argSqlFilename) > 0 && argSqlFilename != "-" {
+		file, err := os.Open(argSqlFilename)
+		if err != nil {
+			return nil, fmt.Errorf("failed open file: %v", err)
+		}
+		return file, nil
+	}
+	return nil, nil
+}
+
+func parseInput(input io.Reader) []models.Task {
 	var finalTasks []models.Task
 
-	parser, err := parser.NewParserBuilder("psql").
-		FromFile(filename).
-		Build()
-
+	content, err := ioutil.ReadAll(input)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
+
+	parser, _ := parser.NewParserBuilder("psql").
+		WithContent(string(content)).
+		Build()
 
 	for queryId, query := range parser.Parse() {
 		finalTasks = append(finalTasks, models.Task{
 			QueryID: queryId,
-			Name:    fmt.Sprintf("Query loaded from %s", filename),
+			Name:    "Query loaded from input",
 			Command: models.Command{
 				Text: query,
 				Type: "psql",
@@ -61,7 +76,7 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 		})
 	}
 
-	return finalTasks, nil
+	return finalTasks
 }
 
 func launch(cmd *cobra.Command, args []string) error {
@@ -75,13 +90,17 @@ func launch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(argSqlFilename) > 0 {
-		loadedTasks, err := parseSqlFile(argSqlFilename)
-		if err != nil {
-			return err
-		}
-		tasks = append(tasks, loadedTasks...)
+	inputReader, err := newFileReader()
+	if err != nil {
+		return err
 	}
+
+	if inputReader == nil {
+		inputReader = cmd.InOrStdin()
+	}
+
+	loadedTasks := parseInput(inputReader)
+	tasks = append(tasks, loadedTasks...)
 
 	if len(tasks) == 0 {
 		return fmt.Errorf("no task to perform")
