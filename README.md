@@ -51,8 +51,10 @@ dispatch run -j 2 -f statements.sql
 
 ## Query parsing
 
-An internal parser is used to load semicolon-separated queries as `psql`'s
-tasks. It provides correct detection of transaction blocks and anonymous code
+An internal parser is used to load queries as `psql`'s tasks. Theses queries are
+semicolon-separated or could be termined by a `psql` meta-command, like `\g` or `\gexec`.
+
+Parsing provides correct detection of transaction blocks and anonymous code
 blocks.
 
 ## Configuration

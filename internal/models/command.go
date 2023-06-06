@@ -1,7 +1,9 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os/exec"
 	"time"
 
@@ -18,6 +20,25 @@ type Command struct {
 	Connection string
 }
 
+func (c Command) getExecCommand() *exec.Cmd {
+	switch c.Type {
+	case "psql":
+		// ON_ERROR_STOP is used to retrieve the correct exit code
+		cmd := exec.Command("psql", "-v", "ON_ERROR_STOP=1", "-d", c.URI)
+
+		// use input pipe to handle \g meta-commands
+		textPipe, _ := cmd.StdinPipe()
+		go func() {
+			defer textPipe.Close()
+			io.WriteString(textPipe, c.Text)
+		}()
+
+		return cmd
+	default:
+		return exec.Command("sh", "-c", c.Text)
+	}
+}
+
 func (c Command) VerifyType() error {
 	if c.Type == "" {
 		return nil
@@ -29,32 +50,28 @@ func (c Command) VerifyType() error {
 }
 
 func (c Command) Run() TaskResult {
-	var cmd *exec.Cmd
-
 	startTime := time.Now()
 
-	switch c.Type {
-	case "psql":
-		cmd = exec.Command("psql", "-d", c.URI, "-c", c.Text)
-	default:
-		cmd = exec.Command("sh", "-c", c.Text)
-	}
+	var stdout, stderr bytes.Buffer
+	cmd := c.getExecCommand()
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
 
-	output, err := cmd.CombinedOutput()
 	endTime := time.Now()
 
-	tr := TaskResult{
+	result := TaskResult{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
 		Status:    Succeeded,
-		Output:    string(output),
+		Output:    stdout.String(),
+		Error:     stderr.String(),
 	}
 
 	if err != nil {
-		tr.Status = Failed
-		tr.Error = err.Error()
+		result.Status = Failed
 	}
 
-	return tr
+	return result
 }

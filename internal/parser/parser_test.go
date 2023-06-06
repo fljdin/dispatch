@@ -6,6 +6,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/parser"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParserWithSqlContent(t *testing.T) {
@@ -16,7 +17,6 @@ func TestParserWithSqlContent(t *testing.T) {
 		Build()
 
 	queries := parser.Parse()
-
 	assert.Equal(t, 3, len(queries))
 }
 
@@ -106,7 +106,49 @@ func TestParserFromSqlFile(t *testing.T) {
 	parser, _ := NewParserBuilder("psql").
 		FromFile(tempFile.Name()).
 		Build()
-	queries := parser.Parse()
 
+	queries := parser.Parse()
+	assert.Equal(t, 1, len(queries))
+}
+
+func TestParserGCommand(t *testing.T) {
+	sqlContent := `SELECT 1\g
+SELECT 2\g result.txt
+SELECT 3\g (format=unaligned tuples_only)
+`
+	parser, _ := NewParserBuilder("psql").
+		WithContent(sqlContent).
+		Build()
+
+	queries := parser.Parse()
+	require.Equal(t, 3, len(queries))
+
+	assert.Equal(t, "SELECT 1\\g\n", queries[0])
+	assert.Equal(t, "SELECT 2\\g result.txt\n", queries[1])
+	assert.Equal(t, "SELECT 3\\g (format=unaligned tuples_only)\n", queries[2])
+}
+
+func TestParserCrosstabviewCommand(t *testing.T) {
+	sqlContent := `SELECT 1, 1, 1 \crosstabview
+SELECT 2, 2, 2 \crosstabview
+SELECT 3, 3, 3 \crosstabview
+`
+
+	parser, _ := NewParserBuilder("psql").
+		WithContent(sqlContent).
+		Build()
+
+	queries := parser.Parse()
+	assert.Equal(t, 3, len(queries))
+}
+
+func TestParserUnsupportedCommand(t *testing.T) {
+	sqlContent := "SELECT 1\\unsupported\nSELECT 1\\\nSELECT 1;"
+
+	parser, _ := NewParserBuilder("psql").
+		WithContent(sqlContent).
+		Build()
+
+	queries := parser.Parse()
 	assert.Equal(t, 1, len(queries))
 }
