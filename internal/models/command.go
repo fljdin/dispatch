@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"io"
 	"os/exec"
 	"time"
 
@@ -23,10 +24,12 @@ func (c Command) getExecCommand() *exec.Cmd {
 	case "psql":
 		cmd := exec.Command("psql", "-d", c.URI)
 
-		// use standard input to handle \g meta-commands
+		// use input pipe to handle \g meta-commands
 		textPipe, _ := cmd.StdinPipe()
-		fmt.Fprintf(textPipe, c.Text)
-		defer textPipe.Close()
+		go func() {
+			defer textPipe.Close()
+			io.WriteString(textPipe, c.Text)
+		}()
 
 		return cmd
 	default:
