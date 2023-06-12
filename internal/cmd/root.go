@@ -46,6 +46,12 @@ func Debug(data ...any) {
 	}
 }
 
+func HasInput() bool {
+	stdinStat, _ := os.Stdin.Stat()
+
+	return stdinStat.Size() > 0
+}
+
 func ReadInput(prompt string, condition bool) string {
 	var value string
 	if condition {

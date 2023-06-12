@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/fljdin/dispatch/internal/config"
@@ -17,7 +16,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Execute tasks",
-	RunE:  launch,
+	RunE:  run,
 }
 
 var defaultConnection models.Connection
@@ -41,7 +40,7 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func newFileReader() (io.Reader, error) {
+func newReader() (io.Reader, error) {
 	if len(argSqlFilename) > 0 && argSqlFilename != "-" {
 		file, err := os.Open(argSqlFilename)
 		if err != nil {
@@ -52,12 +51,12 @@ func newFileReader() (io.Reader, error) {
 	return nil, nil
 }
 
-func parseInput(input io.Reader) []models.Task {
+func parseInput(input io.Reader) ([]models.Task, error) {
 	var finalTasks []models.Task
 
-	content, err := ioutil.ReadAll(input)
+	content, err := io.ReadAll(input)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to parse input: %v", err)
 	}
 
 	parser, _ := parser.NewParserBuilder("psql").
@@ -76,10 +75,10 @@ func parseInput(input io.Reader) []models.Task {
 		})
 	}
 
-	return finalTasks
+	return finalTasks, nil
 }
 
-func launch(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) error {
 	config, err := newConfig()
 	if err != nil {
 		return err
@@ -90,17 +89,24 @@ func launch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	inputReader, err := newFileReader()
+	inputReader, err := newReader()
 	if err != nil {
 		return err
 	}
 
-	if inputReader == nil {
+	if inputReader == nil && HasInput() {
 		inputReader = cmd.InOrStdin()
 	}
 
-	loadedTasks := parseInput(inputReader)
-	tasks = append(tasks, loadedTasks...)
+	if inputReader != nil {
+		loadedTasks, err := parseInput(inputReader)
+
+		if err != nil {
+			return err
+		}
+
+		tasks = append(tasks, loadedTasks...)
+	}
 
 	if len(tasks) == 0 {
 		return fmt.Errorf("no task to perform")
