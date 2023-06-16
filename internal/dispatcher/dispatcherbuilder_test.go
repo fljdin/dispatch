@@ -1,7 +1,6 @@
 package dispatcher_test
 
 import (
-	"context"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
+	_, err := NewDispatcherBuilder().
 		WithMemorySize(0).
 		Build()
 
@@ -19,7 +18,7 @@ func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
 }
 
 func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
+	_, err := NewDispatcherBuilder().
 		WithLogfile("not/exists.out").
 		Build()
 
@@ -28,7 +27,7 @@ func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
 }
 
 func TestDispatcherBuilderWithNegativeWorkerNumber(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
+	_, err := NewDispatcherBuilder().
 		WithWorkerNumber(0).
 		Build()
 

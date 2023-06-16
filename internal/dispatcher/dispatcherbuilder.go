@@ -8,18 +8,18 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher     Dispatcher
+	dispatcher     *Dispatcher
 	logfileName    string
 	memorySize     int
 	consoleEnabled bool
 	err            error
 }
 
-func NewDispatcherBuilder(ctx context.Context) *DispatcherBuilder {
-	ctx, cancel := context.WithCancel(ctx)
+func NewDispatcherBuilder() *DispatcherBuilder {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DispatcherBuilder{
-		dispatcher: Dispatcher{
+		dispatcher: &Dispatcher{
 			context: ctx,
 			cancel:  cancel,
 			workers: 1,
@@ -49,7 +49,7 @@ func (db *DispatcherBuilder) WithMemorySize(size int) *DispatcherBuilder {
 	return db
 }
 
-func (db *DispatcherBuilder) Build() (Dispatcher, error) {
+func (db *DispatcherBuilder) Build() (*Dispatcher, error) {
 	if db.memorySize < 1 {
 		db.err = fmt.Errorf("dispatcher need a positive memory size")
 	}
@@ -58,23 +58,8 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		db.err = fmt.Errorf("dispatcher need a positive worker number")
 	}
 
-	db.dispatcher.memory = &SharedMemory{
-		tasks:   make(chan models.Task, db.memorySize),
-		results: make(chan models.TaskResult, db.memorySize),
-	}
-
-	db.dispatcher.observer = &Observer{
-		memory:  db.dispatcher.memory,
-		context: db.dispatcher.context,
-	}
-
-	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
-		db.err = err
-	}
-
-	if db.consoleEnabled {
-		db.dispatcher.observer.WithConsole()
-	}
+	db.dispatcher.tasks = make(chan models.Task, db.memorySize)
+	db.dispatcher.results = make(chan models.TaskResult, db.memorySize)
 
 	return db.dispatcher, db.err
 }

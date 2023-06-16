@@ -1,7 +1,6 @@
 package dispatcher_test
 
 import (
-	"context"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestDispatcherAddTask(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+	dispatcher, _ := NewDispatcherBuilder().
 		Build()
 
 	dispatcher.AddTask(Task{
@@ -22,7 +21,7 @@ func TestDispatcherAddTask(t *testing.T) {
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+	dispatcher, _ := NewDispatcherBuilder().
 		WithMemorySize(2).
 		Build()
 
@@ -42,7 +41,7 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+	dispatcher, _ := NewDispatcherBuilder().
 		WithMemorySize(2).
 		Build()
 
@@ -62,7 +61,7 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
+	dispatcher, _ := NewDispatcherBuilder().
 		WithMemorySize(2).
 		Build()
 
