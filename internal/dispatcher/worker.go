@@ -21,9 +21,9 @@ func (w *Worker) Start() {
 		case <-w.context.Done():
 			return
 		case task := <-w.memory.tasks:
-			task, result := w.verifyStatus(task)
+			status := w.getTaskStatus(task)
 
-			if result.Status == models.Ready {
+			if status == models.Ready {
 				result := task.Command.Run()
 				result.ID = task.ID
 				result.QueryID = task.QueryID
@@ -32,8 +32,13 @@ func (w *Worker) Start() {
 				continue
 			}
 
-			if result.Status == models.Interrupted {
-				w.memory.results <- result
+			if status == models.Interrupted {
+				w.memory.results <- models.TaskResult{
+					ID:      task.ID,
+					QueryID: task.QueryID,
+					Status:  models.Interrupted,
+					Elapsed: 0,
+				}
 				continue
 			}
 
@@ -42,36 +47,16 @@ func (w *Worker) Start() {
 	}
 }
 
-func (w *Worker) verifyStatus(task models.Task) (models.Task, models.TaskResult) {
-	var depends = []int{}
-	var result models.TaskResult = models.TaskResult{
-		Status: models.Waiting,
-	}
-
+func (w *Worker) getTaskStatus(task models.Task) int {
 	for _, id := range task.Depends {
 		parentStatus := w.memory.GetStatus(id)
 
-		if parentStatus < models.Succeeded {
-			depends = append(depends, id)
-			continue
-		}
-
 		if parentStatus >= models.Failed {
-			return task, models.TaskResult{
-				ID:       task.ID,
-				QueryID:  task.QueryID,
-				WorkerID: w.ID,
-				Status:   models.Interrupted,
-				Elapsed:  0,
-			}
+			return models.Interrupted
+		} else if parentStatus < models.Succeeded {
+			return models.Waiting
 		}
 	}
 
-	task.Depends = depends
-
-	if len(depends) == 0 {
-		result.Status = models.Ready
-	}
-
-	return task, result
+	return models.Ready
 }
