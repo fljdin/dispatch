@@ -20,43 +20,36 @@ func (w *Worker) Start() {
 		select {
 		case <-w.context.Done():
 			return
-		case task := <-w.memory.tasks:
-			status := w.getTaskStatus(task)
-
-			if status == models.Ready {
-				result := task.Command.Run()
-				result.ID = task.ID
-				result.QueryID = task.QueryID
-				result.WorkerID = w.ID
-				w.memory.results <- result
-				continue
-			}
-
-			if status == models.Interrupted {
-				w.memory.results <- models.TaskResult{
-					ID:      task.ID,
-					QueryID: task.QueryID,
-					Status:  models.Interrupted,
-					Elapsed: 0,
-				}
-				continue
-			}
-
-			w.memory.ForwardTask(task)
+		default:
+			task := w.memory.queue.Pop()
+			w.runTask(task)
 		}
 	}
 }
 
-func (w *Worker) getTaskStatus(task models.Task) int {
-	for _, id := range task.Depends {
-		parentStatus := w.memory.GetStatus(id)
-
-		if parentStatus >= models.Failed {
-			return models.Interrupted
-		} else if parentStatus < models.Succeeded {
-			return models.Waiting
-		}
+func (w *Worker) runTask(task *models.Task) {
+	if task == nil {
+		return
 	}
 
-	return models.Ready
+	if task.Status == models.Ready {
+		result := task.Command.Run()
+		result.ID = task.ID
+		result.QueryID = task.QueryID
+		result.WorkerID = w.ID
+		w.memory.results <- result
+		return
+	}
+
+	if task.Status == models.Interrupted {
+		w.memory.results <- models.TaskResult{
+			ID:      task.ID,
+			QueryID: task.QueryID,
+			Status:  models.Interrupted,
+			Elapsed: 0,
+		}
+		return
+	}
+
+	w.memory.ForwardTask(*task)
 }

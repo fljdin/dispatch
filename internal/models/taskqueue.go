@@ -9,8 +9,8 @@ type TaskQueue struct {
 	status StatusMap
 }
 
-func NewTaskQueue() *TaskQueue {
-	return &TaskQueue{
+func NewTaskQueue() TaskQueue {
+	return TaskQueue{
 		tasks: list.New(),
 	}
 }

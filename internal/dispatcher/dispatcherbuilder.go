@@ -59,7 +59,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 	}
 
 	db.dispatcher.memory = &SharedMemory{
-		tasks:   make(chan models.Task, db.memorySize),
+		queue:   models.NewTaskQueue(),
 		results: make(chan models.TaskResult, db.memorySize),
 	}
 

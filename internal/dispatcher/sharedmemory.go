@@ -9,18 +9,17 @@ import (
 type SharedMemory struct {
 	wgTasks   sync.WaitGroup
 	wgWorkers sync.WaitGroup
-	statuses  models.StatusMap
-	tasks     chan models.Task
+	queue     models.TaskQueue
 	results   chan models.TaskResult
 }
 
 func (s *SharedMemory) AddTask(task models.Task) {
-	s.tasks <- task
+	s.queue.Push(&task)
 	s.wgTasks.Add(1)
 }
 
 func (s *SharedMemory) ForwardTask(task models.Task) {
-	s.tasks <- task
+	s.queue.Push(&task)
 }
 
 func (s *SharedMemory) StartWorker() {
@@ -32,9 +31,9 @@ func (s *SharedMemory) EndWorker() {
 }
 
 func (s *SharedMemory) GetStatus(ID int) int {
-	return s.statuses.Load(ID)
+	return s.queue.GetStatus(ID)
 }
 
 func (s *SharedMemory) SetStatus(ID int, status int) {
-	s.statuses.Store(ID, status)
+	s.queue.SetStatus(ID, status)
 }
