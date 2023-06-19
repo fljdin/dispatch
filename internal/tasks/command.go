@@ -89,7 +89,7 @@ func (c Command) GenerateCommands() (TaskResult, []Command) {
 	}
 
 	parser, err := parser.NewParserBuilder(c.ExecOutput).
-		WithContent(c.Text).
+		WithContent(result.Output).
 		Build()
 
 	if err != nil {

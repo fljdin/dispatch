@@ -47,12 +47,12 @@ func TestCommandWithError(t *testing.T) {
 
 func TestCommandExecOutput(t *testing.T) {
 	cmd := Command{
-		Text:       `echo -n "true\nfalse`,
+		Text:       `echo -n "true\nfalse"`,
 		ExecOutput: "sh",
 	}
 	result, tasks := cmd.GenerateCommands()
 
-	assert.Equal(t, Succeeded, result.Status)
-	assert.Equal(t, Command{Text: "true"}, tasks[0])
-	assert.Equal(t, Command{Text: "false"}, tasks[1])
+	require.Equal(t, Succeeded, result.Status)
+	assert.Equal(t, Command{Text: "true", Type: "sh"}, tasks[0])
+	assert.Equal(t, Command{Text: "false", Type: "sh"}, tasks[1])
 }
