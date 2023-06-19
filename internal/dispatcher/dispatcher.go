@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"sync"
 
 	"github.com/fljdin/dispatch/internal/tasks"
 )
@@ -44,4 +45,36 @@ func (d *Dispatcher) launchWorkers() {
 		}
 		go worker.Start()
 	}
+}
+
+type Memory struct {
+	wgTasks   sync.WaitGroup
+	wgWorkers sync.WaitGroup
+	queue     models.TaskQueue
+	results   chan models.TaskResult
+}
+
+func (m *Memory) GetStatus(ID int) int {
+	return m.queue.GetStatus(ID)
+}
+
+func (m *Memory) SetStatus(ID int, status int) {
+	m.queue.SetStatus(ID, status)
+}
+
+func (m *Memory) AddTask(task models.Task) {
+	m.queue.Push(&task)
+	m.wgTasks.Add(1)
+}
+
+func (m *Memory) ForwardTask(task models.Task) {
+	m.queue.Push(&task)
+}
+
+func (m *Memory) StartWorker() {
+	m.wgWorkers.Add(1)
+}
+
+func (m *Memory) EndWorker() {
+	m.wgWorkers.Done()
 }
