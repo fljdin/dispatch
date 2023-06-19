@@ -2,11 +2,13 @@ package models
 
 import (
 	"container/list"
+	"sync"
 )
 
 type TaskQueue struct {
 	tasks  *list.List
 	status StatusMap
+	mut    sync.Mutex
 }
 
 func NewTaskQueue() TaskQueue {
@@ -24,15 +26,24 @@ func (q *TaskQueue) SetStatus(id int, status int) {
 }
 
 func (q *TaskQueue) Len() int {
+	q.mut.Lock()
+	defer q.mut.Unlock()
+
 	return q.tasks.Len()
 }
 
 func (q *TaskQueue) Push(task *Task) {
+	q.mut.Lock()
+	defer q.mut.Unlock()
+
 	q.tasks.PushBack(task)
 	q.status.Set(task.ID, task.Status)
 }
 
 func (q *TaskQueue) Pop() *Task {
+	q.mut.Lock()
+	defer q.mut.Unlock()
+
 	element := q.tasks.Front()
 	if element == nil {
 		return nil
