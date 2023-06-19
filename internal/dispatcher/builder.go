@@ -8,7 +8,7 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher     *Dispatcher
+	dispatcher     Dispatcher
 	logfileName    string
 	consoleEnabled bool
 	err            error
@@ -18,7 +18,7 @@ func NewBuilder() *DispatcherBuilder {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DispatcherBuilder{
-		dispatcher: &Dispatcher{
+		dispatcher: Dispatcher{
 			context: ctx,
 			cancel:  cancel,
 			workers: 1,
