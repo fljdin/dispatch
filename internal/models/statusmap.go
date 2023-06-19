@@ -4,12 +4,20 @@ import (
 	"sync"
 )
 
+const (
+	Waiting int = iota
+	Ready
+	Succeeded
+	Failed
+	Interrupted
+)
+
 type StatusMap struct {
-	statuses sync.Map
+	sm sync.Map
 }
 
-func (dm *StatusMap) Load(taskID int) int {
-	status, exists := dm.statuses.Load(taskID)
+func (dm *StatusMap) Get(id int) int {
+	status, exists := dm.sm.Load(id)
 
 	if !exists {
 		return Waiting
@@ -18,9 +26,9 @@ func (dm *StatusMap) Load(taskID int) int {
 	return status.(int)
 }
 
-func (dm *StatusMap) Store(taskID int, newStatus int) {
+func (dm *StatusMap) Set(id int, newStatus int) {
 	var status int
-	currentStatus := dm.Load(taskID)
+	currentStatus := dm.Get(id)
 
 	if currentStatus > newStatus {
 		status = currentStatus
@@ -28,5 +36,5 @@ func (dm *StatusMap) Store(taskID int, newStatus int) {
 		status = newStatus
 	}
 
-	dm.statuses.Store(taskID, status)
+	dm.sm.Store(id, status)
 }

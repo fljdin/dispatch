@@ -15,12 +15,12 @@ func NewTaskQueue() TaskQueue {
 	}
 }
 
-func (q *TaskQueue) GetStatus(ID int) int {
-	return q.status.Load(ID)
+func (q *TaskQueue) GetStatus(id int) int {
+	return q.status.Get(id)
 }
 
-func (q *TaskQueue) SetStatus(ID int, status int) {
-	q.status.Store(ID, status)
+func (q *TaskQueue) SetStatus(id int, status int) {
+	q.status.Set(id, status)
 }
 
 func (q *TaskQueue) Len() int {
@@ -29,7 +29,7 @@ func (q *TaskQueue) Len() int {
 
 func (q *TaskQueue) Push(task *Task) {
 	q.tasks.PushBack(task)
-	q.status.Store(task.ID, task.Status)
+	q.status.Set(task.ID, task.Status)
 }
 
 func (q *TaskQueue) Pop() *Task {
@@ -47,7 +47,7 @@ func (q *TaskQueue) Pop() *Task {
 
 func (q *TaskQueue) evaluate(task *Task) int {
 	for _, id := range task.Depends {
-		parentStatus := q.status.Load(id)
+		parentStatus := q.status.Get(id)
 
 		if parentStatus >= Failed {
 			return Interrupted

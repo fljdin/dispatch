@@ -28,8 +28,8 @@ func (d *Dispatcher) AddTask(task models.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d *Dispatcher) GetStatus(ID int) int {
-	return d.memory.GetStatus(ID)
+func (d *Dispatcher) GetStatus(id int) int {
+	return d.memory.GetStatus(id)
 }
 
 func (d *Dispatcher) launchObserver() {
@@ -54,12 +54,12 @@ type Memory struct {
 	results   chan models.TaskResult
 }
 
-func (m *Memory) GetStatus(ID int) int {
-	return m.queue.GetStatus(ID)
+func (m *Memory) GetStatus(id int) int {
+	return m.queue.GetStatus(id)
 }
 
-func (m *Memory) SetStatus(ID int, status int) {
-	m.queue.SetStatus(ID, status)
+func (m *Memory) SetStatus(id int, status int) {
+	m.queue.SetStatus(id, status)
 }
 
 func (m *Memory) AddTask(task models.Task) {
