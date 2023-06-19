@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/fljdin/dispatch/internal/config"
@@ -87,9 +86,8 @@ func launch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no task to perform")
 	}
 
-	dispatcher, err := dispatcher.NewDispatcherBuilder(context.Background()).
+	dispatcher, err := dispatcher.NewDispatcherBuilder().
 		WithWorkerNumber(config.MaxWorkers).
-		WithMemorySize(len(tasks)).
 		WithLogfile(config.Logfile).
 		WithConsole().
 		Build()

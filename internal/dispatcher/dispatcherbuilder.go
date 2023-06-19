@@ -8,23 +8,21 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher     Dispatcher
+	dispatcher     *Dispatcher
 	logfileName    string
-	memorySize     int
 	consoleEnabled bool
 	err            error
 }
 
-func NewDispatcherBuilder(ctx context.Context) *DispatcherBuilder {
-	ctx, cancel := context.WithCancel(ctx)
+func NewDispatcherBuilder() *DispatcherBuilder {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DispatcherBuilder{
-		dispatcher: Dispatcher{
+		dispatcher: &Dispatcher{
 			context: ctx,
 			cancel:  cancel,
 			workers: 1,
 		},
-		memorySize:     1,
 		consoleEnabled: false,
 	}
 }
@@ -44,23 +42,14 @@ func (db *DispatcherBuilder) WithWorkerNumber(count int) *DispatcherBuilder {
 	return db
 }
 
-func (db *DispatcherBuilder) WithMemorySize(size int) *DispatcherBuilder {
-	db.memorySize = size
-	return db
-}
-
-func (db *DispatcherBuilder) Build() (Dispatcher, error) {
-	if db.memorySize < 1 {
-		db.err = fmt.Errorf("dispatcher need a positive memory size")
-	}
-
+func (db *DispatcherBuilder) Build() (*Dispatcher, error) {
 	if db.dispatcher.workers < 1 {
 		db.err = fmt.Errorf("dispatcher need a positive worker number")
 	}
 
 	db.dispatcher.memory = &Memory{
 		queue:   models.NewTaskQueue(),
-		results: make(chan models.TaskResult, db.memorySize),
+		results: make(chan models.TaskResult, 10),
 	}
 
 	db.dispatcher.observer = &Observer{
