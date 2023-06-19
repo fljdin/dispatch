@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/parser"
 	"golang.org/x/exp/slices"
 )
 
@@ -20,6 +21,7 @@ type Command struct {
 	Type       string
 	URI        string
 	Connection string
+	ExecOutput string
 }
 
 func (c Command) getExecCommand() *exec.Cmd {
@@ -76,6 +78,32 @@ func (c Command) Run() Result {
 	}
 
 	return result
+}
+
+func (c Command) GenerateCommands() (TaskResult, []Command) {
+	result := c.Run()
+	commands := []Command{}
+
+	if result.Status == Failed {
+		return result, nil
+	}
+
+	parser, err := parser.NewParserBuilder(c.ExecOutput).
+		WithContent(c.Text).
+		Build()
+
+	if err != nil {
+		return result, nil
+	}
+
+	for _, command := range parser.Parse() {
+		commands = append(commands, Command{
+			Text: command,
+			Type: c.ExecOutput,
+		})
+	}
+
+	return result, commands
 }
 
 func (Command) Time() time.Time {
