@@ -13,5 +13,5 @@ func TestParserWithInvalidParseType(t *testing.T) {
 		Build()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "only psql type is supported")
+	assert.Contains(t, err.Error(), "is not supported")
 }
