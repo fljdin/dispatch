@@ -8,7 +8,7 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher     *Dispatcher
+	dispatcher     Dispatcher
 	logfileName    string
 	consoleEnabled bool
 	err            error
@@ -18,7 +18,7 @@ func NewDispatcherBuilder() *DispatcherBuilder {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DispatcherBuilder{
-		dispatcher: &Dispatcher{
+		dispatcher: Dispatcher{
 			context: ctx,
 			cancel:  cancel,
 			workers: 1,
@@ -42,7 +42,7 @@ func (db *DispatcherBuilder) WithWorkerNumber(count int) *DispatcherBuilder {
 	return db
 }
 
-func (db *DispatcherBuilder) Build() (*Dispatcher, error) {
+func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 	if db.dispatcher.workers < 1 {
 		db.err = fmt.Errorf("dispatcher need a positive worker number")
 	}
