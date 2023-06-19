@@ -5,8 +5,8 @@ import (
 )
 
 type TaskQueue struct {
-	tasks    *list.List
-	statuses StatusMap
+	tasks  *list.List
+	status StatusMap
 }
 
 func NewTaskQueue() *TaskQueue {
@@ -16,11 +16,11 @@ func NewTaskQueue() *TaskQueue {
 }
 
 func (q *TaskQueue) GetStatus(ID int) int {
-	return q.statuses.Load(ID)
+	return q.status.Load(ID)
 }
 
 func (q *TaskQueue) SetStatus(ID int, status int) {
-	q.statuses.Store(ID, status)
+	q.status.Store(ID, status)
 }
 
 func (q *TaskQueue) Len() int {
@@ -29,7 +29,7 @@ func (q *TaskQueue) Len() int {
 
 func (q *TaskQueue) Push(task *Task) {
 	q.tasks.PushBack(task)
-	q.statuses.Store(task.ID, task.Status)
+	q.status.Store(task.ID, task.Status)
 }
 
 func (q *TaskQueue) Pop() *Task {
@@ -47,7 +47,7 @@ func (q *TaskQueue) Pop() *Task {
 
 func (q *TaskQueue) evaluate(task *Task) int {
 	for _, id := range task.Depends {
-		parentStatus := q.statuses.Load(id)
+		parentStatus := q.status.Load(id)
 
 		if parentStatus >= Failed {
 			return Interrupted

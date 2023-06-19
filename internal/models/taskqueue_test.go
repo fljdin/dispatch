@@ -18,6 +18,12 @@ func TestQueuePush(t *testing.T) {
 	assert.Equal(t, 1, queue.Len())
 }
 
+func TestQueuePopEmpty(t *testing.T) {
+	queue := NewTaskQueue()
+	task := queue.Pop()
+	assert.Nil(t, task)
+}
+
 func TestQueuePop(t *testing.T) {
 	queue := NewTaskQueue()
 	queue.Push(&Task{
@@ -80,4 +86,27 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 
 	task := queue.Pop()
 	assert.Equal(t, Ready, task.Status)
+}
+
+func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
+	queue := NewTaskQueue()
+	queue.Push(&Task{
+		ID: 1,
+		Command: Command{
+			Text: "true",
+		},
+	})
+	queue.Push(&Task{
+		ID:      2,
+		Depends: []int{1},
+		Command: Command{
+			Text: "true",
+		},
+	})
+
+	_ = queue.Pop()
+	queue.SetStatus(1, Interrupted)
+
+	task := queue.Pop()
+	assert.Equal(t, Interrupted, task.Status)
 }
