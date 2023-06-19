@@ -58,7 +58,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		db.err = fmt.Errorf("dispatcher need a positive worker number")
 	}
 
-	db.dispatcher.memory = &SharedMemory{
+	db.dispatcher.memory = &Memory{
 		queue:   models.NewTaskQueue(),
 		results: make(chan models.TaskResult, db.memorySize),
 	}

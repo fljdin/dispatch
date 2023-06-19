@@ -8,7 +8,7 @@ import (
 
 type Worker struct {
 	ID      int
-	memory  *SharedMemory
+	memory  *Memory
 	context context.Context
 }
 

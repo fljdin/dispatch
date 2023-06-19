@@ -8,7 +8,7 @@ import (
 )
 
 type Observer struct {
-	memory  *SharedMemory
+	memory  *Memory
 	context context.Context
 	loggers []logger.Logger
 }
