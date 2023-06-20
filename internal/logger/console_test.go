@@ -11,7 +11,7 @@ import (
 
 func TestConsoleRender(t *testing.T) {
 	console := Console{}
-	data, _ := console.Parse(TaskResult{
+	data, _ := console.Parse(Result{
 		ID:       1,
 		WorkerID: 1,
 		QueryID:  0,

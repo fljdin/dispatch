@@ -21,6 +21,6 @@ func newTemplate(name string) *template.Template {
 }
 
 type Logger interface {
-	Parse(result task.TaskResult) (string, error)
-	Render(result task.TaskResult) error
+	Parse(result task.Result) (string, error)
+	Render(result task.Result) error
 }

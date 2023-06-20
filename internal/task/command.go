@@ -49,7 +49,7 @@ func (c Command) VerifyType() error {
 	return nil
 }
 
-func (c Command) Run() TaskResult {
+func (c Command) Run() Result {
 	startTime := time.Now()
 
 	var stdout, stderr bytes.Buffer
@@ -60,7 +60,7 @@ func (c Command) Run() TaskResult {
 
 	endTime := time.Now()
 
-	result := TaskResult{
+	result := Result{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),

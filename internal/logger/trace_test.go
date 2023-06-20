@@ -11,7 +11,7 @@ import (
 
 func TestTraceRender(t *testing.T) {
 	trace := Trace{Filename: "dummy.txt"}
-	data, _ := trace.Parse(TaskResult{
+	data, _ := trace.Parse(Result{
 		ID:        1,
 		WorkerID:  1,
 		QueryID:   0,

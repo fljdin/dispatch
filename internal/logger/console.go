@@ -12,7 +12,7 @@ const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (que
 
 type Console struct{}
 
-func (c *Console) Parse(result task.TaskResult) (string, error) {
+func (c *Console) Parse(result task.Result) (string, error) {
 	tmpl := newTemplate("console")
 	tmpl, err := tmpl.Parse(ConsoleTemplate)
 
@@ -26,7 +26,7 @@ func (c *Console) Parse(result task.TaskResult) (string, error) {
 	return buf.String(), nil
 }
 
-func (c *Console) Render(result task.TaskResult) error {
+func (c *Console) Render(result task.Result) error {
 	data, err := c.Parse(result)
 
 	if err != nil {

@@ -50,7 +50,7 @@ func (o *Observer) WithTrace(filename string) error {
 	return nil
 }
 
-func (o *Observer) Log(result task.TaskResult) {
+func (o *Observer) Log(result task.Result) {
 	for _, logger := range o.loggers {
 		logger.Render(result)
 	}

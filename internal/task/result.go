@@ -2,7 +2,7 @@ package task
 
 import "time"
 
-type TaskResult struct {
+type Result struct {
 	ID        int
 	QueryID   int
 	WorkerID  int

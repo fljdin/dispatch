@@ -5,34 +5,34 @@ import (
 	"sync"
 )
 
-type TaskQueue struct {
+type Queue struct {
 	tasks  *list.List
 	status StatusMap
 	mut    sync.Mutex
 }
 
-func NewQueue() TaskQueue {
-	return TaskQueue{
+func NewQueue() Queue {
+	return Queue{
 		tasks: list.New(),
 	}
 }
 
-func (q *TaskQueue) GetStatus(id int) int {
+func (q *Queue) GetStatus(id int) int {
 	return q.status.Get(id)
 }
 
-func (q *TaskQueue) SetStatus(id int, status int) {
+func (q *Queue) SetStatus(id int, status int) {
 	q.status.Set(id, status)
 }
 
-func (q *TaskQueue) Len() int {
+func (q *Queue) Len() int {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
 	return q.tasks.Len()
 }
 
-func (q *TaskQueue) Push(task *Task) {
+func (q *Queue) Push(task *Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -40,7 +40,7 @@ func (q *TaskQueue) Push(task *Task) {
 	q.status.Set(task.ID, task.Status)
 }
 
-func (q *TaskQueue) Pop() *Task {
+func (q *Queue) Pop() *Task {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -56,7 +56,7 @@ func (q *TaskQueue) Pop() *Task {
 	return task
 }
 
-func (q *TaskQueue) evaluate(task *Task) int {
+func (q *Queue) evaluate(task *Task) int {
 	for _, id := range task.Depends {
 		parentStatus := q.status.Get(id)
 

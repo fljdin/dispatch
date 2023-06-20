@@ -42,7 +42,7 @@ func (w *Worker) runTask(t *task.Task) {
 	}
 
 	if t.Status == task.Interrupted {
-		w.memory.results <- task.TaskResult{
+		w.memory.results <- task.Result{
 			ID:      t.ID,
 			QueryID: t.QueryID,
 			Status:  task.Interrupted,

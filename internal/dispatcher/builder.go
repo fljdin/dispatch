@@ -49,7 +49,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 
 	db.dispatcher.memory = &Memory{
 		queue:   task.NewQueue(),
-		results: make(chan task.TaskResult, 10),
+		results: make(chan task.Result, 10),
 	}
 
 	db.dispatcher.observer = &Observer{

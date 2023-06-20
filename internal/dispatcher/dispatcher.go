@@ -50,8 +50,8 @@ func (d *Dispatcher) launchWorkers() {
 type Memory struct {
 	wgTasks   sync.WaitGroup
 	wgWorkers sync.WaitGroup
-	queue     task.TaskQueue
-	results   chan task.TaskResult
+	queue     task.Queue
+	results   chan task.Result
 }
 
 func (m *Memory) GetStatus(id int) int {

@@ -32,7 +32,7 @@ func (t *Trace) Open() error {
 	return nil
 }
 
-func (t *Trace) Parse(result task.TaskResult) (string, error) {
+func (t *Trace) Parse(result task.Result) (string, error) {
 	tmpl := newTemplate("trace")
 	tmpl, err := tmpl.Parse(TraceTemplate)
 
@@ -46,7 +46,7 @@ func (t *Trace) Parse(result task.TaskResult) (string, error) {
 	return buf.String(), nil
 }
 
-func (t *Trace) Render(result task.TaskResult) error {
+func (t *Trace) Render(result task.Result) error {
 	data, err := t.Parse(result)
 	if err != nil {
 		return nil
