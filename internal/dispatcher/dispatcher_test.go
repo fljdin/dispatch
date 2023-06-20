@@ -1,9 +1,11 @@
 package dispatcher_test
 
 import (
+	"os"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
+	"github.com/fljdin/dispatch/internal/tasks"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 )
@@ -73,17 +75,39 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }
 
-func TestDispatcherTaskWithFailedSubTask(t *testing.T) {
+func TestDispatcherGeneratedTaskFromCommand(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID: 1,
 		Command: Command{
-			Text:       `echo -n "true\nfalse"`,
-			ExecOutput: "sh",
+			Text: `echo -n "true\nfalse"`,
+			From: "sh",
 		},
 	})
 	dispatcher.Wait()
 
+	assert.Equal(t, Failed, dispatcher.Status(1))
+}
+
+func TestDispatcherGenerateTaskFromFile(t *testing.T) {
+	shFilename := "commands_*.sh"
+	shContent := `true\nfalse`
+	tempFile, _ := os.CreateTemp("", shFilename)
+	tempFile.Write([]byte(shContent))
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	dispatcher, _ := NewBuilder().Build()
+	dispatcher.AddTask(Task{
+		ID: 1,
+		Command: tasks.Command{
+			File: tempFile.Name(),
+			From: "sh",
+		},
+	})
+
+	dispatcher.Wait()
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }

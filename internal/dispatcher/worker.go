@@ -29,16 +29,37 @@ func (w *Worker) Start() {
 			return
 		default:
 			if task, ok := w.memory.queue.Pop(); ok {
-				w.run(task)
+				w.handle(task)
 			}
 		}
 	}
 }
 
-func (w *Worker) run(t tasks.Task) {
+func (w *Worker) handle(t tasks.Task) {
+	switch t.Status {
+	case tasks.Waiting:
+		w.memory.ForwardTask(t)
 
-	if t.Status == tasks.Ready && t.Command.ExecOutput != "" {
-		result, commands := t.Command.GenerateCommands()
+	case tasks.Interrupted:
+		w.memory.results <- tasks.Result{
+			ID:      t.ID,
+			SubId:   t.SubID,
+			Status:  tasks.Interrupted,
+			Elapsed: 0,
+		}
+
+	case tasks.Ready:
+		w.run(t)
+	}
+}
+
+func (w *Worker) run(t tasks.Task) {
+	if t.Command.From != "" {
+		result, commands := t.Command.Generate()
+		result.ID = t.ID
+		result.SubId = t.SubID
+		result.WorkerID = w.ID
+
 		w.memory.results <- result
 
 		for id, command := range commands {
@@ -51,24 +72,10 @@ func (w *Worker) run(t tasks.Task) {
 		return
 	}
 
-	if t.Status == tasks.Ready {
-		result := t.Command.Run()
-		result.ID = t.ID
-		result.QueryID = t.SubID
-		result.WorkerID = w.ID
-		w.memory.results <- result
-		return
-	}
+	result := t.Command.Run()
+	result.ID = t.ID
+	result.SubId = t.SubID
+	result.WorkerID = w.ID
 
-	if t.Status == tasks.Interrupted {
-		w.memory.results <- tasks.Result{
-			ID:      t.ID,
-			QueryID: t.SubID,
-			Status:  tasks.Interrupted,
-			Elapsed: 0,
-		}
-		return
-	}
-
-	w.memory.ForwardTask(t)
+	w.memory.results <- result
 }

@@ -14,7 +14,7 @@ func TestTraceRender(t *testing.T) {
 	data, _ := trace.Parse(Result{
 		ID:        1,
 		WorkerID:  1,
-		QueryID:   0,
+		SubId:     0,
 		Status:    Succeeded,
 		StartTime: time.Now(),
 		EndTime:   time.Now(),

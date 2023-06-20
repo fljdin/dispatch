@@ -18,10 +18,27 @@ var testing bool = os.Getenv("GOTEST") != ""
 type Command struct {
 	Text       string
 	File       string
+	From       string
 	Type       string
 	URI        string
 	Connection string
-	ExecOutput string
+}
+
+func (Command) Time() time.Time {
+	if testing {
+		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+	}
+	return time.Now()
+}
+
+func (c Command) VerifyType() error {
+	if c.Type == "" {
+		return nil
+	}
+	if !slices.Contains(CommandTypes, c.Type) {
+		return fmt.Errorf("%s is not supported", c.Type)
+	}
+	return nil
 }
 
 func (c Command) getExecCommand() *exec.Cmd {
@@ -41,16 +58,6 @@ func (c Command) getExecCommand() *exec.Cmd {
 	default:
 		return exec.Command("sh", "-c", c.Text)
 	}
-}
-
-func (c Command) VerifyType() error {
-	if c.Type == "" {
-		return nil
-	}
-	if !slices.Contains(CommandTypes, c.Type) {
-		return fmt.Errorf("%s is not supported", c.Type)
-	}
-	return nil
 }
 
 func (c Command) Run() Result {
@@ -80,38 +87,45 @@ func (c Command) Run() Result {
 	return result
 }
 
-func (c Command) GenerateCommands() (Result, []Command) {
-	result := c.Run()
-	commands := []Command{}
+func (c Command) Generate() (Result, []Command) {
+	var commands []Command
+	result := Result{Status: Succeeded}
 
-	if result.Status == Failed {
-		return result, nil
-	}
-
-	parser, err := parser.NewBuilder(c.ExecOutput).
-		WithContent(result.Output).
-		Build()
-
+	parser, err := c.parser()
 	if err != nil {
 		result.Status = Failed
 		result.Error = err.Error()
-
-		return result, nil
+		return result, commands
 	}
 
 	for _, command := range parser.Parse() {
 		commands = append(commands, Command{
 			Text: command,
-			Type: c.ExecOutput,
+			Type: c.From,
 		})
 	}
 
 	return result, commands
 }
 
-func (Command) Time() time.Time {
-	if testing {
-		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+func (c Command) parser() (parser.Parser, error) {
+
+	if c.File != "" {
+		return parser.NewBuilder(c.From).
+			FromFile(c.File).
+			Build()
 	}
-	return time.Now()
+
+	if c.Text != "" {
+		result := c.Run()
+		if result.Status == Failed {
+			return nil, fmt.Errorf("%s", result.Error)
+		}
+
+		return parser.NewBuilder(c.From).
+			WithContent(result.Output).
+			Build()
+	}
+
+	return nil, fmt.Errorf("invalid generator")
 }

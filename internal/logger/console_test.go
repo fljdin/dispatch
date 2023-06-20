@@ -14,7 +14,7 @@ func TestConsoleRender(t *testing.T) {
 	data, _ := console.Parse(Result{
 		ID:       1,
 		WorkerID: 1,
-		QueryID:  0,
+		SubId:    0,
 		Status:   Succeeded,
 		Elapsed:  time.Duration(1e8),
 	})

@@ -45,23 +45,23 @@ func TestCommandWithError(t *testing.T) {
 	assert.Equal(t, Failed, result.Status)
 }
 
-func TestCommandWithInvalidExecOutput(t *testing.T) {
+func TestCommandWithInvalidGeneratorType(t *testing.T) {
 	cmd := Command{
-		Text:       "true",
-		ExecOutput: "unknown",
+		Text: "true",
+		From: "unknown",
 	}
-	result, _ := cmd.GenerateCommands()
+	result, _ := cmd.Generate()
 
 	assert.Equal(t, Failed, result.Status)
 	assert.Contains(t, result.Error, "is not supported")
 }
 
-func TestCommandExecOutput(t *testing.T) {
+func TestCommandGenerator(t *testing.T) {
 	cmd := Command{
-		Text:       `echo -n "true\nfalse"`,
-		ExecOutput: "sh",
+		Text: `echo -n "true\nfalse"`,
+		From: "sh",
 	}
-	result, tasks := cmd.GenerateCommands()
+	result, tasks := cmd.Generate()
 
 	require.Equal(t, Succeeded, result.Status)
 	assert.Equal(t, Command{Text: "true", Type: "sh"}, tasks[0])

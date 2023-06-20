@@ -1,39 +1,55 @@
 package config
 
 import (
-	"fmt"
 	"runtime"
 
-	"github.com/fljdin/dispatch/internal/parser"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 var ConfigWorkersDefault int = 2
 
+type YamlGenerator struct {
+	From    string `yaml:"from"`
+	Command string `yaml:"command"`
+	File    string `yaml:"file"`
+}
+
 type YamlTask struct {
-	ID         int    `yaml:"id"`
-	Type       string `yaml:"type,omitempty"`
-	Name       string `yaml:"name,omitempty"`
-	Command    string `yaml:"command"`
-	File       string `yaml:"file"`
-	URI        string `yaml:"uri,omitempty"`
-	Connection string `yaml:"connection,omitempty"`
-	Depends    []int  `yaml:"depends_on,omitempty"`
-	ExecOutput string `yaml:"exec_output,omitempty"`
+	ID         int           `yaml:"id"`
+	Type       string        `yaml:"type,omitempty"`
+	Name       string        `yaml:"name,omitempty"`
+	Command    string        `yaml:"command"`
+	File       string        `yaml:"file"`
+	URI        string        `yaml:"uri,omitempty"`
+	Connection string        `yaml:"connection,omitempty"`
+	Depends    []int         `yaml:"depends_on,omitempty"`
+	Generated  YamlGenerator `yaml:"generated,omitempty"`
 }
 
 func (t YamlTask) Normalize() tasks.Task {
-	return tasks.Task{
-		ID:   t.ID,
-		Name: t.Name,
-		Command: tasks.Command{
-			Text:       t.Command,
-			File:       t.File,
+	command := tasks.Command{
+		Text:       t.Command,
+		File:       t.File,
+		Type:       t.Type,
+		URI:        t.URI,
+		Connection: t.Connection,
+	}
+
+	if t.Generated.From != "" {
+		command = tasks.Command{
+			Text:       t.Generated.Command,
+			File:       t.Generated.File,
 			Type:       t.Type,
 			URI:        t.URI,
 			Connection: t.Connection,
-			ExecOutput: t.ExecOutput,
-		},
+			From:       t.Generated.From,
+		}
+	}
+
+	return tasks.Task{
+		ID:      t.ID,
+		Name:    t.Name,
+		Command: command,
 		Depends: t.Depends,
 	}
 }
@@ -103,30 +119,6 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 		// append task to final tasks
 		if task.Command.Text != "" {
 			finalTasks = append(finalTasks, task)
-		}
-
-		// parse queries from file and append new related tasks
-		if task.Command.File != "" {
-			parser, err := parser.NewBuilder(task.Command.Type).
-				FromFile(task.Command.File).
-				Build()
-
-			if err != nil {
-				return nil, err
-			}
-
-			for queryId, query := range parser.Parse() {
-				finalTasks = append(finalTasks, tasks.Task{
-					ID:    task.ID,
-					SubID: queryId,
-					Name:  fmt.Sprintf("Query loaded from %s", task.Command.File),
-					Command: tasks.Command{
-						Text: query,
-						Type: task.Command.Type,
-						URI:  task.Command.URI,
-					},
-				})
-			}
 		}
 
 		// append task to already knwown identifiers

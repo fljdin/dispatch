@@ -159,37 +159,6 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot unmarshal")
 }
-
-func TestConfigLoadTasksFromFile(t *testing.T) {
-	sqlFilename := "queries_*.sql"
-	sqlContent := "SELECT 1; SELECT 2;"
-	tempFile, _ := os.CreateTemp("", sqlFilename)
-
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
-
-	tempFile.Write([]byte(sqlContent))
-
-	config, _ := NewBuilder().
-		WithTask(YamlTask{
-			ID:   1,
-			Type: "psql",
-			File: tempFile.Name(),
-			URI:  "postgresql://localhost",
-		}).
-		Build()
-	tasks, _ := config.Tasks()
-
-	// File task must be replaced by Command tasks loaded from SQL file
-	assert.Equal(t, 1, tasks[0].ID)
-	assert.Equal(t, "SELECT 1;", tasks[0].Command.Text)
-	assert.Equal(t, "postgresql://localhost", tasks[0].Command.URI)
-
-	// Each loaded task must have an unique query ID
-	assert.Equal(t, 0, tasks[0].SubID)
-	assert.Equal(t, 1, tasks[1].SubID)
-}
-
 func TestConfigWithDependencies(t *testing.T) {
 	yamlConfig := `
 tasks:
@@ -249,17 +218,18 @@ tasks:
 	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
 }
 
-func TestConfigWithDynamicTask(t *testing.T) {
+func TestConfigWithGenerator(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
-    exec_output: sh
-    command: echo true
+    generated:
+      from: sh
+      command: echo true
 `
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	tasks, _ := config.Tasks()
 
-	assert.Equal(t, "sh", tasks[0].Command.ExecOutput)
+	assert.Equal(t, "sh", tasks[0].Command.From)
 }
