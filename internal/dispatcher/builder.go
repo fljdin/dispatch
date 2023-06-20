@@ -14,7 +14,7 @@ type DispatcherBuilder struct {
 	err            error
 }
 
-func NewDispatcherBuilder() *DispatcherBuilder {
+func NewBuilder() *DispatcherBuilder {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &DispatcherBuilder{

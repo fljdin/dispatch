@@ -13,7 +13,7 @@ type ConfigBuilder struct {
 	err    error
 }
 
-func NewConfigBuilder() *ConfigBuilder {
+func NewBuilder() *ConfigBuilder {
 	return &ConfigBuilder{}
 }
 

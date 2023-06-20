@@ -101,7 +101,7 @@ func (c Config) GetTasks() ([]tasks.Task, error) {
 
 		// parse queries from file and append new related tasks
 		if task.Command.File != "" {
-			parser, err := parser.NewParserBuilder(task.Command.Type).
+			parser, err := parser.NewBuilder(task.Command.Type).
 				FromFile(task.Command.File).
 				Build()
 

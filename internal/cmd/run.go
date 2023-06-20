@@ -29,7 +29,7 @@ func newConfig() (config.Config, error) {
 		Password: argPgPassword,
 	}
 
-	return config.NewConfigBuilder().
+	return config.NewBuilder().
 		FromYAML(argConfigFilename).
 		WithMaxWorkers(argMaxWorkers).
 		WithLogfile(argLogfile).
@@ -40,7 +40,7 @@ func newConfig() (config.Config, error) {
 func parseSqlFile(filename string) ([]tasks.Task, error) {
 	var finalTasks []tasks.Task
 
-	parser, err := parser.NewParserBuilder("psql").
+	parser, err := parser.NewBuilder("psql").
 		FromFile(filename).
 		Build()
 
@@ -86,7 +86,7 @@ func launch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no task to perform")
 	}
 
-	dispatcher, err := dispatcher.NewDispatcherBuilder().
+	dispatcher, err := dispatcher.NewBuilder().
 		WithWorkerNumber(config.MaxWorkers).
 		WithLogfile(config.Logfile).
 		WithConsole().

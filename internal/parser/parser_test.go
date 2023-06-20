@@ -12,7 +12,7 @@ import (
 func TestParserWithSqlContent(t *testing.T) {
 	sqlContent := "SELECT 1; SELECT 2; SELECT 3;"
 
-	parser, _ := NewParserBuilder("psql").
+	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
 
@@ -30,7 +30,7 @@ func TestParserHandleStrings(t *testing.T) {
 	}
 
 	for i, q := range sqlContent {
-		parser, _ := NewParserBuilder("psql").
+		parser, _ := NewBuilder("psql").
 			WithContent(q).
 			Build()
 
@@ -48,7 +48,7 @@ func TestParserHandleComments(t *testing.T) {
 	}
 
 	for i, q := range sqlContent {
-		parser, _ := NewParserBuilder("psql").
+		parser, _ := NewBuilder("psql").
 			WithContent(q).
 			Build()
 
@@ -66,7 +66,7 @@ func TestParserHandleCommentsAndStringsMix(t *testing.T) {
 	}
 
 	for i, q := range sqlContent {
-		parser, _ := NewParserBuilder("psql").
+		parser, _ := NewBuilder("psql").
 			WithContent(q).
 			Build()
 
@@ -84,7 +84,7 @@ func TestParserHandleTransactionBlock(t *testing.T) {
 	}
 
 	for i, q := range sqlContent {
-		parser, _ := NewParserBuilder("psql").
+		parser, _ := NewBuilder("psql").
 			WithContent(q).
 			Build()
 
@@ -103,7 +103,7 @@ func TestParserFromSqlFile(t *testing.T) {
 
 	tempFile.Write([]byte(sqlContent))
 
-	parser, _ := NewParserBuilder("psql").
+	parser, _ := NewBuilder("psql").
 		FromFile(tempFile.Name()).
 		Build()
 
@@ -116,7 +116,7 @@ func TestParserGCommand(t *testing.T) {
 SELECT 2\g result.txt
 SELECT 3\g (format=unaligned tuples_only)
 `
-	parser, _ := NewParserBuilder("psql").
+	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
 
@@ -134,7 +134,7 @@ SELECT 2, 2, 2 \crosstabview
 SELECT 3, 3, 3 \crosstabview
 `
 
-	parser, _ := NewParserBuilder("psql").
+	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
 
@@ -145,7 +145,7 @@ SELECT 3, 3, 3 \crosstabview
 func TestParserUnsupportedCommand(t *testing.T) {
 	sqlContent := "SELECT 1\\unsupported\nSELECT 1\\\nSELECT 1;"
 
-	parser, _ := NewParserBuilder("psql").
+	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
 

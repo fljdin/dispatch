@@ -12,13 +12,13 @@ import (
 )
 
 func TestConfigWithDefaultMaxWorkers(t *testing.T) {
-	config, _ := NewConfigBuilder().Build()
+	config, _ := NewBuilder().Build()
 
 	assert.Equal(t, 2, config.MaxWorkers)
 }
 
 func TestConfigWithMaxWorkers(t *testing.T) {
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithMaxWorkers(1).
 		Build()
 
@@ -28,7 +28,7 @@ func TestConfigWithMaxWorkers(t *testing.T) {
 func TestConfigWithMaxWorkersOverrided(t *testing.T) {
 	yamlConfig := "workers: 2"
 
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		WithMaxWorkers(1).
 		Build()
@@ -43,7 +43,7 @@ tasks:
   - id: 1
     command: true`
 
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	tasks, _ := config.GetTasks()
@@ -62,7 +62,7 @@ tasks:
     type: psql
     command: SELECT 1
 `
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	tasks, _ := config.GetTasks()
@@ -84,7 +84,7 @@ tasks:
     command: SELECT 1
     connection: db
 `
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
 	tasks, _ := config.GetTasks()
@@ -99,7 +99,7 @@ tasks:
     command: SELECT 1
     connection: db
 `
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	_, err := config.GetTasks()
@@ -122,7 +122,7 @@ tasks:
     connection: db
 `
 
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	tasks, _ := config.GetTasks()
@@ -134,7 +134,7 @@ tasks:
 func TestConfigFromNonExistingFile(t *testing.T) {
 	yamlFilename := "test.yaml"
 
-	_, err := NewConfigBuilder().
+	_, err := NewBuilder().
 		FromYAML(yamlFilename).
 		Build()
 
@@ -152,7 +152,7 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 
 	tempFile.Write([]byte(yamlContent))
 
-	_, err := NewConfigBuilder().
+	_, err := NewBuilder().
 		FromYAML(tempFile.Name()).
 		Build()
 
@@ -170,7 +170,7 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 
 	tempFile.Write([]byte(sqlContent))
 
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithTask(YamlTask{
 			ID:   1,
 			Type: "psql",
@@ -199,7 +199,7 @@ tasks:
     command: true
     depends_on: [1]
 `
-	_, err := NewConfigBuilder().
+	_, err := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 
@@ -215,7 +215,7 @@ tasks:
     command: true
     depends_on: [1, 3]
 `
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
 	_, err := config.GetTasks()
@@ -239,7 +239,7 @@ tasks:
     connection: anotherdb
 `
 	cnx := Connection{Host: "remote", User: "postgres"}
-	config, _ := NewConfigBuilder().
+	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		WithDefaultConnection(cnx).
 		Build()

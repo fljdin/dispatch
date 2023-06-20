@@ -9,7 +9,7 @@ import (
 )
 
 func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
-	_, err := NewDispatcherBuilder().
+	_, err := NewBuilder().
 		WithLogfile("not/exists.out").
 		Build()
 
@@ -18,7 +18,7 @@ func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
 }
 
 func TestDispatcherBuilderWithNegativeWorkerNumber(t *testing.T) {
-	_, err := NewDispatcherBuilder().
+	_, err := NewBuilder().
 		WithWorkerNumber(0).
 		Build()
 

@@ -10,7 +10,7 @@ type ParserBuilder struct {
 	err    error
 }
 
-func NewParserBuilder(pt string) *ParserBuilder {
+func NewBuilder(pt string) *ParserBuilder {
 	var err error
 	if pt != "psql" {
 		err = fmt.Errorf("only psql type is supported")
