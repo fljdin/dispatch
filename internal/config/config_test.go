@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/config"
-	. "github.com/fljdin/dispatch/internal/task"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

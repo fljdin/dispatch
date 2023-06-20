@@ -1,9 +1,9 @@
-package task_test
+package tasks_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/task"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 )
 

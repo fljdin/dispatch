@@ -5,7 +5,7 @@ import (
 	"runtime"
 
 	"github.com/fljdin/dispatch/internal/parser"
-	"github.com/fljdin/dispatch/internal/task"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 var ConfigWorkersDefault int = 2
@@ -22,11 +22,11 @@ type YamlTask struct {
 }
 
 type Config struct {
-	DeclaredTasks     []YamlTask       `yaml:"tasks"`
-	MaxWorkers        int              `yaml:"workers"`
-	Logfile           string           `yaml:"logfile"`
-	Connections       task.Connections `yaml:"connections"`
-	DefaultConnection task.Connection
+	DeclaredTasks     []YamlTask        `yaml:"tasks"`
+	MaxWorkers        int               `yaml:"workers"`
+	Logfile           string            `yaml:"logfile"`
+	Connections       tasks.Connections `yaml:"connections"`
+	DefaultConnection tasks.Connection
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -41,68 +41,68 @@ func (c *Config) ConfigureWorkers() {
 
 func (c *Config) ConfigureConnections() {
 	if _, err := c.Connections.GetURIByName("default"); err != nil {
-		c.Connections = append(c.Connections, task.Connection{
+		c.Connections = append(c.Connections, tasks.Connection{
 			Name: "default",
 			URI:  c.DefaultConnection.CombinedURI(),
 		})
 	}
 }
 
-func (c Config) GetTasks() ([]task.Task, error) {
-	var finalTasks []task.Task
+func (c Config) GetTasks() ([]tasks.Task, error) {
+	var finalTasks []tasks.Task
 	var identifiers []int
 
-	for _, t := range c.DeclaredTasks {
-		t := task.Task{
-			ID:   t.ID,
-			Name: t.Name,
-			Command: task.Command{
-				Text:       t.Command,
-				File:       t.File,
-				Type:       t.Type,
-				URI:        t.URI,
-				Connection: t.Connection,
+	for _, declared := range c.DeclaredTasks {
+		task := tasks.Task{
+			ID:   declared.ID,
+			Name: declared.Name,
+			Command: tasks.Command{
+				Text:       declared.Command,
+				File:       declared.File,
+				Type:       declared.Type,
+				URI:        declared.URI,
+				Connection: declared.Connection,
 			},
-			Depends: t.Depends,
+			Depends: declared.Depends,
 		}
 
-		if err := t.VerifyRequired(); err != nil {
+		if err := task.VerifyRequired(); err != nil {
 			return nil, err
 		}
 
-		if err := t.Command.VerifyType(); err != nil {
+		if err := task.Command.VerifyType(); err != nil {
 			return nil, err
 		}
 
-		if err := t.VerifyDependencies(identifiers); err != nil {
+		if err := task.VerifyDependencies(identifiers); err != nil {
 			return nil, err
 		}
 
 		// auto-complete URI from named connections
-		if t.Command.Connection != "" {
-			uri, err := c.Connections.GetURIByName(t.Command.Connection)
+		if task.Command.Connection != "" {
+			uri, err := c.Connections.GetURIByName(task.Command.Connection)
 
 			if err != nil {
 				return nil, err
 			}
 
-			t.Command.URI = uri
+			task.Command.URI = uri
 		}
 
 		// use default connection if no URI is provided
-		if t.Command.URI == "" {
-			t.Command.URI, _ = c.Connections.GetURIByName("default")
+		if task.Command.URI == "" {
+			task.Command.URI, _ = c.Connections.GetURIByName("default")
 		}
 
 		// append task to final tasks
-		if t.Command.Text != "" {
-			finalTasks = append(finalTasks, t)
+		if task.Command.Text != "" {
+			finalTasks = append(finalTasks, task)
 		}
 
 		// parse queries from file and append new related tasks
-		if t.Command.File != "" {
-			parser, err := parser.NewParserBuilder(t.Command.Type).
-				FromFile(t.Command.File).
+		if task.Command.File != "" {
+			parser, err := parser.NewParserBuilder(task.Command.Type).
+				FromFile(task.Command.File).
 				Build()
 
 			if err != nil {
@@ -110,21 +110,21 @@ func (c Config) GetTasks() ([]task.Task, error) {
 			}
 
 			for queryId, query := range parser.Parse() {
-				finalTasks = append(finalTasks, task.Task{
-					ID:      t.ID,
+				finalTasks = append(finalTasks, tasks.Task{
+					ID:      task.ID,
 					QueryID: queryId,
-					Name:    fmt.Sprintf("Query loaded from %s", t.Command.File),
-					Command: task.Command{
+					Name:    fmt.Sprintf("Query loaded from %s", task.Command.File),
+					Command: tasks.Command{
 						Text: query,
-						Type: t.Command.Type,
-						URI:  t.Command.URI,
+						Type: task.Command.Type,
+						URI:  task.Command.URI,
 					},
 				})
 			}
 		}
 
 		// append task to already knwown identifiers
-		identifiers = append(identifiers, t.ID)
+		identifiers = append(identifiers, task.ID)
 	}
 
 	return finalTasks, nil

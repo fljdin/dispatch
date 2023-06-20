@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fljdin/dispatch/internal/task"
+	"github.com/fljdin/dispatch/internal/tasks"
 	"gopkg.in/yaml.v2"
 )
 
@@ -31,7 +31,7 @@ func (cb *ConfigBuilder) WithTask(task YamlTask) *ConfigBuilder {
 	return cb
 }
 
-func (cb *ConfigBuilder) WithDefaultConnection(cnx task.Connection) *ConfigBuilder {
+func (cb *ConfigBuilder) WithDefaultConnection(cnx tasks.Connection) *ConfigBuilder {
 	cb.config.DefaultConnection = cnx
 	return cb
 }

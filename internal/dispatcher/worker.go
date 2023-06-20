@@ -3,7 +3,7 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/task"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Worker struct {
@@ -22,17 +22,17 @@ func (w *Worker) Start() {
 			return
 		default:
 			task := w.memory.queue.Pop()
-			w.runTask(task)
+			w.run(task)
 		}
 	}
 }
 
-func (w *Worker) runTask(t *task.Task) {
+func (w *Worker) run(t *tasks.Task) {
 	if t == nil {
 		return
 	}
 
-	if t.Status == task.Ready {
+	if t.Status == tasks.Ready {
 		result := t.Command.Run()
 		result.ID = t.ID
 		result.QueryID = t.QueryID
@@ -41,11 +41,11 @@ func (w *Worker) runTask(t *task.Task) {
 		return
 	}
 
-	if t.Status == task.Interrupted {
-		w.memory.results <- task.Result{
+	if t.Status == tasks.Interrupted {
+		w.memory.results <- tasks.Result{
 			ID:      t.ID,
 			QueryID: t.QueryID,
-			Status:  task.Interrupted,
+			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
 		return

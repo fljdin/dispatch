@@ -4,14 +4,14 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/fljdin/dispatch/internal/task"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 func newTemplate(name string) *template.Template {
 	return template.New(name).Funcs(
 		template.FuncMap{
 			"isSucceeded": func(status int) bool {
-				return status == task.Succeeded
+				return status == tasks.Succeeded
 			},
 			"roundToMilliseconds": func(duration time.Duration) time.Duration {
 				return duration.Round(time.Millisecond)
@@ -21,6 +21,6 @@ func newTemplate(name string) *template.Template {
 }
 
 type Logger interface {
-	Parse(result task.Result) (string, error)
-	Render(result task.Result) error
+	Parse(result tasks.Result) (string, error)
+	Render(result tasks.Result) error
 }
