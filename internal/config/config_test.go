@@ -46,7 +46,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, 1, config.MaxWorkers)
 	assert.Equal(t, 1, tasks[0].ID)
@@ -65,7 +65,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, 1, len(config.Connections))
 	assert.Equal(t, "postgresql://?host=remote", tasks[0].Command.URI)
@@ -87,7 +87,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, cnx, tasks[0].Command.URI)
 }
@@ -102,7 +102,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	_, err := config.GetTasks()
+	_, err := config.Tasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connection not found")
@@ -125,7 +125,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	expected := "postgresql://?dbname=db&host=localhost&port=5433"
 	assert.Equal(t, expected, tasks[0].Command.URI)
@@ -178,7 +178,7 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 			URI:  "postgresql://localhost",
 		}).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	// File task must be replaced by Command tasks loaded from SQL file
 	assert.Equal(t, 1, tasks[0].ID)
@@ -218,7 +218,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	_, err := config.GetTasks()
+	_, err := config.Tasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "depends on unknown task")
@@ -243,8 +243,23 @@ tasks:
 		WithYAML(yamlConfig).
 		WithDefaultConnection(cnx).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Command.URI)
 	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
+}
+
+func TestConfigWithDynamicTask(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    exec_output: sh
+    command: echo true
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, _ := config.Tasks()
+
+	assert.Equal(t, "sh", tasks[0].Command.ExecOutput)
 }

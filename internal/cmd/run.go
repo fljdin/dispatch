@@ -69,7 +69,7 @@ func launch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	tasks, err := config.GetTasks()
+	tasks, err := config.Tasks()
 	if err != nil {
 		return err
 	}

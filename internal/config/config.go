@@ -19,6 +19,23 @@ type YamlTask struct {
 	URI        string `yaml:"uri,omitempty"`
 	Connection string `yaml:"connection,omitempty"`
 	Depends    []int  `yaml:"depends_on,omitempty"`
+	ExecOutput string `yaml:"exec_output,omitempty"`
+}
+
+func (t YamlTask) Normalize() tasks.Task {
+	return tasks.Task{
+		ID:   t.ID,
+		Name: t.Name,
+		Command: tasks.Command{
+			Text:       t.Command,
+			File:       t.File,
+			Type:       t.Type,
+			URI:        t.URI,
+			Connection: t.Connection,
+			ExecOutput: t.ExecOutput,
+		},
+		Depends: t.Depends,
+	}
 }
 
 type Config struct {
@@ -48,23 +65,12 @@ func (c *Config) ConfigureConnections() {
 	}
 }
 
-func (c Config) GetTasks() ([]tasks.Task, error) {
+func (c Config) Tasks() ([]tasks.Task, error) {
 	var finalTasks []tasks.Task
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {
-		task := tasks.Task{
-			ID:   declared.ID,
-			Name: declared.Name,
-			Command: tasks.Command{
-				Text:       declared.Command,
-				File:       declared.File,
-				Type:       declared.Type,
-				URI:        declared.URI,
-				Connection: declared.Connection,
-			},
-			Depends: declared.Depends,
-		}
+		task := declared.Normalize()
 
 		if err := task.VerifyRequired(); err != nil {
 			return nil, err
