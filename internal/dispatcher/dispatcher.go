@@ -63,12 +63,12 @@ func (m *Memory) SetStatus(id int, status int) {
 }
 
 func (m *Memory) AddTask(task tasks.Task) {
-	m.queue.Push(&task)
+	m.queue.Add(&task)
 	m.wgTasks.Add(1)
 }
 
 func (m *Memory) ForwardTask(task tasks.Task) {
-	m.queue.Push(&task)
+	m.queue.Add(&task)
 }
 
 func (m *Memory) StartWorker() {

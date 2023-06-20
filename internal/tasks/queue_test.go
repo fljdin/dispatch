@@ -9,7 +9,7 @@ import (
 
 func TestQueuePush(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
@@ -27,7 +27,7 @@ func TestQueuePopEmpty(t *testing.T) {
 
 func TestQueuePop(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
@@ -41,7 +41,7 @@ func TestQueuePop(t *testing.T) {
 
 func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
@@ -54,7 +54,7 @@ func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 
 func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{
@@ -68,13 +68,13 @@ func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 
 func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID: 1,
 		Command: Command{
 			Text: "true",
 		},
 	})
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{
@@ -91,13 +91,13 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 
 func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	queue := NewQueue()
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID: 1,
 		Command: Command{
 			Text: "true",
 		},
 	})
-	queue.Push(&Task{
+	queue.Add(&Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{

@@ -32,12 +32,12 @@ func (q *Queue) Len() int {
 	return q.tasks.Len()
 }
 
-func (q *Queue) Push(task *Task) {
+func (q *Queue) Add(t *Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	q.tasks.PushBack(task)
-	q.status.Set(task.ID, task.Status)
+	q.tasks.PushBack(t)
+	q.status.Set(t.ID, t.Status)
 }
 
 func (q *Queue) Pop() *Task {
@@ -56,8 +56,8 @@ func (q *Queue) Pop() *Task {
 	return task
 }
 
-func (q *Queue) evaluate(task *Task) int {
-	for _, id := range task.Depends {
+func (q *Queue) evaluate(t *Task) int {
+	for _, id := range t.Depends {
 		parentStatus := q.status.Get(id)
 
 		if parentStatus >= Failed {
