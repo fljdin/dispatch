@@ -3,7 +3,7 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Dispatcher struct {
@@ -11,7 +11,7 @@ type Dispatcher struct {
 	context  context.Context
 	workers  int
 	observer *Observer
-	memory   *SharedMemory
+	memory   *Memory
 }
 
 func (d *Dispatcher) Wait() {
@@ -23,12 +23,12 @@ func (d *Dispatcher) Wait() {
 	d.memory.wgWorkers.Wait()
 }
 
-func (d *Dispatcher) AddTask(task models.Task) {
+func (d *Dispatcher) AddTask(task tasks.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d *Dispatcher) GetStatus(ID int) int {
-	return d.memory.GetStatus(ID)
+func (d *Dispatcher) Status(taskId int) int {
+	return d.memory.Status(taskId)
 }
 
 func (d *Dispatcher) launchObserver() {

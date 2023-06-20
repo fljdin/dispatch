@@ -9,7 +9,7 @@ import (
 )
 
 func TestParserWithInvalidParseType(t *testing.T) {
-	_, err := NewParserBuilder("unknown").
+	_, err := NewBuilder("unknown").
 		Build()
 
 	require.NotNil(t, err)

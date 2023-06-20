@@ -1,30 +1,26 @@
 package dispatcher_test
 
 import (
-	"context"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
-	. "github.com/fljdin/dispatch/internal/models"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDispatcherAddTask(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
-		Build()
+	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID:      1,
 		Command: Command{Text: "true"},
 	})
 
-	assert.Equal(t, Waiting, dispatcher.GetStatus(1))
+	assert.Equal(t, Waiting, dispatcher.Status(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
-		WithMemorySize(2).
-		Build()
+	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID:      1,
@@ -37,14 +33,12 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Failed, dispatcher.GetStatus(1))
-	assert.Equal(t, Interrupted, dispatcher.GetStatus(2))
+	assert.Equal(t, Failed, dispatcher.Status(1))
+	assert.Equal(t, Interrupted, dispatcher.Status(2))
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
-		WithMemorySize(2).
-		Build()
+	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID:      1,
@@ -57,14 +51,12 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Succeeded, dispatcher.GetStatus(1))
-	assert.Equal(t, Succeeded, dispatcher.GetStatus(2))
+	assert.Equal(t, Succeeded, dispatcher.Status(1))
+	assert.Equal(t, Succeeded, dispatcher.Status(2))
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
-	dispatcher, _ := NewDispatcherBuilder(context.Background()).
-		WithMemorySize(2).
-		Build()
+	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID:      1,
@@ -78,5 +70,5 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Failed, dispatcher.GetStatus(1))
+	assert.Equal(t, Failed, dispatcher.Status(1))
 }

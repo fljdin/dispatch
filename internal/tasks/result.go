@@ -1,8 +1,8 @@
-package models
+package tasks
 
 import "time"
 
-type TaskResult struct {
+type Result struct {
 	ID        int
 	QueryID   int
 	WorkerID  int

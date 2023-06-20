@@ -5,13 +5,13 @@ import (
 	"time"
 
 	. "github.com/fljdin/dispatch/internal/logger"
-	. "github.com/fljdin/dispatch/internal/models"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestConsoleRender(t *testing.T) {
 	console := Console{}
-	data, _ := console.Parse(TaskResult{
+	data, _ := console.Parse(Result{
 		ID:       1,
 		WorkerID: 1,
 		QueryID:  0,

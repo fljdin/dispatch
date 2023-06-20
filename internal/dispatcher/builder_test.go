@@ -1,7 +1,6 @@
 package dispatcher_test
 
 import (
-	"context"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
@@ -9,17 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDispatcherBuilderWithInvalidMemorySize(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
-		WithMemorySize(0).
-		Build()
-
-	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "need a positive memory size")
-}
-
 func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
+	_, err := NewBuilder().
 		WithLogfile("not/exists.out").
 		Build()
 
@@ -28,7 +18,7 @@ func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
 }
 
 func TestDispatcherBuilderWithNegativeWorkerNumber(t *testing.T) {
-	_, err := NewDispatcherBuilder(context.Background()).
+	_, err := NewBuilder().
 		WithWorkerNumber(0).
 		Build()
 

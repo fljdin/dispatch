@@ -3,12 +3,12 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Worker struct {
 	ID      int
-	memory  *SharedMemory
+	memory  *Memory
 	context context.Context
 }
 
@@ -20,58 +20,33 @@ func (w *Worker) Start() {
 		select {
 		case <-w.context.Done():
 			return
-		case task := <-w.memory.tasks:
-			task, result := w.verifyStatus(task)
-
-			if result.Status == models.Ready {
-				result := task.Command.Run()
-				result.ID = task.ID
-				result.QueryID = task.QueryID
-				result.WorkerID = w.ID
-				w.memory.results <- result
-				continue
+		default:
+			if task, ok := w.memory.queue.Pop(); ok {
+				w.run(task)
 			}
-
-			if result.Status == models.Interrupted {
-				w.memory.results <- result
-				continue
-			}
-
-			w.memory.ForwardTask(task)
 		}
 	}
 }
 
-func (w *Worker) verifyStatus(task models.Task) (models.Task, models.TaskResult) {
-	var depends = []int{}
-	var result models.TaskResult = models.TaskResult{
-		Status: models.Waiting,
+func (w *Worker) run(t tasks.Task) {
+	if t.Status == tasks.Ready {
+		result := t.Command.Run()
+		result.ID = t.ID
+		result.QueryID = t.QueryID
+		result.WorkerID = w.ID
+		w.memory.results <- result
+		return
 	}
 
-	for _, id := range task.Depends {
-		parentStatus := w.memory.GetStatus(id)
-
-		if parentStatus < models.Succeeded {
-			depends = append(depends, id)
-			continue
+	if t.Status == tasks.Interrupted {
+		w.memory.results <- tasks.Result{
+			ID:      t.ID,
+			QueryID: t.QueryID,
+			Status:  tasks.Interrupted,
+			Elapsed: 0,
 		}
-
-		if parentStatus >= models.Failed {
-			return task, models.TaskResult{
-				ID:       task.ID,
-				QueryID:  task.QueryID,
-				WorkerID: w.ID,
-				Status:   models.Interrupted,
-				Elapsed:  0,
-			}
-		}
+		return
 	}
 
-	task.Depends = depends
-
-	if len(depends) == 0 {
-		result.Status = models.Ready
-	}
-
-	return task, result
+	w.memory.ForwardTask(t)
 }

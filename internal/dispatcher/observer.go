@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/fljdin/dispatch/internal/logger"
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Observer struct {
-	memory  *SharedMemory
+	memory  *Memory
 	context context.Context
 	loggers []logger.Logger
 }
@@ -50,7 +50,7 @@ func (o *Observer) WithTrace(filename string) error {
 	return nil
 }
 
-func (o *Observer) Log(result models.TaskResult) {
+func (o *Observer) Log(result tasks.Result) {
 	for _, logger := range o.loggers {
 		logger.Render(result)
 	}

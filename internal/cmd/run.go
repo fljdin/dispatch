@@ -1,13 +1,12 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
-	"github.com/fljdin/dispatch/internal/models"
 	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/spf13/cobra"
 )
 
@@ -17,12 +16,12 @@ var runCmd = &cobra.Command{
 	RunE:  launch,
 }
 
-var defaultConnection models.Connection
+var defaultConnection tasks.Connection
 
 func newConfig() (config.Config, error) {
 	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
 
-	defaultConnection = models.Connection{
+	defaultConnection = tasks.Connection{
 		Host:     argPgHost,
 		Port:     argPgPort,
 		Dbname:   argPgDbname,
@@ -30,7 +29,7 @@ func newConfig() (config.Config, error) {
 		Password: argPgPassword,
 	}
 
-	return config.NewConfigBuilder().
+	return config.NewBuilder().
 		FromYAML(argConfigFilename).
 		WithMaxWorkers(argMaxWorkers).
 		WithLogfile(argLogfile).
@@ -38,10 +37,10 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func parseSqlFile(filename string) ([]models.Task, error) {
-	var finalTasks []models.Task
+func parseSqlFile(filename string) ([]tasks.Task, error) {
+	var finalTasks []tasks.Task
 
-	parser, err := parser.NewParserBuilder("psql").
+	parser, err := parser.NewBuilder("psql").
 		FromFile(filename).
 		Build()
 
@@ -50,10 +49,10 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 	}
 
 	for queryId, query := range parser.Parse() {
-		finalTasks = append(finalTasks, models.Task{
+		finalTasks = append(finalTasks, tasks.Task{
 			QueryID: queryId,
 			Name:    fmt.Sprintf("Query loaded from %s", filename),
-			Command: models.Command{
+			Command: tasks.Command{
 				Text: query,
 				Type: "psql",
 				URI:  defaultConnection.CombinedURI(),
@@ -87,9 +86,8 @@ func launch(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no task to perform")
 	}
 
-	dispatcher, err := dispatcher.NewDispatcherBuilder(context.Background()).
+	dispatcher, err := dispatcher.NewBuilder().
 		WithWorkerNumber(config.MaxWorkers).
-		WithMemorySize(len(tasks)).
 		WithLogfile(config.Logfile).
 		WithConsole().
 		Build()

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/tasks"
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,7 +13,7 @@ type ConfigBuilder struct {
 	err    error
 }
 
-func NewConfigBuilder() *ConfigBuilder {
+func NewBuilder() *ConfigBuilder {
 	return &ConfigBuilder{}
 }
 
@@ -31,7 +31,7 @@ func (cb *ConfigBuilder) WithTask(task YamlTask) *ConfigBuilder {
 	return cb
 }
 
-func (cb *ConfigBuilder) WithDefaultConnection(cnx models.Connection) *ConfigBuilder {
+func (cb *ConfigBuilder) WithDefaultConnection(cnx tasks.Connection) *ConfigBuilder {
 	cb.config.DefaultConnection = cnx
 	return cb
 }

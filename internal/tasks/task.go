@@ -1,4 +1,4 @@
-package models
+package tasks
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ type Task struct {
 	Command Command
 	Depends []int
 	QueryID int
+	Status  int
 }
 
 func (t Task) VerifyRequired() error {
