@@ -37,6 +37,10 @@ func NewBuilder(pt string) *ParserBuilder {
 }
 
 func (pb *ParserBuilder) WithContent(content string) *ParserBuilder {
+	if pb.err != nil {
+		return pb
+	}
+
 	pb.parser.SetContent(content)
 	return pb
 }

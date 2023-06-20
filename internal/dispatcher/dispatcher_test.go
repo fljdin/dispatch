@@ -72,3 +72,18 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }
+
+func TestDispatcherDynamicTasks(t *testing.T) {
+	dispatcher, _ := NewBuilder().Build()
+
+	dispatcher.AddTask(Task{
+		ID: 1,
+		Command: Command{
+			Text:       `echo true\nfalse`,
+			ExecOutput: "sh",
+		},
+	})
+	dispatcher.Wait()
+
+	assert.Equal(t, Failed, dispatcher.Status(1))
+}

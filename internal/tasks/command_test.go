@@ -45,6 +45,17 @@ func TestCommandWithError(t *testing.T) {
 	assert.Equal(t, Failed, result.Status)
 }
 
+func TestCommandWithInvalidExecOutput(t *testing.T) {
+	cmd := Command{
+		Text:       "true",
+		ExecOutput: "unknown",
+	}
+	result, _ := cmd.GenerateCommands()
+
+	assert.Equal(t, Failed, result.Status)
+	assert.Contains(t, result.Error, "is not supported")
+}
+
 func TestCommandExecOutput(t *testing.T) {
 	cmd := Command{
 		Text:       `echo -n "true\nfalse"`,

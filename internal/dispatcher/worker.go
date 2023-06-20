@@ -29,6 +29,21 @@ func (w *Worker) Start() {
 }
 
 func (w *Worker) run(t tasks.Task) {
+
+	if t.Status == tasks.Ready && t.Command.ExecOutput != "" {
+		result, commands := t.Command.GenerateCommands()
+		w.memory.results <- result
+
+		for id, command := range commands {
+			w.memory.AddTask(tasks.Task{
+				ID:      t.ID,
+				QueryID: id,
+				Command: command,
+			})
+		}
+		return
+	}
+
 	if t.Status == tasks.Ready {
 		result := t.Command.Run()
 		result.ID = t.ID

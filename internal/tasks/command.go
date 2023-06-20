@@ -93,6 +93,9 @@ func (c Command) GenerateCommands() (Result, []Command) {
 		Build()
 
 	if err != nil {
+		result.Status = Failed
+		result.Error = err.Error()
+
 		return result, nil
 	}
 
