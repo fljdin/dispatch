@@ -11,7 +11,7 @@ type TaskQueue struct {
 	mut    sync.Mutex
 }
 
-func NewTaskQueue() TaskQueue {
+func NewQueue() TaskQueue {
 	return TaskQueue{
 		tasks: list.New(),
 	}

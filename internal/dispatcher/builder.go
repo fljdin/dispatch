@@ -48,7 +48,7 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 	}
 
 	db.dispatcher.memory = &Memory{
-		queue:   task.NewTaskQueue(),
+		queue:   task.NewQueue(),
 		results: make(chan task.TaskResult, 10),
 	}
 
