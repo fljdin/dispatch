@@ -60,12 +60,12 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 
 	dispatcher.AddTask(Task{
 		ID:      1,
-		QueryID: 0,
+		SubID:   0,
 		Command: Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      1,
-		QueryID: 1,
+		SubID:   1,
 		Command: Command{Text: "true"},
 	})
 	dispatcher.Wait()
@@ -73,7 +73,7 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }
 
-func TestDispatcherDynamicTasks(t *testing.T) {
+func TestDispatcherTaskWithFailedSubTask(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{

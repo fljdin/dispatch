@@ -186,8 +186,8 @@ func TestConfigLoadTasksFromFile(t *testing.T) {
 	assert.Equal(t, "postgresql://localhost", tasks[0].Command.URI)
 
 	// Each loaded task must have an unique query ID
-	assert.Equal(t, 0, tasks[0].QueryID)
-	assert.Equal(t, 1, tasks[1].QueryID)
+	assert.Equal(t, 0, tasks[0].SubID)
+	assert.Equal(t, 1, tasks[1].SubID)
 }
 
 func TestConfigWithDependencies(t *testing.T) {

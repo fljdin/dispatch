@@ -117,9 +117,9 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 
 			for queryId, query := range parser.Parse() {
 				finalTasks = append(finalTasks, tasks.Task{
-					ID:      task.ID,
-					QueryID: queryId,
-					Name:    fmt.Sprintf("Query loaded from %s", task.Command.File),
+					ID:    task.ID,
+					SubID: queryId,
+					Name:  fmt.Sprintf("Query loaded from %s", task.Command.File),
 					Command: tasks.Command{
 						Text: query,
 						Type: task.Command.Type,

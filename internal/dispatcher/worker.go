@@ -44,7 +44,7 @@ func (w *Worker) run(t tasks.Task) {
 		for id, command := range commands {
 			w.memory.AddTask(tasks.Task{
 				ID:      t.ID,
-				QueryID: id,
+				SubID:   id,
 				Command: command,
 			})
 		}
@@ -54,7 +54,7 @@ func (w *Worker) run(t tasks.Task) {
 	if t.Status == tasks.Ready {
 		result := t.Command.Run()
 		result.ID = t.ID
-		result.QueryID = t.QueryID
+		result.QueryID = t.SubID
 		result.WorkerID = w.ID
 		w.memory.results <- result
 		return
@@ -63,7 +63,7 @@ func (w *Worker) run(t tasks.Task) {
 	if t.Status == tasks.Interrupted {
 		w.memory.results <- tasks.Result{
 			ID:      t.ID,
-			QueryID: t.QueryID,
+			QueryID: t.SubID,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}

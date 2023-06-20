@@ -8,10 +8,10 @@ import (
 
 type Task struct {
 	ID      int
+	SubID   int
 	Name    string
 	Command Command
 	Depends []int
-	QueryID int
 	Status  int
 }
 

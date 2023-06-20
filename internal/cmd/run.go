@@ -50,8 +50,8 @@ func parseSqlFile(filename string) ([]tasks.Task, error) {
 
 	for queryId, query := range parser.Parse() {
 		finalTasks = append(finalTasks, tasks.Task{
-			QueryID: queryId,
-			Name:    fmt.Sprintf("Query loaded from %s", filename),
+			SubID: queryId,
+			Name:  fmt.Sprintf("Query loaded from %s", filename),
 			Command: tasks.Command{
 				Text: query,
 				Type: "psql",
