@@ -9,7 +9,7 @@ import (
 func TestShParserWithContent(t *testing.T) {
 	shContent := `true\nfalse`
 
-	parser, _ := NewParserBuilder("sh").
+	parser, _ := NewBuilder("sh").
 		WithContent(shContent).
 		Build()
 

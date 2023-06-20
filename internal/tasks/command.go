@@ -80,7 +80,7 @@ func (c Command) Run() Result {
 	return result
 }
 
-func (c Command) GenerateCommands() (TaskResult, []Command) {
+func (c Command) GenerateCommands() (Result, []Command) {
 	result := c.Run()
 	commands := []Command{}
 
@@ -88,7 +88,7 @@ func (c Command) GenerateCommands() (TaskResult, []Command) {
 		return result, nil
 	}
 
-	parser, err := parser.NewParserBuilder(c.ExecOutput).
+	parser, err := parser.NewBuilder(c.ExecOutput).
 		WithContent(result.Output).
 		Build()
 
