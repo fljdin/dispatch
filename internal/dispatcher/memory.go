@@ -13,12 +13,12 @@ type Memory struct {
 	results   chan tasks.Result
 }
 
-func (m *Memory) GetStatus(id int) int {
-	return m.queue.Status(id)
+func (m *Memory) Status(taskId int) int {
+	return m.queue.Status(taskId)
 }
 
-func (m *Memory) SetStatus(id int, status int) {
-	m.queue.SetStatus(id, status)
+func (m *Memory) SetStatus(taskId int, status int) {
+	m.queue.SetStatus(taskId, status)
 }
 
 func (m *Memory) AddTask(task tasks.Task) {

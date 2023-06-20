@@ -18,12 +18,12 @@ func NewQueue() Queue {
 	}
 }
 
-func (q *Queue) Status(id int) int {
-	return q.status.Get(id)
+func (q *Queue) Status(taskId int) int {
+	return q.status.Get(taskId)
 }
 
-func (q *Queue) SetStatus(id int, status int) {
-	q.status.Set(id, status)
+func (q *Queue) SetStatus(taskId int, status int) {
+	q.status.Set(taskId, status)
 }
 
 func (q *Queue) Len() int {

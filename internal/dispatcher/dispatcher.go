@@ -27,8 +27,8 @@ func (d *Dispatcher) AddTask(task tasks.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d *Dispatcher) GetStatus(id int) int {
-	return d.memory.GetStatus(id)
+func (d *Dispatcher) Status(taskId int) int {
+	return d.memory.Status(taskId)
 }
 
 func (d *Dispatcher) launchObserver() {
