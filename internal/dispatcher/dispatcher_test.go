@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
-	"github.com/fljdin/dispatch/internal/tasks"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
 )
@@ -102,7 +101,7 @@ func TestDispatcherGenerateTaskFromFile(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID: 1,
-		Command: tasks.Command{
+		Command: Command{
 			File: tempFile.Name(),
 			From: "sh",
 		},

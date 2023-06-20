@@ -4,7 +4,7 @@ import "time"
 
 type Result struct {
 	ID        int
-	SubId     int
+	SubID     int
 	WorkerID  int
 	StartTime time.Time
 	EndTime   time.Time

@@ -43,7 +43,7 @@ func (w *Worker) handle(t tasks.Task) {
 	case tasks.Interrupted:
 		w.memory.results <- tasks.Result{
 			ID:      t.ID,
-			SubId:   t.SubID,
+			SubID:   t.SubID,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
@@ -57,7 +57,7 @@ func (w *Worker) run(t tasks.Task) {
 	if t.Command.From != "" {
 		result, commands := t.Command.Generate()
 		result.ID = t.ID
-		result.SubId = t.SubID
+		result.SubID = t.SubID
 		result.WorkerID = w.ID
 
 		w.memory.results <- result
@@ -74,7 +74,7 @@ func (w *Worker) run(t tasks.Task) {
 
 	result := t.Command.Run()
 	result.ID = t.ID
-	result.SubId = t.SubID
+	result.SubID = t.SubID
 	result.WorkerID = w.ID
 
 	w.memory.results <- result

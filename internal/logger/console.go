@@ -7,7 +7,7 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (query #{{.QueryID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}})
+const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (query #{{.SubID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}})
 `
 
 type Console struct{}
