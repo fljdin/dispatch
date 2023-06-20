@@ -21,17 +21,14 @@ func (w *Worker) Start() {
 		case <-w.context.Done():
 			return
 		default:
-			task := w.memory.queue.Pop()
-			w.run(task)
+			if task, ok := w.memory.queue.Pop(); ok {
+				w.run(task)
+			}
 		}
 	}
 }
 
-func (w *Worker) run(t *tasks.Task) {
-	if t == nil {
-		return
-	}
-
+func (w *Worker) run(t tasks.Task) {
 	if t.Status == tasks.Ready {
 		result := t.Command.Run()
 		result.ID = t.ID
@@ -51,5 +48,5 @@ func (w *Worker) run(t *tasks.Task) {
 		return
 	}
 
-	w.memory.ForwardTask(*t)
+	w.memory.ForwardTask(t)
 }

@@ -13,11 +13,11 @@ const (
 )
 
 type StatusMap struct {
-	sm sync.Map
+	m sync.Map
 }
 
-func (dm *StatusMap) Get(id int) int {
-	status, exists := dm.sm.Load(id)
+func (sm *StatusMap) Get(id int) int {
+	status, exists := sm.m.Load(id)
 
 	if !exists {
 		return Waiting
@@ -26,9 +26,9 @@ func (dm *StatusMap) Get(id int) int {
 	return status.(int)
 }
 
-func (dm *StatusMap) Set(id int, newStatus int) {
+func (sm *StatusMap) Set(id int, newStatus int) {
 	var status int
-	currentStatus := dm.Get(id)
+	currentStatus := sm.Get(id)
 
 	if currentStatus > newStatus {
 		status = currentStatus
@@ -36,5 +36,5 @@ func (dm *StatusMap) Set(id int, newStatus int) {
 		status = newStatus
 	}
 
-	dm.sm.Store(id, status)
+	sm.m.Store(id, status)
 }

@@ -6,9 +6,10 @@ import (
 )
 
 type Queue struct {
-	tasks  *list.List
 	status StatusMap
-	mut    sync.Mutex
+
+	mut   sync.Mutex
+	tasks *list.List
 }
 
 func NewQueue() Queue {
@@ -17,7 +18,7 @@ func NewQueue() Queue {
 	}
 }
 
-func (q *Queue) GetStatus(id int) int {
+func (q *Queue) Status(id int) int {
 	return q.status.Get(id)
 }
 
@@ -32,7 +33,7 @@ func (q *Queue) Len() int {
 	return q.tasks.Len()
 }
 
-func (q *Queue) Add(t *Task) {
+func (q *Queue) Add(t Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -40,23 +41,23 @@ func (q *Queue) Add(t *Task) {
 	q.status.Set(t.ID, t.Status)
 }
 
-func (q *Queue) Pop() *Task {
+func (q *Queue) Pop() (Task, bool) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
 	element := q.tasks.Front()
 	if element == nil {
-		return nil
+		return Task{}, false
 	}
 
-	task := element.Value.(*Task)
+	task := element.Value.(Task)
 	q.tasks.Remove(element)
 
 	task.Status = q.evaluate(task)
-	return task
+	return task, true
 }
 
-func (q *Queue) evaluate(t *Task) int {
+func (q *Queue) evaluate(t Task) int {
 	for _, id := range t.Depends {
 		parentStatus := q.status.Get(id)
 

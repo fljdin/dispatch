@@ -14,7 +14,7 @@ type Memory struct {
 }
 
 func (m *Memory) GetStatus(id int) int {
-	return m.queue.GetStatus(id)
+	return m.queue.Status(id)
 }
 
 func (m *Memory) SetStatus(id int, status int) {
@@ -22,12 +22,12 @@ func (m *Memory) SetStatus(id int, status int) {
 }
 
 func (m *Memory) AddTask(task tasks.Task) {
-	m.queue.Add(&task)
+	m.queue.Add(task)
 	m.wgTasks.Add(1)
 }
 
 func (m *Memory) ForwardTask(task tasks.Task) {
-	m.queue.Add(&task)
+	m.queue.Add(task)
 }
 
 func (m *Memory) StartWorker() {

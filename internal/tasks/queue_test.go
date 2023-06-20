@@ -9,7 +9,7 @@ import (
 
 func TestQueuePush(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
@@ -21,40 +21,40 @@ func TestQueuePush(t *testing.T) {
 
 func TestQueuePopEmpty(t *testing.T) {
 	queue := NewQueue()
-	task := queue.Pop()
-	assert.Nil(t, task)
+	_, ok := queue.Pop()
+	assert.Equal(t, false, ok)
 }
 
 func TestQueuePop(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
 		},
 	})
 
-	task := queue.Pop()
+	task, _ := queue.Pop()
 	assert.Equal(t, 1, task.ID)
 	assert.Equal(t, 0, queue.Len())
 }
 
 func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID: 1,
 		Command: Command{
 			Text: "echo test",
 		},
 	})
 
-	task := queue.Pop()
+	task, _ := queue.Pop()
 	assert.Equal(t, Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{
@@ -62,19 +62,19 @@ func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 		},
 	})
 
-	task := queue.Pop()
+	task, _ := queue.Pop()
 	assert.Equal(t, Waiting, task.Status)
 }
 
 func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID: 1,
 		Command: Command{
 			Text: "true",
 		},
 	})
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{
@@ -82,22 +82,22 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 		},
 	})
 
-	_ = queue.Pop()
+	_, _ = queue.Pop()
 	queue.SetStatus(1, Succeeded)
 
-	task := queue.Pop()
+	task, _ := queue.Pop()
 	assert.Equal(t, Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	queue := NewQueue()
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID: 1,
 		Command: Command{
 			Text: "true",
 		},
 	})
-	queue.Add(&Task{
+	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
 		Command: Command{
@@ -105,9 +105,9 @@ func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 		},
 	})
 
-	_ = queue.Pop()
+	_, _ = queue.Pop()
 	queue.SetStatus(1, Interrupted)
 
-	task := queue.Pop()
+	task, _ := queue.Pop()
 	assert.Equal(t, Interrupted, task.Status)
 }
