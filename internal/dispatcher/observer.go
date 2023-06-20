@@ -13,6 +13,13 @@ type Observer struct {
 	loggers []logger.Logger
 }
 
+func NewObserver(memory *Memory, ctx context.Context) *Observer {
+	return &Observer{
+		memory:  memory,
+		context: ctx,
+	}
+}
+
 func (o *Observer) Start() {
 	o.memory.StartWorker()
 	defer o.memory.EndWorker()

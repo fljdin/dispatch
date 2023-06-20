@@ -52,10 +52,10 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		results: make(chan tasks.Result, 10),
 	}
 
-	db.dispatcher.observer = &Observer{
-		memory:  db.dispatcher.memory,
-		context: db.dispatcher.context,
-	}
+	db.dispatcher.observer = NewObserver(
+		db.dispatcher.memory,
+		db.dispatcher.context,
+	)
 
 	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
 		db.err = err

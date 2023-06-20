@@ -79,7 +79,7 @@ func TestDispatcherDynamicTasks(t *testing.T) {
 	dispatcher.AddTask(Task{
 		ID: 1,
 		Command: Command{
-			Text:       `echo true\nfalse`,
+			Text:       `echo -n "true\nfalse"`,
 			ExecOutput: "sh",
 		},
 	})

@@ -12,6 +12,13 @@ type Worker struct {
 	context context.Context
 }
 
+func NewWorker(memory *Memory, ctx context.Context) *Worker {
+	return &Worker{
+		memory:  memory,
+		context: ctx,
+	}
+}
+
 func (w *Worker) Start() {
 	w.memory.StartWorker()
 	defer w.memory.EndWorker()
