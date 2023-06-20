@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"log"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (query #{{.QueryID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}})
@@ -12,7 +12,7 @@ const ConsoleTemplate string = `Worker {{.WorkerID}} completed Task {{.ID}} (que
 
 type Console struct{}
 
-func (c *Console) Parse(result models.TaskResult) (string, error) {
+func (c *Console) Parse(result task.TaskResult) (string, error) {
 	tmpl := newTemplate("console")
 	tmpl, err := tmpl.Parse(ConsoleTemplate)
 
@@ -26,7 +26,7 @@ func (c *Console) Parse(result models.TaskResult) (string, error) {
 	return buf.String(), nil
 }
 
-func (c *Console) Render(result models.TaskResult) error {
+func (c *Console) Render(result task.TaskResult) error {
 	data, err := c.Parse(result)
 
 	if err != nil {

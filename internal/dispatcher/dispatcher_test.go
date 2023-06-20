@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
-	. "github.com/fljdin/dispatch/internal/models"
+	. "github.com/fljdin/dispatch/internal/task"
 	"github.com/stretchr/testify/assert"
 )
 

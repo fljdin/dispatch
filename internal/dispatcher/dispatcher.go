@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 type Dispatcher struct {
@@ -24,7 +24,7 @@ func (d *Dispatcher) Wait() {
 	d.memory.wgWorkers.Wait()
 }
 
-func (d *Dispatcher) AddTask(task models.Task) {
+func (d *Dispatcher) AddTask(task task.Task) {
 	d.memory.AddTask(task)
 }
 
@@ -50,8 +50,8 @@ func (d *Dispatcher) launchWorkers() {
 type Memory struct {
 	wgTasks   sync.WaitGroup
 	wgWorkers sync.WaitGroup
-	queue     models.TaskQueue
-	results   chan models.TaskResult
+	queue     task.TaskQueue
+	results   chan task.TaskResult
 }
 
 func (m *Memory) GetStatus(id int) int {
@@ -62,12 +62,12 @@ func (m *Memory) SetStatus(id int, status int) {
 	m.queue.SetStatus(id, status)
 }
 
-func (m *Memory) AddTask(task models.Task) {
+func (m *Memory) AddTask(task task.Task) {
 	m.queue.Push(&task)
 	m.wgTasks.Add(1)
 }
 
-func (m *Memory) ForwardTask(task models.Task) {
+func (m *Memory) ForwardTask(task task.Task) {
 	m.queue.Push(&task)
 }
 

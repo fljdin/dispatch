@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 type DispatcherBuilder struct {
@@ -48,8 +48,8 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 	}
 
 	db.dispatcher.memory = &Memory{
-		queue:   models.NewTaskQueue(),
-		results: make(chan models.TaskResult, 10),
+		queue:   task.NewTaskQueue(),
+		results: make(chan task.TaskResult, 10),
 	}
 
 	db.dispatcher.observer = &Observer{

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/fljdin/dispatch/internal/logger"
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 type Observer struct {
@@ -50,7 +50,7 @@ func (o *Observer) WithTrace(filename string) error {
 	return nil
 }
 
-func (o *Observer) Log(result models.TaskResult) {
+func (o *Observer) Log(result task.TaskResult) {
 	for _, logger := range o.loggers {
 		logger.Render(result)
 	}

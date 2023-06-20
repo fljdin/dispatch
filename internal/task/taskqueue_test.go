@@ -1,8 +1,9 @@
-package models
+package task_test
 
 import (
 	"testing"
 
+	. "github.com/fljdin/dispatch/internal/task"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
-	"github.com/fljdin/dispatch/internal/models"
 	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/dispatch/internal/task"
 	"github.com/spf13/cobra"
 )
 
@@ -16,12 +16,12 @@ var runCmd = &cobra.Command{
 	RunE:  launch,
 }
 
-var defaultConnection models.Connection
+var defaultConnection task.Connection
 
 func newConfig() (config.Config, error) {
 	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
 
-	defaultConnection = models.Connection{
+	defaultConnection = task.Connection{
 		Host:     argPgHost,
 		Port:     argPgPort,
 		Dbname:   argPgDbname,
@@ -37,8 +37,8 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func parseSqlFile(filename string) ([]models.Task, error) {
-	var finalTasks []models.Task
+func parseSqlFile(filename string) ([]task.Task, error) {
+	var finalTasks []task.Task
 
 	parser, err := parser.NewParserBuilder("psql").
 		FromFile(filename).
@@ -49,10 +49,10 @@ func parseSqlFile(filename string) ([]models.Task, error) {
 	}
 
 	for queryId, query := range parser.Parse() {
-		finalTasks = append(finalTasks, models.Task{
+		finalTasks = append(finalTasks, task.Task{
 			QueryID: queryId,
 			Name:    fmt.Sprintf("Query loaded from %s", filename),
-			Command: models.Command{
+			Command: task.Command{
 				Text: query,
 				Type: "psql",
 				URI:  defaultConnection.CombinedURI(),

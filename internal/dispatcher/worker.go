@@ -3,7 +3,7 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/models"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 type Worker struct {
@@ -27,29 +27,29 @@ func (w *Worker) Start() {
 	}
 }
 
-func (w *Worker) runTask(task *models.Task) {
-	if task == nil {
+func (w *Worker) runTask(t *task.Task) {
+	if t == nil {
 		return
 	}
 
-	if task.Status == models.Ready {
-		result := task.Command.Run()
-		result.ID = task.ID
-		result.QueryID = task.QueryID
+	if t.Status == task.Ready {
+		result := t.Command.Run()
+		result.ID = t.ID
+		result.QueryID = t.QueryID
 		result.WorkerID = w.ID
 		w.memory.results <- result
 		return
 	}
 
-	if task.Status == models.Interrupted {
-		w.memory.results <- models.TaskResult{
-			ID:      task.ID,
-			QueryID: task.QueryID,
-			Status:  models.Interrupted,
+	if t.Status == task.Interrupted {
+		w.memory.results <- task.TaskResult{
+			ID:      t.ID,
+			QueryID: t.QueryID,
+			Status:  task.Interrupted,
 			Elapsed: 0,
 		}
 		return
 	}
 
-	w.memory.ForwardTask(*task)
+	w.memory.ForwardTask(*t)
 }

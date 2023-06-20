@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/fljdin/dispatch/internal/logger"
-	. "github.com/fljdin/dispatch/internal/models"
+	. "github.com/fljdin/dispatch/internal/task"
 	"github.com/stretchr/testify/assert"
 )
 

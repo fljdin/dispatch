@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/fljdin/dispatch/internal/models"
 	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/dispatch/internal/task"
 )
 
 var ConfigWorkersDefault int = 2
@@ -22,11 +22,11 @@ type YamlTask struct {
 }
 
 type Config struct {
-	DeclaredTasks     []YamlTask         `yaml:"tasks"`
-	MaxWorkers        int                `yaml:"workers"`
-	Logfile           string             `yaml:"logfile"`
-	Connections       models.Connections `yaml:"connections"`
-	DefaultConnection models.Connection
+	DeclaredTasks     []YamlTask       `yaml:"tasks"`
+	MaxWorkers        int              `yaml:"workers"`
+	Logfile           string           `yaml:"logfile"`
+	Connections       task.Connections `yaml:"connections"`
+	DefaultConnection task.Connection
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -41,22 +41,22 @@ func (c *Config) ConfigureWorkers() {
 
 func (c *Config) ConfigureConnections() {
 	if _, err := c.Connections.GetURIByName("default"); err != nil {
-		c.Connections = append(c.Connections, models.Connection{
+		c.Connections = append(c.Connections, task.Connection{
 			Name: "default",
 			URI:  c.DefaultConnection.CombinedURI(),
 		})
 	}
 }
 
-func (c Config) GetTasks() ([]models.Task, error) {
-	var finalTasks []models.Task
+func (c Config) GetTasks() ([]task.Task, error) {
+	var finalTasks []task.Task
 	var identifiers []int
 
 	for _, t := range c.DeclaredTasks {
-		t := models.Task{
+		t := task.Task{
 			ID:   t.ID,
 			Name: t.Name,
-			Command: models.Command{
+			Command: task.Command{
 				Text:       t.Command,
 				File:       t.File,
 				Type:       t.Type,
@@ -110,11 +110,11 @@ func (c Config) GetTasks() ([]models.Task, error) {
 			}
 
 			for queryId, query := range parser.Parse() {
-				finalTasks = append(finalTasks, models.Task{
+				finalTasks = append(finalTasks, task.Task{
 					ID:      t.ID,
 					QueryID: queryId,
 					Name:    fmt.Sprintf("Query loaded from %s", t.Command.File),
-					Command: models.Command{
+					Command: task.Command{
 						Text: query,
 						Type: t.Command.Type,
 						URI:  t.Command.URI,
