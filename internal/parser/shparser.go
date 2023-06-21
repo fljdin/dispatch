@@ -7,7 +7,7 @@ type ShParser struct {
 }
 
 func (p *ShParser) Parse() []string {
-	lines := strings.Split(p.content, `\n`)
+	lines := strings.Split(p.content, "\n")
 	commands := make([]string, 0)
 
 	for _, line := range lines {

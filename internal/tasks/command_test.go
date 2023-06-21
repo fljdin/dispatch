@@ -69,7 +69,7 @@ func TestCommandWithFailedGenerator(t *testing.T) {
 
 func TestCommandGeneratorFromText(t *testing.T) {
 	cmd := Command{
-		Text: `echo -n "true\nfalse"`,
+		Text: `echo true; echo false`,
 		From: "sh",
 	}
 	result, commands := cmd.Generate()
