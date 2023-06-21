@@ -145,7 +145,7 @@ func (c Command) generateFromOutput() (Result, []string) {
 		return result, nil
 	}
 
-	parser, err := parser.NewBuilder(c.From).
+	parser, err := parser.NewBuilder(c.Type).
 		WithContent(result.Output).
 		Build()
 

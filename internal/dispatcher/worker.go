@@ -60,8 +60,6 @@ func (w *Worker) run(t tasks.Task) {
 		result.SubID = t.SubID
 		result.WorkerID = w.ID
 
-		w.memory.results <- result
-
 		for id, command := range commands {
 			w.memory.AddTask(tasks.Task{
 				ID:      t.ID,
@@ -69,6 +67,8 @@ func (w *Worker) run(t tasks.Task) {
 				Command: command,
 			})
 		}
+
+		w.memory.results <- result
 		return
 	}
 
