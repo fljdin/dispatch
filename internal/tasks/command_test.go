@@ -1,6 +1,7 @@
 package tasks_test
 
 import (
+	"os"
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks"
@@ -47,7 +48,7 @@ func TestCommandWithError(t *testing.T) {
 
 func TestCommandWithInvalidGeneratorType(t *testing.T) {
 	cmd := Command{
-		Text: "true",
+		Text: "unknown",
 		From: "unknown",
 	}
 	result, _ := cmd.Generate()
@@ -56,14 +57,44 @@ func TestCommandWithInvalidGeneratorType(t *testing.T) {
 	assert.Contains(t, result.Error, "is not supported")
 }
 
-func TestCommandGenerator(t *testing.T) {
+func TestCommandWithFailedGenerator(t *testing.T) {
+	cmd := Command{
+		Text: `echo true ; false`,
+		From: "sh",
+	}
+	result, _ := cmd.Generate()
+
+	assert.Equal(t, Failed, result.Status)
+}
+
+func TestCommandGeneratorFromText(t *testing.T) {
 	cmd := Command{
 		Text: `echo -n "true\nfalse"`,
 		From: "sh",
 	}
-	result, tasks := cmd.Generate()
+	result, commands := cmd.Generate()
 
 	require.Equal(t, Succeeded, result.Status)
-	assert.Equal(t, Command{Text: "true", Type: "sh"}, tasks[0])
-	assert.Equal(t, Command{Text: "false", Type: "sh"}, tasks[1])
+	assert.Equal(t, Command{Text: "true", Type: "sh"}, commands[0])
+	assert.Equal(t, Command{Text: "false", Type: "sh"}, commands[1])
+}
+
+func TestCommandGeneratorFromFile(t *testing.T) {
+	sqlFilename := "queries_*.sql"
+	sqlContent := "SELECT 1;SELECT 2;"
+	tempFile, _ := os.CreateTemp("", sqlFilename)
+	tempFile.Write([]byte(sqlContent))
+
+	defer tempFile.Close()
+	defer os.Remove(tempFile.Name())
+
+	cmd := Command{
+		File: tempFile.Name(),
+		From: "psql",
+	}
+	result, commands := cmd.Generate()
+
+	require.Equal(t, Succeeded, result.Status)
+	assert.Equal(t, Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
+	assert.Equal(t, Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
 }
