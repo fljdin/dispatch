@@ -31,6 +31,16 @@ func TestCommandVerifyRequired(t *testing.T) {
 	assert.Equal(t, "unknown is not supported", err.Error())
 }
 
+func TestCommandVerifyFile(t *testing.T) {
+	cmd := Command{
+		File: "unknown.txt",
+	}
+	err := cmd.Validate()
+
+	require.NotNil(t, err)
+	assert.Equal(t, "type is required with a file", err.Error())
+}
+
 func TestCommandWithOutput(t *testing.T) {
 	cmd := Command{Text: "echo test"}
 	result := cmd.Run()
@@ -44,6 +54,14 @@ func TestCommandWithError(t *testing.T) {
 	result := cmd.Run()
 
 	assert.Equal(t, Failed, result.Status)
+}
+
+func TestCommandIsGenerator(t *testing.T) {
+	cmd := Command{From: "sh", Text: "echo true"}
+	assert.True(t, cmd.IsGenerator())
+
+	cmd = Command{File: "unknown.txt"}
+	assert.True(t, cmd.IsGenerator())
 }
 
 func TestCommandWithInvalidGeneratorType(t *testing.T) {

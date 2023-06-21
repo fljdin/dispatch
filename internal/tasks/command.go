@@ -37,6 +37,10 @@ func (c Command) Validate() error {
 		return fmt.Errorf("%s is not supported", c.Type)
 	}
 
+	if c.File != "" && c.Type == "" {
+		return fmt.Errorf("type is required with a file")
+	}
+
 	if c.Text == "" && c.File == "" {
 		return fmt.Errorf("command or file are required")
 	}
@@ -46,6 +50,11 @@ func (c Command) Validate() error {
 	}
 
 	return nil
+}
+
+func (c Command) IsGenerator() bool {
+	return c.File != "" ||
+		(c.From != "" && c.Text != "")
 }
 
 func (c Command) getExecCommand() *exec.Cmd {

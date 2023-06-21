@@ -54,7 +54,7 @@ func (w *Worker) handle(t tasks.Task) {
 }
 
 func (w *Worker) run(t tasks.Task) {
-	if t.Command.From != "" {
+	if t.Command.IsGenerator() {
 		result, commands := t.Command.Generate()
 		result.ID = t.ID
 		result.SubID = t.SubID

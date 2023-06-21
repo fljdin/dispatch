@@ -103,7 +103,6 @@ func TestDispatcherGenerateTaskFromFile(t *testing.T) {
 		ID: 1,
 		Command: Command{
 			File: tempFile.Name(),
-			From: "sh",
 		},
 	})
 
