@@ -69,14 +69,15 @@ func TestCommandWithFailedGenerator(t *testing.T) {
 
 func TestCommandGeneratorFromText(t *testing.T) {
 	cmd := Command{
-		Text: `echo true; echo false`,
+		Text: "echo true; echo false",
 		From: "sh",
 	}
 	result, commands := cmd.Generate()
 
 	require.Equal(t, Succeeded, result.Status)
-	assert.Equal(t, Command{Text: "true", Type: "sh"}, commands[0])
-	assert.Equal(t, Command{Text: "false", Type: "sh"}, commands[1])
+	assert.Equal(t, "true\nfalse\n", result.Output)
+	assert.Equal(t, Command{Text: "true"}, commands[0])
+	assert.Equal(t, Command{Text: "false"}, commands[1])
 }
 
 func TestCommandGeneratorFromFile(t *testing.T) {
@@ -90,7 +91,7 @@ func TestCommandGeneratorFromFile(t *testing.T) {
 
 	cmd := Command{
 		File: tempFile.Name(),
-		From: "psql",
+		Type: "psql",
 	}
 	result, commands := cmd.Generate()
 

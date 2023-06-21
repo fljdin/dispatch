@@ -49,7 +49,12 @@ func (c Command) Validate() error {
 }
 
 func (c Command) getExecCommand() *exec.Cmd {
-	switch c.Type {
+	cmdType := c.Type
+	if c.From != "" {
+		cmdType = c.From
+	}
+
+	switch cmdType {
 	case "psql":
 		// ON_ERROR_STOP is used to retrieve the correct exit code
 		cmd := exec.Command("psql", "-v", "ON_ERROR_STOP=1", "-d", c.URI)
@@ -95,44 +100,86 @@ func (c Command) Run() Result {
 }
 
 func (c Command) Generate() (Result, []Command) {
-	var commands []Command
-	result := Result{Status: Succeeded}
+	var result Result
+	var cmds []string
 
-	parser, err := c.parser()
-	if err != nil {
-		result.Status = Failed
-		result.Error = err.Error()
-		return result, commands
+	if err := c.Validate(); err != nil {
+		result = Result{
+			Status: Failed,
+			Error:  err.Error(),
+		}
+		return result, nil
 	}
 
-	for _, command := range parser.Parse() {
+	if c.File != "" {
+		result, cmds = c.generateFromFile()
+	} else if c.From != "" && c.Text != "" {
+		result, cmds = c.generateFromOutput()
+	}
+
+	var commands []Command
+	for _, command := range cmds {
 		commands = append(commands, Command{
 			Text: command,
-			Type: c.From,
+			Type: c.Type,
+			URI:  c.URI,
 		})
 	}
 
 	return result, commands
 }
 
-func (c Command) parser() (parser.Parser, error) {
-
-	if err := c.Validate(); err != nil {
-		return nil, err
-	}
-
-	if c.File != "" {
-		return parser.NewBuilder(c.From).
-			FromFile(c.File).
-			Build()
-	}
-
+func (c Command) generateFromOutput() (Result, []string) {
 	result := c.Run()
+
 	if result.Status == Failed {
-		return nil, fmt.Errorf("%s", result.Error)
+		return result, nil
 	}
 
-	return parser.NewBuilder(c.From).
+	parser, err := parser.NewBuilder(c.From).
 		WithContent(result.Output).
 		Build()
+
+	if err != nil {
+		result.Status = Failed
+		result.Error = err.Error()
+		return result, nil
+	}
+
+	cmds := parser.Parse()
+	return result, cmds
+}
+
+func (c Command) generateFromFile() (Result, []string) {
+	startTime := time.Now()
+
+	parser, err := parser.NewBuilder(c.Type).
+		FromFile(c.File).
+		Build()
+
+	if err != nil {
+		endTime := time.Now()
+
+		result := Result{
+			StartTime: startTime,
+			EndTime:   endTime,
+			Elapsed:   endTime.Sub(startTime),
+			Status:    Failed,
+			Error:     err.Error(),
+		}
+		return result, nil
+	}
+
+	cmds := parser.Parse()
+	endTime := time.Now()
+
+	result := Result{
+		StartTime: startTime,
+		EndTime:   endTime,
+		Elapsed:   endTime.Sub(startTime),
+		Status:    Succeeded,
+		Output:    fmt.Sprintf("%d loaded from %s", len(cmds), c.File),
+	}
+
+	return result, cmds
 }

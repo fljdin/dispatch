@@ -218,7 +218,7 @@ tasks:
 	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
 }
 
-func TestConfigWithGenerator(t *testing.T) {
+func TestConfigWithCommandGenerator(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
@@ -232,4 +232,38 @@ tasks:
 	tasks, _ := config.Tasks()
 
 	assert.Equal(t, "sh", tasks[0].Command.From)
+	assert.Equal(t, "echo true", tasks[0].Command.Text)
+}
+
+func TestConfigWithFileGenerator(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: psql
+    generated:
+      file: junk.sql
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, err := config.Tasks()
+
+	require.Nil(t, err)
+	assert.Equal(t, "junk.sql", tasks[0].Command.File)
+}
+
+func TestConfigWithInvalidGenerator(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    generated:
+      from: invalid
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	_, err := config.Tasks()
+
+	require.NotNil(t, err)
+	assert.Equal(t, "command or file are required", err.Error())
 }

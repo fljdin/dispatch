@@ -65,7 +65,7 @@ func (w *Worker) run(t tasks.Task) {
 		for id, command := range commands {
 			w.memory.AddTask(tasks.Task{
 				ID:      t.ID,
-				SubID:   id,
+				SubID:   id + 1,
 				Command: command,
 			})
 		}

@@ -19,7 +19,6 @@ type YamlTask struct {
 	Type       string        `yaml:"type,omitempty"`
 	Name       string        `yaml:"name,omitempty"`
 	Command    string        `yaml:"command"`
-	File       string        `yaml:"file"`
 	URI        string        `yaml:"uri,omitempty"`
 	Connection string        `yaml:"connection,omitempty"`
 	Depends    []int         `yaml:"depends_on,omitempty"`
@@ -29,13 +28,12 @@ type YamlTask struct {
 func (t YamlTask) Normalize() tasks.Task {
 	command := tasks.Command{
 		Text:       t.Command,
-		File:       t.File,
 		Type:       t.Type,
 		URI:        t.URI,
 		Connection: t.Connection,
 	}
 
-	if t.Generated.From != "" {
+	if t.Generated != (YamlGenerator{}) {
 		command = tasks.Command{
 			Text:       t.Generated.Command,
 			File:       t.Generated.File,
@@ -112,12 +110,7 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 			task.Command.URI, _ = c.Connections.GetURIByName("default")
 		}
 
-		// append task to final tasks
-		if task.Command.Text != "" {
-			finalTasks = append(finalTasks, task)
-		}
-
-		// append task to already knwown identifiers
+		finalTasks = append(finalTasks, task)
 		identifiers = append(identifiers, task.ID)
 	}
 
