@@ -15,7 +15,7 @@ func TestCreateTask(t *testing.T) {
 			Text: "echo test",
 		},
 	}
-	err := task.VerifyRequired()
+	err := task.Validate()
 
 	assert.Equal(t, nil, err)
 }
@@ -24,7 +24,7 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 	task := Task{
 		Command: Command{Text: "true"},
 	}
-	err := task.VerifyRequired()
+	err := task.Validate()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "id is required")
@@ -34,8 +34,8 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 	task := Task{
 		ID: 1,
 	}
-	err := task.VerifyRequired()
+	err := task.Validate()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "command is required")
+	assert.Contains(t, err.Error(), "command or file are required")
 }

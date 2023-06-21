@@ -133,7 +133,6 @@ func TestPsqlParserCrosstabviewCommand(t *testing.T) {
 SELECT 2, 2, 2 \crosstabview
 SELECT 3, 3, 3 \crosstabview
 `
-
 	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()

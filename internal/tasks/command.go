@@ -12,7 +12,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var CommandTypes = []string{"sh", "psql"}
+var CommandTypes = []string{"", "sh", "psql"}
 var testing bool = os.Getenv("GOTEST") != ""
 
 type Command struct {
@@ -31,13 +31,20 @@ func (Command) Time() time.Time {
 	return time.Now()
 }
 
-func (c Command) VerifyType() error {
-	if c.Type == "" {
-		return nil
-	}
+func (c Command) Validate() error {
+
 	if !slices.Contains(CommandTypes, c.Type) {
 		return fmt.Errorf("%s is not supported", c.Type)
 	}
+
+	if c.Text == "" && c.File == "" {
+		return fmt.Errorf("command or file are required")
+	}
+
+	if c.From != "" && !slices.Contains(CommandTypes, c.From) {
+		return fmt.Errorf("%s is not supported", c.From)
+	}
+
 	return nil
 }
 
@@ -110,22 +117,22 @@ func (c Command) Generate() (Result, []Command) {
 
 func (c Command) parser() (parser.Parser, error) {
 
+	if err := c.Validate(); err != nil {
+		return nil, err
+	}
+
 	if c.File != "" {
 		return parser.NewBuilder(c.From).
 			FromFile(c.File).
 			Build()
 	}
 
-	if c.Text != "" {
-		result := c.Run()
-		if result.Status == Failed {
-			return nil, fmt.Errorf("%s", result.Error)
-		}
-
-		return parser.NewBuilder(c.From).
-			WithContent(result.Output).
-			Build()
+	result := c.Run()
+	if result.Status == Failed {
+		return nil, fmt.Errorf("%s", result.Error)
 	}
 
-	return nil, fmt.Errorf("invalid generator")
+	return parser.NewBuilder(c.From).
+		WithContent(result.Output).
+		Build()
 }

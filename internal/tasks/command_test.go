@@ -20,15 +20,15 @@ func TestCommandBasicRun(t *testing.T) {
 	assert.Contains(t, result.Output, "test")
 }
 
-func TestCommandVerifyType(t *testing.T) {
+func TestCommandVerifyRequired(t *testing.T) {
 	cmd := Command{
 		Type: "unknown",
 		Text: "unknown",
 	}
-	err := cmd.VerifyType()
+	err := cmd.Validate()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not supported")
+	assert.Equal(t, "unknown is not supported", err.Error())
 }
 
 func TestCommandWithOutput(t *testing.T) {
@@ -54,7 +54,7 @@ func TestCommandWithInvalidGeneratorType(t *testing.T) {
 	result, _ := cmd.Generate()
 
 	assert.Equal(t, Failed, result.Status)
-	assert.Contains(t, result.Error, "is not supported")
+	assert.Equal(t, "unknown is not supported", result.Error)
 }
 
 func TestCommandWithFailedGenerator(t *testing.T) {

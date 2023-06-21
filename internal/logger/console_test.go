@@ -21,6 +21,6 @@ func TestConsoleRender(t *testing.T) {
 	})
 
 	require.Nil(t, err)
-	expected := "Worker 1 completed Task 1 (query #0) (success: true, elapsed: 100ms)\n"
+	expected := "Worker 1 completed Task 1 (command #0) (success: true, elapsed: 100ms)\n"
 	assert.Equal(t, expected, data)
 }

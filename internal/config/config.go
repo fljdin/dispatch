@@ -88,15 +88,11 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 	for _, declared := range c.DeclaredTasks {
 		task := declared.Normalize()
 
-		if err := task.VerifyRequired(); err != nil {
+		if err := task.Validate(); err != nil {
 			return nil, err
 		}
 
-		if err := task.Command.VerifyType(); err != nil {
-			return nil, err
-		}
-
-		if err := task.VerifyDependencies(identifiers); err != nil {
+		if err := task.ValidateDependencies(identifiers); err != nil {
 			return nil, err
 		}
 
