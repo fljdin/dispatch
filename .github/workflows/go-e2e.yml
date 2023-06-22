@@ -1,9 +1,9 @@
-name: go-test
+name: go-test-e2e
 
 on: [push]
 
 jobs:
-  build:
+  go-test:
 
     runs-on: ubuntu-latest
     steps:
