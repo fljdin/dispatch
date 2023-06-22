@@ -14,8 +14,5 @@ jobs:
         with:
           go-version: '1.20.x'
 
-      - name: Build
-        run: go build -v ./...
-
       - name: Test
-        run: go test -v ./internal/*
+        run: GOTEST=1 go test -v ./test

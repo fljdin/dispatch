@@ -1,3 +1,4 @@
 .idea/
 .vscode/launch.json
 junk/
+test/*.log

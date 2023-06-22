@@ -34,7 +34,7 @@ var (
 	argVerboseDesc        string = "verbose mode"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "dispatch",
 	Short: "Dispatch tasks described in a YAML file",
 }
@@ -75,22 +75,22 @@ func ReadHiddenInput(prompt string, condition bool) string {
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
-	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
-	rootCmd.PersistentFlags().StringVarP(&argLogfile, "log", "l", "", argLogfileDesc)
+	RootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
+	RootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
+	RootCmd.PersistentFlags().StringVarP(&argLogfile, "log", "l", "", argLogfileDesc)
 
-	rootCmd.PersistentFlags().StringVarP(&argPgHost, "host", "h", "", argPgHostDesc)
-	rootCmd.PersistentFlags().IntVarP(&argPgPort, "port", "p", 0, argPgPortDesc)
-	rootCmd.PersistentFlags().StringVarP(&argPgDbname, "dbname", "d", "", argPgDbnameDesc)
-	rootCmd.PersistentFlags().StringVarP(&argPgUser, "user", "U", "", argPgUserDesc)
-	rootCmd.PersistentFlags().BoolVarP(&argPgPwdPrompt, "password", "W", false, argPgPwdPromptdDesc)
+	RootCmd.PersistentFlags().StringVarP(&argPgHost, "host", "h", "", argPgHostDesc)
+	RootCmd.PersistentFlags().IntVarP(&argPgPort, "port", "p", 0, argPgPortDesc)
+	RootCmd.PersistentFlags().StringVarP(&argPgDbname, "dbname", "d", "", argPgDbnameDesc)
+	RootCmd.PersistentFlags().StringVarP(&argPgUser, "user", "U", "", argPgUserDesc)
+	RootCmd.PersistentFlags().BoolVarP(&argPgPwdPrompt, "password", "W", false, argPgPwdPromptdDesc)
 
-	rootCmd.PersistentFlags().Bool("help", false, "show help")
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
+	RootCmd.PersistentFlags().Bool("help", false, "show help")
+	RootCmd.CompletionOptions.DisableDefaultCmd = true
 }
