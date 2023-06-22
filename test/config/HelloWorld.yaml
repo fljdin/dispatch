@@ -1,6 +1,6 @@
 ---
 workers: 1
-logfile: TestRunWithConfig.log
+logfile: HelloWorld.log
 
 tasks:
   - id: 1

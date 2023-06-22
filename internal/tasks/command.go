@@ -12,7 +12,7 @@ import (
 )
 
 var CommandTypes = []string{"sh", "psql"}
-var test bool = os.Getenv("GOTEST") != ""
+var testing bool = os.Getenv("GOTEST") != ""
 
 type Command struct {
 	Text       string
@@ -79,11 +79,8 @@ func (c Command) Run() Result {
 }
 
 func (Command) Time() time.Time {
-	var value time.Time
-	if test {
-		value = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
-	} else {
-		value = time.Now()
+	if testing {
+		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
 	}
-	return value
+	return time.Now()
 }
