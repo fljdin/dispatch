@@ -6,11 +6,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestHelloWorld(t *testing.T) {
-	suite.Run(t, &Suite{
-		Args:    []string{"run", "--config", "config/HelloWorld.yaml"},
-		Logfile: "HelloWorld.log",
-	})
+var s = &Suite{}
+
+func TestTaskWithDefaultConnection(t *testing.T) {
+	s.Args = []string{"run", "--config", "config/TaskWithDefaultConnection.yaml"}
+	s.Logfile = "TaskWithDefaultConnection.log"
+
+	suite.Run(t, s)
 }
 
 func TestWorkerForwardURIToGeneratedTasks(t *testing.T) {

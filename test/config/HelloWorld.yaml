@@ -1,8 +1,0 @@
----
-workers: 1
-logfile: HelloWorld.log
-
-tasks:
-  - id: 1
-    name: simple task
-    command: echo "hello world"
