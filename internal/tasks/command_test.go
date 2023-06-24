@@ -20,7 +20,7 @@ func TestCommandBasicRun(t *testing.T) {
 	assert.Contains(t, result.Output, "test")
 }
 
-func TestCommandVerifyRequired(t *testing.T) {
+func TestCommandValidate(t *testing.T) {
 	cmd := Command{
 		Type: "unknown",
 		Text: "unknown",
@@ -31,7 +31,7 @@ func TestCommandVerifyRequired(t *testing.T) {
 	assert.Equal(t, "unknown is not supported", err.Error())
 }
 
-func TestCommandVerifyFile(t *testing.T) {
+func TestCommandValidateFile(t *testing.T) {
 	cmd := Command{
 		File: "unknown.txt",
 	}

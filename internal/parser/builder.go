@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-var ParserTypes = []string{"sh", "psql"}
+var ParserTypes = []string{"", "sh", "psql"}
 
 type ParserBuilder struct {
 	parser Parser
@@ -17,7 +17,7 @@ func NewBuilder(pt string) *ParserBuilder {
 	var parser Parser
 
 	switch pt {
-	case "sh":
+	case "", "sh":
 		parser = &ShParser{}
 	case "psql":
 		parser = &PsqlParser{
