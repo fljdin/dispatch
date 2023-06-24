@@ -108,7 +108,7 @@ func launch(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	RootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(runCmd)
 
 	// don't use defaulting feature from cobra as precedence rules are
 	// provided by ConfigBuilder
