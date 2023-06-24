@@ -171,17 +171,16 @@ tasks:
 
 ## Testing
 
-Unit tests are provided under `internal` packages
+[Bats](https://bats-core.readthedocs.io) testing framework is used. End-to-end
+tests are located under `t/` directory A local PostgreSQL instance is required
+with `postgres/postgres` authentication or `trust` method in `pg_hba.conf`
 
 ```sh
-go test ./internal/*
+bats t
 ```
 
-End-to-end tests are located under `test/` directory.
-
-* A local PostgreSQL instance is required with `postgres/postgres`
-  authentication or `trust` method in `pg_hba.conf`
+Unit tests are provided under `internal` packages.
 
 ```sh
-GOTEST=1 go test ./test
+go test ./...
 ```

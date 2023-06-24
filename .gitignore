@@ -1,5 +1,5 @@
 .idea/
 .vscode/launch.json
 junk/
-test/*.log
+t/*.log
 dispatch
