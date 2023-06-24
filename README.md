@@ -168,3 +168,20 @@ tasks:
   - id: 2
     command: echo bar
 ```
+
+## Testing
+
+Unit tests are provided under `internal` packages
+
+```sh
+go test ./internal/*
+```
+
+End-to-end tests are located under `test/` directory.
+
+* A local PostgreSQL instance is required with `postgres/postgres`
+  authentication or `trust` method in `pg_hba.conf`
+
+```sh
+GOTEST=1 go test ./test
+```
