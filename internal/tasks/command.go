@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 )
 
 var CommandTypes = []string{"sh", "psql"}
+var testing bool = os.Getenv("GOTEST") != ""
 
 type Command struct {
 	Text       string
@@ -50,7 +52,7 @@ func (c Command) VerifyType() error {
 }
 
 func (c Command) Run() Result {
-	startTime := time.Now()
+	startTime := c.Time()
 
 	var stdout, stderr bytes.Buffer
 	cmd := c.getExecCommand()
@@ -58,7 +60,7 @@ func (c Command) Run() Result {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 
-	endTime := time.Now()
+	endTime := c.Time()
 
 	result := Result{
 		StartTime: startTime,
@@ -74,4 +76,11 @@ func (c Command) Run() Result {
 	}
 
 	return result
+}
+
+func (Command) Time() time.Time {
+	if testing {
+		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+	}
+	return time.Now()
 }

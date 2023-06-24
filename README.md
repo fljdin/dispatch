@@ -1,6 +1,7 @@
 # Simple task dispatcher
 
 [![go-test](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml)
+[![go-e2e](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml)
 
 Provides an easy-to-use command to dispatch tasks described in a YAML file.
 
@@ -166,4 +167,20 @@ tasks:
     command: echo foo
   - id: 2
     command: echo bar
+```
+
+## Testing
+
+[Bats](https://bats-core.readthedocs.io) testing framework is used. End-to-end
+tests are located under `t/` directory A local PostgreSQL instance is required
+with `postgres/postgres` authentication or `trust` method in `pg_hba.conf`
+
+```sh
+bats t
+```
+
+Unit tests are provided under `internal` packages.
+
+```sh
+go test ./...
 ```
