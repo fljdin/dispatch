@@ -16,8 +16,6 @@ var (
 	argConfigFilenameDesc string = "configuration file"
 	argLogfile            string
 	argLogfileDesc        string = "log file"
-	argMaxWorkers         int
-	argMaxWorkersDesc     string = "number of workers (default 2)"
 	argPgDbname           string
 	argPgDbnameDesc       string = "database name to connect to"
 	argPgHost             string
@@ -28,8 +26,6 @@ var (
 	argPgPwdPromptdDesc   string = "force password prompt"
 	argPgUser             string
 	argPgUserDesc         string = "database user name"
-	argSqlFilename        string
-	argSqlFilenameDesc    string = "file containing SQL statements"
 	argVerbose            bool
 	argVerboseDesc        string = "verbose mode"
 )
