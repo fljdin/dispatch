@@ -1,0 +1,9 @@
+workers: 1
+logfile: loaded_from_a_file.log
+
+tasks:
+  - id: 1
+    name: dispatch queries from a sql file
+    type: psql
+    generated:
+      file: queries.sql

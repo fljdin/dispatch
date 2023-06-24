@@ -160,14 +160,14 @@ func (c Command) generateFromOutput() (Result, []string) {
 }
 
 func (c Command) generateFromFile() (Result, []string) {
-	startTime := time.Now()
+	startTime := c.Time()
 
 	parser, err := parser.NewBuilder(c.Type).
 		FromFile(c.File).
 		Build()
 
 	if err != nil {
-		endTime := time.Now()
+		endTime := c.Time()
 
 		result := Result{
 			StartTime: startTime,
@@ -180,7 +180,7 @@ func (c Command) generateFromFile() (Result, []string) {
 	}
 
 	cmds := parser.Parse()
-	endTime := time.Now()
+	endTime := c.Time()
 
 	result := Result{
 		StartTime: startTime,

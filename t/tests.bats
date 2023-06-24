@@ -8,7 +8,7 @@ setup() {
 }
 
 teardown() {
-    rm -f *.log
+    rm -f *.log *.sql
 }
 
 run_with_config() {
@@ -18,6 +18,15 @@ run_with_config() {
 
 @test "task with default connection" {
     run_with_config "default_connection"
+}
+
+@test "tasks loaded from a file" {
+    cat <<EOF > queries.sql
+SELECT 1;
+SELECT 2;
+EOF
+
+    run_with_config "loaded_from_a_file"
 }
 
 @test "worker forward uri to generated tasks" {
