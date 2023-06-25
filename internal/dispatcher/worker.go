@@ -54,28 +54,25 @@ func (w *Worker) handle(t tasks.Task) {
 }
 
 func (w *Worker) run(t tasks.Task) {
-	if t.Command.IsGenerator() {
-		result, commands := t.Command.Generate()
-		result.ID = t.ID
-		result.SubID = t.SubID
-		result.WorkerID = w.ID
+	report, commands := t.Action.Run()
 
-		for id, command := range commands {
-			w.memory.AddTask(tasks.Task{
-				ID:      t.ID,
-				SubID:   id + 1,
-				Command: command,
-			})
-		}
-
-		w.memory.results <- result
-		return
+	for id, command := range commands {
+		w.memory.AddTask(tasks.Task{
+			ID:     t.ID,
+			SubID:  id + 1,
+			Action: command,
+		})
 	}
 
-	result := t.Command.Run()
-	result.ID = t.ID
-	result.SubID = t.SubID
-	result.WorkerID = w.ID
-
-	w.memory.results <- result
+	w.memory.results <- tasks.Result{
+		ID:        t.ID,
+		SubID:     t.SubID,
+		WorkerID:  w.ID,
+		Status:    report.Status,
+		StartTime: report.StartTime,
+		EndTime:   report.EndTime,
+		Elapsed:   report.Elapsed,
+		Output:    report.Output,
+		Error:     report.Error,
+	}
 }

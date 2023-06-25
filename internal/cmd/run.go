@@ -6,6 +6,7 @@ import (
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/spf13/cobra"
 )
 
@@ -59,9 +60,9 @@ func launch(cmd *cobra.Command, args []string) error {
 	if len(argSqlFilename) > 0 {
 		t = append(t, tasks.Task{
 			ID: 1,
-			Command: tasks.Command{
-				Type: argType,
+			Action: actions.FileLoader{
 				File: argSqlFilename,
+				Type: argType,
 				URI:  config.DefaultConnection.CombinedURI(),
 			},
 		})

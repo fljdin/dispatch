@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,7 +12,7 @@ import (
 func TestCreateTask(t *testing.T) {
 	task := Task{
 		ID: 1,
-		Command: Command{
+		Action: actions.Command{
 			Text: "echo test",
 		},
 	}
@@ -22,7 +23,7 @@ func TestCreateTask(t *testing.T) {
 
 func TestTaskVerifyIDRequired(t *testing.T) {
 	task := Task{
-		Command: Command{Text: "true"},
+		Action: actions.Command{Text: "true"},
 	}
 	err := task.Validate()
 
@@ -37,5 +38,5 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 	err := task.Validate()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "command or file are required")
+	assert.Contains(t, err.Error(), "action is required")
 }

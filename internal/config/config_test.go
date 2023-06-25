@@ -7,6 +7,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/config"
 	. "github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,7 +69,7 @@ tasks:
 	tasks, _ := config.Tasks()
 
 	assert.Equal(t, 1, len(config.Connections))
-	assert.Equal(t, "postgresql://?host=remote", tasks[0].Command.URI)
+	assert.Equal(t, "postgresql://?host=remote", tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -89,7 +90,7 @@ tasks:
 		Build()
 	tasks, _ := config.Tasks()
 
-	assert.Equal(t, cnx, tasks[0].Command.URI)
+	assert.Equal(t, cnx, tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -128,7 +129,7 @@ tasks:
 	tasks, _ := config.Tasks()
 
 	expected := "postgresql://?dbname=db&host=localhost&port=5433"
-	assert.Equal(t, expected, tasks[0].Command.URI)
+	assert.Equal(t, expected, tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -214,11 +215,11 @@ tasks:
 		Build()
 	tasks, _ := config.Tasks()
 
-	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Command.URI)
-	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
+	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Action.(actions.Command).URI)
+	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Action.(actions.Command).URI)
 }
 
-func TestConfigWithCommandGenerator(t *testing.T) {
+func TestConfigWithOutputLoader(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
@@ -231,11 +232,11 @@ tasks:
 		Build()
 	tasks, _ := config.Tasks()
 
-	assert.Equal(t, "sh", tasks[0].Command.From)
-	assert.Equal(t, "echo true", tasks[0].Command.Text)
+	assert.Equal(t, "sh", tasks[0].Action.(actions.OutputLoader).From)
+	assert.Equal(t, "echo true", tasks[0].Action.(actions.OutputLoader).Text)
 }
 
-func TestConfigWithFileGenerator(t *testing.T) {
+func TestConfigWithFileLoader(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
@@ -249,10 +250,10 @@ tasks:
 	tasks, err := config.Tasks()
 
 	require.Nil(t, err)
-	assert.Equal(t, "junk.sql", tasks[0].Command.File)
+	assert.Equal(t, "junk.sql", tasks[0].Action.(actions.FileLoader).File)
 }
 
-func TestConfigWithInvalidGenerator(t *testing.T) {
+func TestConfigWithInvalidLoader(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
@@ -265,5 +266,5 @@ tasks:
 	_, err := config.Tasks()
 
 	require.NotNil(t, err)
-	assert.Equal(t, "command or file are required", err.Error())
+	assert.Equal(t, "action is required", err.Error())
 }

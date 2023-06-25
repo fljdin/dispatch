@@ -6,6 +6,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
 	. "github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,8 +14,8 @@ func TestDispatcherAddTask(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
-		ID:      1,
-		Command: Command{Text: "true"},
+		ID:     1,
+		Action: Command{Text: "true"},
 	})
 
 	assert.Equal(t, Waiting, dispatcher.Status(1))
@@ -24,13 +25,13 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
-		ID:      1,
-		Command: Command{Text: "false"},
+		ID:     1,
+		Action: Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: Command{Text: "true"},
+		Action:  Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -42,13 +43,13 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
-		ID:      1,
-		Command: Command{Text: "true"},
+		ID:     1,
+		Action: Command{Text: "true"},
 	})
 	dispatcher.AddTask(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: Command{Text: "true"},
+		Action:  Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -60,26 +61,26 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
-		ID:      1,
-		SubID:   0,
-		Command: Command{Text: "false"},
+		ID:     1,
+		SubID:  0,
+		Action: Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
-		ID:      1,
-		SubID:   1,
-		Command: Command{Text: "true"},
+		ID:     1,
+		SubID:  1,
+		Action: Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }
 
-func TestDispatcherGeneratedTaskFromCommand(t *testing.T) {
+func TestDispatcherWithOutputLoader(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 
 	dispatcher.AddTask(Task{
 		ID: 1,
-		Command: Command{
+		Action: OutputLoader{
 			Text: `echo -n "true\nfalse"`,
 			From: "sh",
 		},
@@ -89,7 +90,7 @@ func TestDispatcherGeneratedTaskFromCommand(t *testing.T) {
 	assert.Equal(t, Failed, dispatcher.Status(1))
 }
 
-func TestDispatcherGenerateTaskFromFile(t *testing.T) {
+func TestDispatcherWithFileLoader(t *testing.T) {
 	shFilename := "commands_*.sh"
 	shContent := `true\nfalse`
 	tempFile, _ := os.CreateTemp("", shFilename)
@@ -101,7 +102,7 @@ func TestDispatcherGenerateTaskFromFile(t *testing.T) {
 	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID: 1,
-		Command: Command{
+		Action: FileLoader{
 			File: tempFile.Name(),
 		},
 	})

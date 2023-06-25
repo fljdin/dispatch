@@ -8,50 +8,6 @@ import (
 
 var ConfigWorkersDefault int = 2
 
-type YamlGenerator struct {
-	From    string `yaml:"from"`
-	Command string `yaml:"command"`
-	File    string `yaml:"file"`
-}
-
-type YamlTask struct {
-	ID         int           `yaml:"id"`
-	Type       string        `yaml:"type,omitempty"`
-	Name       string        `yaml:"name,omitempty"`
-	Command    string        `yaml:"command"`
-	URI        string        `yaml:"uri,omitempty"`
-	Connection string        `yaml:"connection,omitempty"`
-	Depends    []int         `yaml:"depends_on,omitempty"`
-	Generated  YamlGenerator `yaml:"generated,omitempty"`
-}
-
-func (t YamlTask) Normalize() tasks.Task {
-	command := tasks.Command{
-		Text:       t.Command,
-		Type:       t.Type,
-		URI:        t.URI,
-		Connection: t.Connection,
-	}
-
-	if t.Generated != (YamlGenerator{}) {
-		command = tasks.Command{
-			Text:       t.Generated.Command,
-			File:       t.Generated.File,
-			Type:       t.Type,
-			URI:        t.URI,
-			Connection: t.Connection,
-			From:       t.Generated.From,
-		}
-	}
-
-	return tasks.Task{
-		ID:      t.ID,
-		Name:    t.Name,
-		Command: command,
-		Depends: t.Depends,
-	}
-}
-
 type Config struct {
 	DeclaredTasks     []YamlTask        `yaml:"tasks"`
 	MaxWorkers        int               `yaml:"workers"`
@@ -84,7 +40,10 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {
-		task := declared.Normalize()
+		task, err := declared.Normalize(c.Connections)
+		if err != nil {
+			return nil, err
+		}
 
 		if err := task.Validate(); err != nil {
 			return nil, err
@@ -92,22 +51,6 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 
 		if err := task.ValidateDependencies(identifiers); err != nil {
 			return nil, err
-		}
-
-		// auto-complete URI from named connections
-		if task.Command.Connection != "" {
-			uri, err := c.Connections.GetURIByName(task.Command.Connection)
-
-			if err != nil {
-				return nil, err
-			}
-
-			task.Command.URI = uri
-		}
-
-		// use default connection if no URI is provided
-		if task.Command.URI == "" {
-			task.Command.URI, _ = c.Connections.GetURIByName("default")
 		}
 
 		finalTasks = append(finalTasks, task)

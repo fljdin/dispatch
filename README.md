@@ -21,7 +21,7 @@ Usage:
 Flags:
   -f, --file string   file containing SQL statements
   -j, --jobs int      number of workers (default 2)
-  -t, --type string   parser type (default sh) (default "sh")
+  -t, --type string   parser type (default "sh")
 
 Global Flags:
   -c, --config string   configuration file

@@ -3,6 +3,7 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"golang.org/x/exp/slices"
 )
 
@@ -10,7 +11,7 @@ type Task struct {
 	ID      int
 	SubID   int
 	Name    string
-	Command Command
+	Action  actions.Action
 	Depends []int
 	Status  int
 }
@@ -20,7 +21,11 @@ func (t Task) Validate() error {
 		return fmt.Errorf("id is required")
 	}
 
-	if err := t.Command.Validate(); err != nil {
+	if t.Action == nil {
+		return fmt.Errorf("action is required")
+	}
+
+	if err := t.Action.Validate(); err != nil {
 		return err
 	}
 
