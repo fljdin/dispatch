@@ -6,11 +6,12 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/logger"
 	. "github.com/fljdin/dispatch/internal/tasks"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestTraceRender(t *testing.T) {
+	r := require.New(t)
+
 	trace := Trace{Filename: "dummy.txt"}
 	data, err := trace.Parse(Result{
 		ID:        1,
@@ -23,6 +24,6 @@ func TestTraceRender(t *testing.T) {
 		Output:    "test\n",
 	})
 
-	require.Nil(t, err)
-	assert.Contains(t, data, "Output:\ntest\n")
+	r.Nil(err)
+	r.Contains(data, "Output:\ntest\n")
 }

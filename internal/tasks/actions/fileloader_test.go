@@ -5,21 +5,24 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks/actions"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFileLoaderValidate(t *testing.T) {
+	r := require.New(t)
+
 	cmd := FileLoader{
 		File: "unknown.txt",
 	}
 	err := cmd.Validate()
 
-	require.NotNil(t, err)
-	assert.Equal(t, "type is required with a file", err.Error())
+	r.NotNil(err)
+	r.Equal("type is required with a file", err.Error())
 }
 
 func TestFileLoaderRun(t *testing.T) {
+	r := require.New(t)
+
 	sqlFilename := "queries_*.sql"
 	sqlContent := "SELECT 1;SELECT 2;"
 	tempFile, _ := os.CreateTemp("", sqlFilename)
@@ -34,7 +37,7 @@ func TestFileLoaderRun(t *testing.T) {
 	}
 	result, commands := cmd.Run()
 
-	require.Equal(t, OK, result.Status)
-	assert.Equal(t, Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
-	assert.Equal(t, Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
+	r.Equal(OK, result.Status)
+	r.Equal(Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
+	r.Equal(Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
 }

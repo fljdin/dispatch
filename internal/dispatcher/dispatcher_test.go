@@ -7,23 +7,25 @@ import (
 	. "github.com/fljdin/dispatch/internal/dispatcher"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	. "github.com/fljdin/dispatch/internal/tasks/actions"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDispatcherAddTask(t *testing.T) {
-	dispatcher, _ := NewBuilder().Build()
+	r := require.New(t)
 
+	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "true"},
 	})
 
-	assert.Equal(t, Waiting, dispatcher.Status(1))
+	r.Equal(Waiting, dispatcher.Status(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
-	dispatcher, _ := NewBuilder().Build()
+	r := require.New(t)
 
+	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "false"},
@@ -35,13 +37,14 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Failed, dispatcher.Status(1))
-	assert.Equal(t, Interrupted, dispatcher.Status(2))
+	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Interrupted, dispatcher.Status(2))
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
-	dispatcher, _ := NewBuilder().Build()
+	r := require.New(t)
 
+	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "true"},
@@ -53,13 +56,14 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Succeeded, dispatcher.Status(1))
-	assert.Equal(t, Succeeded, dispatcher.Status(2))
+	r.Equal(Succeeded, dispatcher.Status(1))
+	r.Equal(Succeeded, dispatcher.Status(2))
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
-	dispatcher, _ := NewBuilder().Build()
+	r := require.New(t)
 
+	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID:     1,
 		SubID:  0,
@@ -72,12 +76,13 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Status(1))
 }
 
 func TestDispatcherWithOutputLoader(t *testing.T) {
-	dispatcher, _ := NewBuilder().Build()
+	r := require.New(t)
 
+	dispatcher, _ := NewBuilder().Build()
 	dispatcher.AddTask(Task{
 		ID: 1,
 		Action: OutputLoader{
@@ -87,10 +92,12 @@ func TestDispatcherWithOutputLoader(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	assert.Equal(t, Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Status(1))
 }
 
 func TestDispatcherWithFileLoader(t *testing.T) {
+	r := require.New(t)
+
 	shFilename := "commands_*.sh"
 	shContent := `true\nfalse`
 	tempFile, _ := os.CreateTemp("", shFilename)
@@ -106,7 +113,7 @@ func TestDispatcherWithFileLoader(t *testing.T) {
 			File: tempFile.Name(),
 		},
 	})
-
 	dispatcher.Wait()
-	assert.Equal(t, Failed, dispatcher.Status(1))
+
+	r.Equal(Failed, dispatcher.Status(1))
 }
