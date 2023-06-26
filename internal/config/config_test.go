@@ -223,7 +223,7 @@ func TestConfigWithOutputLoader(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
-    generated:
+    loaded:
       from: sh
       command: echo true
 `
@@ -241,8 +241,7 @@ func TestConfigWithFileLoader(t *testing.T) {
 tasks:
   - id: 1
     type: psql
-    generated:
-      file: junk.sql
+    file: junk.sql
 `
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
@@ -257,7 +256,7 @@ func TestConfigWithInvalidLoader(t *testing.T) {
 	yamlConfig := `
 tasks:
   - id: 1
-    generated:
+    loaded:
       from: invalid
 `
 	config, _ := NewBuilder().

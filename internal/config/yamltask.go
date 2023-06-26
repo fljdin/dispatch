@@ -8,7 +8,6 @@ import (
 type YamlLoader struct {
 	From    string `yaml:"from"`
 	Command string `yaml:"command"`
-	File    string `yaml:"file"`
 }
 
 type YamlTask struct {
@@ -16,10 +15,11 @@ type YamlTask struct {
 	Type       string     `yaml:"type,omitempty"`
 	Name       string     `yaml:"name,omitempty"`
 	Command    string     `yaml:"command"`
+	File       string     `yaml:"file"`
 	URI        string     `yaml:"uri,omitempty"`
 	Connection string     `yaml:"connection,omitempty"`
 	Depends    []int      `yaml:"depends_on,omitempty"`
-	Generated  YamlLoader `yaml:"generated,omitempty"`
+	Loader     YamlLoader `yaml:"loaded,omitempty"`
 }
 
 func (t YamlTask) Normalize(cnx tasks.Connections) (tasks.Task, error) {
@@ -42,20 +42,20 @@ func (t YamlTask) Normalize(cnx tasks.Connections) (tasks.Task, error) {
 
 	var action actions.Action
 
-	if t.Generated != (YamlLoader{}) {
-		if t.Generated.File != "" {
-			action = actions.FileLoader{
-				File: t.Generated.File,
-				Type: t.Type,
-				URI:  t.URI,
-			}
-		} else if t.Generated.Command != "" && t.Generated.From != "" {
+	if t.Loader != (YamlLoader{}) {
+		if t.Loader.Command != "" && t.Loader.From != "" {
 			action = actions.OutputLoader{
-				Text: t.Generated.Command,
-				From: t.Generated.From,
+				Text: t.Loader.Command,
+				From: t.Loader.From,
 				Type: t.Type,
 				URI:  t.URI,
 			}
+		}
+	} else if t.File != "" {
+		action = actions.FileLoader{
+			File: t.File,
+			Type: t.Type,
+			URI:  t.URI,
 		}
 	} else {
 		action = actions.Command{
