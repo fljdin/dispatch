@@ -58,6 +58,8 @@ Internal parsers are used to load commands from `sh` or `psql` invocation.
 **`sh` rules**
 
 * commands are newline-separated
+* empty lines, escaped newline or comments are ignored
+* WARNING: multilines with Heredoc or quoted literals are not supported yet
 
 **`psql` rules**
 
