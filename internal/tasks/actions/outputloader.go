@@ -32,6 +32,10 @@ func (c OutputLoader) Validate() error {
 }
 
 func (c OutputLoader) Run() (Report, []Action) {
+	if c.From == "psql" {
+		c.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", c.Text)
+	}
+
 	cmd := Command{
 		Text: c.Text,
 		Type: c.From,

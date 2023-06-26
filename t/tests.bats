@@ -39,6 +39,10 @@ EOF
     run_with_config "loaded_from_sql_file"
 }
 
+@test "tasks loaded from psql output" {
+    run_with_config "loaded_from_sql_output"
+}
+
 @test "dispatch with --file and --type flags" {
     LOG=loaded_from_sh_file.log
     create_commands
