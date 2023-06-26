@@ -7,6 +7,7 @@ import (
 
 	. "github.com/fljdin/dispatch/internal/config"
 	. "github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +47,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, 1, config.MaxWorkers)
 	assert.Equal(t, 1, tasks[0].ID)
@@ -65,10 +66,10 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	assert.Equal(t, 1, len(config.Connections))
-	assert.Equal(t, "postgresql://?host=remote", tasks[0].Command.URI)
+	assert.Equal(t, "postgresql://?host=remote", tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -87,9 +88,9 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
-	assert.Equal(t, cnx, tasks[0].Command.URI)
+	assert.Equal(t, cnx, tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -102,7 +103,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	_, err := config.GetTasks()
+	_, err := config.Tasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connection not found")
@@ -125,10 +126,10 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
 	expected := "postgresql://?dbname=db&host=localhost&port=5433"
-	assert.Equal(t, expected, tasks[0].Command.URI)
+	assert.Equal(t, expected, tasks[0].Action.(actions.Command).URI)
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -159,37 +160,6 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot unmarshal")
 }
-
-func TestConfigLoadTasksFromFile(t *testing.T) {
-	sqlFilename := "queries_*.sql"
-	sqlContent := "SELECT 1; SELECT 2;"
-	tempFile, _ := os.CreateTemp("", sqlFilename)
-
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
-
-	tempFile.Write([]byte(sqlContent))
-
-	config, _ := NewBuilder().
-		WithTask(YamlTask{
-			ID:   1,
-			Type: "psql",
-			File: tempFile.Name(),
-			URI:  "postgresql://localhost",
-		}).
-		Build()
-	tasks, _ := config.GetTasks()
-
-	// File task must be replaced by Command tasks loaded from SQL file
-	assert.Equal(t, 1, tasks[0].ID)
-	assert.Equal(t, "SELECT 1;", tasks[0].Command.Text)
-	assert.Equal(t, "postgresql://localhost", tasks[0].Command.URI)
-
-	// Each loaded task must have an unique query ID
-	assert.Equal(t, 0, tasks[0].QueryID)
-	assert.Equal(t, 1, tasks[1].QueryID)
-}
-
 func TestConfigWithDependencies(t *testing.T) {
 	yamlConfig := `
 tasks:
@@ -218,7 +188,7 @@ tasks:
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
-	_, err := config.GetTasks()
+	_, err := config.Tasks()
 
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "depends on unknown task")
@@ -243,8 +213,57 @@ tasks:
 		WithYAML(yamlConfig).
 		WithDefaultConnection(cnx).
 		Build()
-	tasks, _ := config.GetTasks()
+	tasks, _ := config.Tasks()
 
-	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Command.URI)
-	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Command.URI)
+	assert.Equal(t, "postgresql://?host=remote&user=postgres", tasks[0].Action.(actions.Command).URI)
+	assert.Equal(t, "postgresql://?host=localhost", tasks[1].Action.(actions.Command).URI)
+}
+
+func TestConfigWithOutputLoader(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    loaded:
+      from: sh
+      command: echo true
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, _ := config.Tasks()
+
+	assert.Equal(t, "sh", tasks[0].Action.(actions.OutputLoader).From)
+	assert.Equal(t, "echo true", tasks[0].Action.(actions.OutputLoader).Text)
+}
+
+func TestConfigWithFileLoader(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    type: psql
+    file: junk.sql
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, err := config.Tasks()
+
+	require.Nil(t, err)
+	assert.Equal(t, "junk.sql", tasks[0].Action.(actions.FileLoader).File)
+}
+
+func TestConfigWithInvalidLoader(t *testing.T) {
+	yamlConfig := `
+tasks:
+  - id: 1
+    loaded:
+      from: invalid
+`
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	_, err := config.Tasks()
+
+	require.NotNil(t, err)
+	assert.Equal(t, "action is required", err.Error())
 }

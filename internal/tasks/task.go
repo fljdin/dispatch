@@ -3,38 +3,43 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"golang.org/x/exp/slices"
 )
 
 type Task struct {
 	ID      int
+	SubID   int
 	Name    string
-	Command Command
+	Action  actions.Action
 	Depends []int
-	QueryID int
 	Status  int
 }
 
-func (t Task) VerifyRequired() error {
+func (t Task) Validate() error {
 	if t.ID == 0 {
 		return fmt.Errorf("id is required")
 	}
 
-	if t.Command.Text == "" && t.Command.File == "" {
-		return fmt.Errorf("command is required")
+	if t.Action == nil {
+		return fmt.Errorf("action is required")
+	}
+
+	if err := t.Action.Validate(); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (t Task) VerifyDependencies(identifiers []int) error {
-	verified := true
+func (t Task) ValidateDependencies(identifiers []int) error {
+	exists := true
 
 	for _, d := range t.Depends {
-		verified = verified && slices.Contains(identifiers, d)
+		exists = exists && slices.Contains(identifiers, d)
 	}
 
-	if !verified {
+	if !exists {
 		return fmt.Errorf("task %d depends on unknown task %d", t.ID, t.Depends)
 	}
 

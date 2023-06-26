@@ -1,0 +1,20 @@
+===== Task 1 (command #0) (success: true, elapsed: 0s) =====
+Started at: 2000-01-01 00:00:00 +0000 UTC
+Ended at:   2000-01-01 00:00:00 +0000 UTC
+Error: 
+Output:
+2 loaded from commands.sh
+===== Task 1 (command #1) (success: true, elapsed: 0s) =====
+Started at: 2000-01-01 00:00:00 +0000 UTC
+Ended at:   2000-01-01 00:00:00 +0000 UTC
+Error: 
+Output:
+1
+
+===== Task 1 (command #2) (success: true, elapsed: 0s) =====
+Started at: 2000-01-01 00:00:00 +0000 UTC
+Ended at:   2000-01-01 00:00:00 +0000 UTC
+Error: 
+Output:
+2
+

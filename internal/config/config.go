@@ -1,25 +1,12 @@
 package config
 
 import (
-	"fmt"
 	"runtime"
 
-	"github.com/fljdin/dispatch/internal/parser"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 var ConfigWorkersDefault int = 2
-
-type YamlTask struct {
-	ID         int    `yaml:"id"`
-	Type       string `yaml:"type,omitempty"`
-	Name       string `yaml:"name,omitempty"`
-	Command    string `yaml:"command"`
-	File       string `yaml:"file"`
-	URI        string `yaml:"uri,omitempty"`
-	Connection string `yaml:"connection,omitempty"`
-	Depends    []int  `yaml:"depends_on,omitempty"`
-}
 
 type Config struct {
 	DeclaredTasks     []YamlTask        `yaml:"tasks"`
@@ -48,82 +35,25 @@ func (c *Config) ConfigureConnections() {
 	}
 }
 
-func (c Config) GetTasks() ([]tasks.Task, error) {
+func (c Config) Tasks() ([]tasks.Task, error) {
 	var finalTasks []tasks.Task
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {
-		task := tasks.Task{
-			ID:   declared.ID,
-			Name: declared.Name,
-			Command: tasks.Command{
-				Text:       declared.Command,
-				File:       declared.File,
-				Type:       declared.Type,
-				URI:        declared.URI,
-				Connection: declared.Connection,
-			},
-			Depends: declared.Depends,
-		}
-
-		if err := task.VerifyRequired(); err != nil {
+		task, err := declared.Normalize(c.Connections)
+		if err != nil {
 			return nil, err
 		}
 
-		if err := task.Command.VerifyType(); err != nil {
+		if err := task.Validate(); err != nil {
 			return nil, err
 		}
 
-		if err := task.VerifyDependencies(identifiers); err != nil {
+		if err := task.ValidateDependencies(identifiers); err != nil {
 			return nil, err
 		}
 
-		// auto-complete URI from named connections
-		if task.Command.Connection != "" {
-			uri, err := c.Connections.GetURIByName(task.Command.Connection)
-
-			if err != nil {
-				return nil, err
-			}
-
-			task.Command.URI = uri
-		}
-
-		// use default connection if no URI is provided
-		if task.Command.URI == "" {
-			task.Command.URI, _ = c.Connections.GetURIByName("default")
-		}
-
-		// append task to final tasks
-		if task.Command.Text != "" {
-			finalTasks = append(finalTasks, task)
-		}
-
-		// parse queries from file and append new related tasks
-		if task.Command.File != "" {
-			parser, err := parser.NewBuilder(task.Command.Type).
-				FromFile(task.Command.File).
-				Build()
-
-			if err != nil {
-				return nil, err
-			}
-
-			for queryId, query := range parser.Parse() {
-				finalTasks = append(finalTasks, tasks.Task{
-					ID:      task.ID,
-					QueryID: queryId,
-					Name:    fmt.Sprintf("Query loaded from %s", task.Command.File),
-					Command: tasks.Command{
-						Text: query,
-						Type: task.Command.Type,
-						URI:  task.Command.URI,
-					},
-				})
-			}
-		}
-
-		// append task to already knwown identifiers
+		finalTasks = append(finalTasks, task)
 		identifiers = append(identifiers, task.ID)
 	}
 

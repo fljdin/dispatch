@@ -1,0 +1,14 @@
+workers: 1
+logfile: loaded_from_sql_output.log
+
+connections:
+  - name: default
+    uri: postgresql://?host=localhost&user=postgres&password=postgres
+
+tasks:
+  - id: 1
+    type: sh
+    loaded:
+      from: psql
+      command: |
+        SELECT format('echo %s', i) FROM generate_series(1, 2) AS i

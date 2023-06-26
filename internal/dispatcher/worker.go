@@ -12,6 +12,13 @@ type Worker struct {
 	context context.Context
 }
 
+func NewWorker(memory *Memory, ctx context.Context) *Worker {
+	return &Worker{
+		memory:  memory,
+		context: ctx,
+	}
+}
+
 func (w *Worker) Start() {
 	w.memory.StartWorker()
 	defer w.memory.EndWorker()
@@ -22,31 +29,50 @@ func (w *Worker) Start() {
 			return
 		default:
 			if task, ok := w.memory.queue.Pop(); ok {
-				w.run(task)
+				w.handle(task)
 			}
 		}
 	}
 }
 
-func (w *Worker) run(t tasks.Task) {
-	if t.Status == tasks.Ready {
-		result := t.Command.Run()
-		result.ID = t.ID
-		result.QueryID = t.QueryID
-		result.WorkerID = w.ID
-		w.memory.results <- result
-		return
-	}
+func (w *Worker) handle(t tasks.Task) {
+	switch t.Status {
+	case tasks.Waiting:
+		w.memory.ForwardTask(t)
 
-	if t.Status == tasks.Interrupted {
+	case tasks.Interrupted:
 		w.memory.results <- tasks.Result{
 			ID:      t.ID,
-			QueryID: t.QueryID,
+			SubID:   t.SubID,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
-		return
+
+	case tasks.Ready:
+		w.run(t)
+	}
+}
+
+func (w *Worker) run(t tasks.Task) {
+	report, commands := t.Action.Run()
+
+	for id, command := range commands {
+		w.memory.AddTask(tasks.Task{
+			ID:     t.ID,
+			SubID:  id + 1,
+			Action: command,
+		})
 	}
 
-	w.memory.ForwardTask(t)
+	w.memory.results <- tasks.Result{
+		ID:        t.ID,
+		SubID:     t.SubID,
+		WorkerID:  w.ID,
+		Status:    report.Status,
+		StartTime: report.StartTime,
+		EndTime:   report.EndTime,
+		Elapsed:   report.Elapsed,
+		Output:    report.Output,
+		Error:     report.Error,
+	}
 }

@@ -7,18 +7,20 @@ import (
 	. "github.com/fljdin/dispatch/internal/logger"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConsoleRender(t *testing.T) {
 	console := Console{}
-	data, _ := console.Parse(Result{
+	data, err := console.Parse(Result{
 		ID:       1,
 		WorkerID: 1,
-		QueryID:  0,
+		SubID:    0,
 		Status:   Succeeded,
 		Elapsed:  time.Duration(1e8),
 	})
 
-	expected := "Worker 1 completed Task 1 (query #0) (success: true, elapsed: 100ms)\n"
+	require.Nil(t, err)
+	expected := "Worker 1 completed Task 1 (command #0) (success: true, elapsed: 100ms)\n"
 	assert.Equal(t, expected, data)
 }

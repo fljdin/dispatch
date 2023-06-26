@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+var ParserTypes = []string{"", "sh", "psql"}
+
 type ParserBuilder struct {
 	parser Parser
 	err    error
@@ -12,23 +14,34 @@ type ParserBuilder struct {
 
 func NewBuilder(pt string) *ParserBuilder {
 	var err error
-	if pt != "psql" {
-		err = fmt.Errorf("only psql type is supported")
-	}
+	var parser Parser
 
-	return &ParserBuilder{
-		parser: Parser{
+	switch pt {
+	case "", "sh":
+		parser = &ShParser{}
+	case "psql":
+		parser = &PsqlParser{
 			currentChar:    0x0,
 			currentComment: 0x0,
 			currentQuote:   0x0,
 			inTransaction:  false,
-		},
-		err: err,
+		}
+	default:
+		err = fmt.Errorf("%s is not supported", pt)
+	}
+
+	return &ParserBuilder{
+		parser: parser,
+		err:    err,
 	}
 }
 
 func (pb *ParserBuilder) WithContent(content string) *ParserBuilder {
-	pb.parser.Content = content
+	if pb.err != nil {
+		return pb
+	}
+
+	pb.parser.SetContent(content)
 	return pb
 }
 
@@ -38,7 +51,7 @@ func (pb *ParserBuilder) FromFile(filename string) *ParserBuilder {
 		pb.err = fmt.Errorf("error reading file: %w", err)
 	}
 
-	pb.parser.Content = pb.WithContent(string(data)).parser.Content
+	pb.parser.SetContent(string(data))
 	return pb
 }
 

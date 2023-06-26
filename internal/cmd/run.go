@@ -5,9 +5,18 @@ import (
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
-	"github.com/fljdin/dispatch/internal/parser"
 	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/spf13/cobra"
+)
+
+var (
+	argMaxWorkers      int
+	argMaxWorkersDesc  string = "number of workers (default 2)"
+	argSqlFilename     string
+	argSqlFilenameDesc string = "file containing SQL statements"
+	argType            string
+	argTypeDesc        string = "parser type (default sh)"
 )
 
 var runCmd = &cobra.Command{
@@ -37,52 +46,29 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func parseSqlFile(filename string) ([]tasks.Task, error) {
-	var finalTasks []tasks.Task
-
-	parser, err := parser.NewBuilder("psql").
-		FromFile(filename).
-		Build()
-
-	if err != nil {
-		return nil, err
-	}
-
-	for queryId, query := range parser.Parse() {
-		finalTasks = append(finalTasks, tasks.Task{
-			QueryID: queryId,
-			Name:    fmt.Sprintf("Query loaded from %s", filename),
-			Command: tasks.Command{
-				Text: query,
-				Type: "psql",
-				URI:  defaultConnection.CombinedURI(),
-			},
-		})
-	}
-
-	return finalTasks, nil
-}
-
 func launch(cmd *cobra.Command, args []string) error {
 	config, err := newConfig()
 	if err != nil {
 		return err
 	}
 
-	tasks, err := config.GetTasks()
+	t, err := config.Tasks()
 	if err != nil {
 		return err
 	}
 
 	if len(argSqlFilename) > 0 {
-		loadedTasks, err := parseSqlFile(argSqlFilename)
-		if err != nil {
-			return err
-		}
-		tasks = append(tasks, loadedTasks...)
+		t = append(t, tasks.Task{
+			ID: 1,
+			Action: actions.FileLoader{
+				File: argSqlFilename,
+				Type: argType,
+				URI:  config.DefaultConnection.CombinedURI(),
+			},
+		})
 	}
 
-	if len(tasks) == 0 {
+	if len(t) == 0 {
 		return fmt.Errorf("no task to perform")
 	}
 
@@ -96,11 +82,11 @@ func launch(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	for _, t := range tasks {
+	for _, t := range t {
 		dispatcher.AddTask(t)
 	}
 
-	Debug("loaded tasks =", len(tasks))
+	Debug("loaded tasks =", len(t))
 	Debug("max workers =", config.MaxWorkers)
 
 	dispatcher.Wait()
@@ -114,4 +100,5 @@ func init() {
 	// provided by ConfigBuilder
 	runCmd.Flags().IntVarP(&argMaxWorkers, "jobs", "j", 0, argMaxWorkersDesc)
 	runCmd.Flags().StringVarP(&argSqlFilename, "file", "f", "", argSqlFilenameDesc)
+	runCmd.Flags().StringVarP(&argType, "type", "t", "sh", argTypeDesc)
 }

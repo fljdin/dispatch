@@ -7,7 +7,7 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-const TraceTemplate string = `===== Task {{.ID}} (query #{{.QueryID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}}) =====
+const TraceTemplate string = `===== Task {{.ID}} (command #{{.SubID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}}) =====
 Started at: {{.StartTime}}
 Ended at:   {{.EndTime}}
 Error: {{.Error}}

@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParserWithSqlContent(t *testing.T) {
+func TestPsqlParserWithContent(t *testing.T) {
 	sqlContent := "SELECT 1; SELECT 2; SELECT 3;"
 
 	parser, _ := NewBuilder("psql").
@@ -20,7 +20,7 @@ func TestParserWithSqlContent(t *testing.T) {
 	assert.Equal(t, 3, len(queries))
 }
 
-func TestParserHandleStrings(t *testing.T) {
+func TestPsqlParserHandleStrings(t *testing.T) {
 	sqlContent := []string{
 		`SELECT ';"';`,
 		`SELECT 1 ";'";`,
@@ -39,7 +39,7 @@ func TestParserHandleStrings(t *testing.T) {
 	}
 }
 
-func TestParserHandleComments(t *testing.T) {
+func TestPsqlParserHandleComments(t *testing.T) {
 	sqlContent := []string{
 		"SELECT 1 /* comment ; */ + 2;",
 		"SELECT 1 /* comment ;\n comment ; */ + 2;",
@@ -57,7 +57,7 @@ func TestParserHandleComments(t *testing.T) {
 	}
 }
 
-func TestParserHandleCommentsAndStringsMix(t *testing.T) {
+func TestPsqlParserHandleCommentsAndStringsMix(t *testing.T) {
 	sqlContent := []string{
 		`SELECT /*'*/ 1"';";`,
 		`SELECT $$/*$$ AS "$$;";`,
@@ -75,7 +75,7 @@ func TestParserHandleCommentsAndStringsMix(t *testing.T) {
 	}
 }
 
-func TestParserHandleTransactionBlock(t *testing.T) {
+func TestPsqlParserHandleTransactionBlock(t *testing.T) {
 	sqlContent := []string{
 		"BEGIN; SELECT 1; END;",
 		"BEGIN; SELECT 1; COMMIT;",
@@ -93,7 +93,7 @@ func TestParserHandleTransactionBlock(t *testing.T) {
 	}
 }
 
-func TestParserFromSqlFile(t *testing.T) {
+func TestPsqlParserFromSqlFile(t *testing.T) {
 	sqlFilename := "queries_*.sql"
 	sqlContent := "SELECT 1;"
 	tempFile, _ := os.CreateTemp("", sqlFilename)
@@ -111,7 +111,7 @@ func TestParserFromSqlFile(t *testing.T) {
 	assert.Equal(t, 1, len(queries))
 }
 
-func TestParserGCommand(t *testing.T) {
+func TestPsqlParserGCommand(t *testing.T) {
 	sqlContent := `SELECT 1\g
 SELECT 2\g result.txt
 SELECT 3\g (format=unaligned tuples_only)
@@ -128,12 +128,11 @@ SELECT 3\g (format=unaligned tuples_only)
 	assert.Equal(t, "SELECT 3\\g (format=unaligned tuples_only)\n", queries[2])
 }
 
-func TestParserCrosstabviewCommand(t *testing.T) {
+func TestPsqlParserCrosstabviewCommand(t *testing.T) {
 	sqlContent := `SELECT 1, 1, 1 \crosstabview
 SELECT 2, 2, 2 \crosstabview
 SELECT 3, 3, 3 \crosstabview
 `
-
 	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
@@ -142,7 +141,7 @@ SELECT 3, 3, 3 \crosstabview
 	assert.Equal(t, 3, len(queries))
 }
 
-func TestParserUnsupportedCommand(t *testing.T) {
+func TestPsqlParserUnsupportedCommand(t *testing.T) {
 	sqlContent := "SELECT 1\\unsupported\nSELECT 1\\\nSELECT 1;"
 
 	parser, _ := NewBuilder("psql").

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +12,7 @@ func TestQueuePush(t *testing.T) {
 	queue := NewQueue()
 	queue.Add(Task{
 		ID: 1,
-		Command: Command{
+		Action: Command{
 			Text: "echo test",
 		},
 	})
@@ -29,7 +30,7 @@ func TestQueuePop(t *testing.T) {
 	queue := NewQueue()
 	queue.Add(Task{
 		ID: 1,
-		Command: Command{
+		Action: Command{
 			Text: "echo test",
 		},
 	})
@@ -43,7 +44,7 @@ func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
 	queue.Add(Task{
 		ID: 1,
-		Command: Command{
+		Action: Command{
 			Text: "echo test",
 		},
 	})
@@ -57,7 +58,7 @@ func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: Command{
+		Action: Command{
 			Text: "true",
 		},
 	})
@@ -70,14 +71,14 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	queue := NewQueue()
 	queue.Add(Task{
 		ID: 1,
-		Command: Command{
+		Action: Command{
 			Text: "true",
 		},
 	})
 	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: Command{
+		Action: Command{
 			Text: "true",
 		},
 	})
@@ -93,14 +94,14 @@ func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	queue := NewQueue()
 	queue.Add(Task{
 		ID: 1,
-		Command: Command{
+		Action: Command{
 			Text: "true",
 		},
 	})
 	queue.Add(Task{
 		ID:      2,
 		Depends: []int{1},
-		Command: Command{
+		Action: Command{
 			Text: "true",
 		},
 	})

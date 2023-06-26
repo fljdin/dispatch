@@ -1,25 +1,31 @@
-package tasks
+package actions
 
 import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
-	"time"
 
 	"golang.org/x/exp/slices"
 )
 
-var CommandTypes = []string{"sh", "psql"}
-var testing bool = os.Getenv("GOTEST") != ""
-
 type Command struct {
-	Text       string
-	File       string
-	Type       string
-	URI        string
-	Connection string
+	Text string
+	Type string
+	URI  string
+}
+
+func (c Command) Validate() error {
+
+	if !slices.Contains(CommandTypes, c.Type) {
+		return fmt.Errorf("%s is not supported", c.Type)
+	}
+
+	if c.Text == "" {
+		return fmt.Errorf("command is required")
+	}
+
+	return nil
 }
 
 func (c Command) getExecCommand() *exec.Cmd {
@@ -41,18 +47,8 @@ func (c Command) getExecCommand() *exec.Cmd {
 	}
 }
 
-func (c Command) VerifyType() error {
-	if c.Type == "" {
-		return nil
-	}
-	if !slices.Contains(CommandTypes, c.Type) {
-		return fmt.Errorf("%s is not supported", c.Type)
-	}
-	return nil
-}
-
-func (c Command) Run() Result {
-	startTime := c.Time()
+func (c Command) Run() (Report, []Action) {
+	startTime := Time()
 
 	var stdout, stderr bytes.Buffer
 	cmd := c.getExecCommand()
@@ -60,27 +56,20 @@ func (c Command) Run() Result {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 
-	endTime := c.Time()
+	endTime := Time()
 
-	result := Result{
+	result := Report{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    Succeeded,
+		Status:    OK,
 		Output:    stdout.String(),
 		Error:     stderr.String(),
 	}
 
 	if err != nil {
-		result.Status = Failed
+		result.Status = KO
 	}
 
-	return result
-}
-
-func (Command) Time() time.Time {
-	if testing {
-		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
-	}
-	return time.Now()
+	return result, nil
 }

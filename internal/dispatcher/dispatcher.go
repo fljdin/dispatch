@@ -18,9 +18,9 @@ func (d *Dispatcher) Wait() {
 	d.launchObserver()
 	d.launchWorkers()
 
-	d.memory.wgTasks.Wait()
+	d.memory.WaitForTasks()
 	d.cancel()
-	d.memory.wgWorkers.Wait()
+	d.memory.WaitForWorkers()
 }
 
 func (d *Dispatcher) AddTask(task tasks.Task) {

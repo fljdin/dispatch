@@ -1,9 +1,9 @@
-package tasks_test
+package actions_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,34 +13,34 @@ func TestCommandBasicRun(t *testing.T) {
 		Type: "sh",
 		Text: "echo test",
 	}
-	result := cmd.Run()
+	result, _ := cmd.Run()
 
-	assert.Equal(t, Succeeded, result.Status)
+	assert.Equal(t, OK, result.Status)
 	assert.Contains(t, result.Output, "test")
 }
 
-func TestCommandVerifyType(t *testing.T) {
+func TestCommandValidate(t *testing.T) {
 	cmd := Command{
 		Type: "unknown",
 		Text: "unknown",
 	}
-	err := cmd.VerifyType()
+	err := cmd.Validate()
 
 	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "is not supported")
+	assert.Equal(t, "unknown is not supported", err.Error())
 }
 
 func TestCommandWithOutput(t *testing.T) {
 	cmd := Command{Text: "echo test"}
-	result := cmd.Run()
+	result, _ := cmd.Run()
 
-	assert.Equal(t, Succeeded, result.Status)
+	assert.Equal(t, OK, result.Status)
 	assert.Contains(t, result.Output, "test")
 }
 
 func TestCommandWithError(t *testing.T) {
 	cmd := Command{Text: "false"}
-	result := cmd.Run()
+	result, _ := cmd.Run()
 
-	assert.Equal(t, Failed, result.Status)
+	assert.Equal(t, KO, result.Status)
 }

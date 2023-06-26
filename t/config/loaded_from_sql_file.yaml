@@ -1,0 +1,9 @@
+workers: 1
+logfile: loaded_from_sql_file.log
+
+tasks:
+  - id: 1
+    name: dispatch queries from a sql file
+    type: psql
+    file: queries.sql
+    uri: postgresql://?host=localhost&user=postgres&password=postgres
