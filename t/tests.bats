@@ -1,6 +1,6 @@
 setup() {
     export GOTEST=1
-    go build
+    go build -tags testing
 
     DIR="${BATS_TEST_FILENAME%/*}"
     PATH="$DIR/..:$PATH"
