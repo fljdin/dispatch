@@ -48,8 +48,8 @@ func TestConfigFromYAML(t *testing.T) {
 	yamlConfig := dedent.Dedent(`
 	workers: 1
 	tasks:
-	- id: 1
-	  command: true
+	  - id: 1
+	    command: true
 	`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
@@ -65,12 +65,12 @@ func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
 
 	yamlConfig := dedent.Dedent(`
 	connections:
-	- name: default
-	  host: remote
+	  - name: default
+	    host: remote
 	tasks:
-	- id: 1
-	  type: psql
-	  command: SELECT 1`)
+	  - id: 1
+	    type: psql
+	    command: SELECT 1`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
