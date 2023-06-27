@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/parser"
+	"github.com/lithammer/dedent"
 	"github.com/stretchr/testify/require"
 )
 
@@ -123,10 +124,11 @@ func TestPsqlParserFromSqlFile(t *testing.T) {
 func TestPsqlParserGCommand(t *testing.T) {
 	r := require.New(t)
 
-	sqlContent := `SELECT 1\g
-SELECT 2\g result.txt
-SELECT 3\g (format=unaligned tuples_only)
-`
+	sqlContent := dedent.Dedent(`
+	SELECT 1\g
+	SELECT 2\g result.txt
+	SELECT 3\g (format=unaligned tuples_only)
+	`)
 	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()
@@ -134,7 +136,7 @@ SELECT 3\g (format=unaligned tuples_only)
 	queries := parser.Parse()
 
 	r.Equal(3, len(queries))
-	r.Equal("SELECT 1\\g\n", queries[0])
+	r.Equal("\nSELECT 1\\g\n", queries[0])
 	r.Equal("SELECT 2\\g result.txt\n", queries[1])
 	r.Equal("SELECT 3\\g (format=unaligned tuples_only)\n", queries[2])
 }
@@ -142,10 +144,11 @@ SELECT 3\g (format=unaligned tuples_only)
 func TestPsqlParserCrosstabviewCommand(t *testing.T) {
 	r := require.New(t)
 
-	sqlContent := `SELECT 1, 1, 1 \crosstabview
-SELECT 2, 2, 2 \crosstabview
-SELECT 3, 3, 3 \crosstabview
-`
+	sqlContent := dedent.Dedent(`
+	SELECT 1, 1, 1 \crosstabview
+	SELECT 2, 2, 2 \crosstabview
+	SELECT 3, 3, 3 \crosstabview
+	`)
 	parser, _ := NewBuilder("psql").
 		WithContent(sqlContent).
 		Build()

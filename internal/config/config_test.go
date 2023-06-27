@@ -8,6 +8,7 @@ import (
 	. "github.com/fljdin/dispatch/internal/config"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/fljdin/dispatch/internal/tasks/actions"
+	"github.com/lithammer/dedent"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,11 +45,12 @@ func TestConfigWithMaxWorkersOverrided(t *testing.T) {
 func TestConfigFromYAML(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-workers: 1
-tasks:
-  - id: 1
-    command: true`
+	yamlConfig := dedent.Dedent(`
+	workers: 1
+	tasks:
+	  - id: 1
+	    command: true
+	`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -61,14 +63,14 @@ tasks:
 func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-connections:
-  - name: default
-    host: remote
-tasks:
-  - id: 1
-    type: psql
-    command: SELECT 1`
+	yamlConfig := dedent.Dedent(`
+	connections:
+	  - name: default
+	    host: remote
+	tasks:
+	  - id: 1
+	    type: psql
+	    command: SELECT 1`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -82,16 +84,16 @@ func TestConfigFromYAMLWithConnections(t *testing.T) {
 	r := require.New(t)
 
 	cnx := "postgresql://postgres:secret@localhost:5432/postgres"
-	yamlConfig := `
-connections:
-  - name: db
-    uri: %s
-tasks:
-  - id: 1
-    name: use predefined db name
-    type: psql
-    command: SELECT 1
-    connection: db`
+	yamlConfig := dedent.Dedent(`
+	connections:
+	  - name: db
+	    uri: %s
+	tasks:
+	  - id: 1
+	    name: use predefined db name
+	    type: psql
+	    command: SELECT 1
+	    connection: db`)
 	config, _ := NewBuilder().
 		WithYAML(fmt.Sprintf(yamlConfig, cnx)).
 		Build()
@@ -103,11 +105,11 @@ tasks:
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    command: SELECT 1
-    connection: db`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    command: SELECT 1
+	    connection: db`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -120,17 +122,17 @@ tasks:
 func TestConfigFromYAMLWithCombinedURIConnection(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-connections:
-  - name: db
-    host: localhost
-    port: 5433
-    dbname: db
-tasks:
-  - id: 1
-    type: psql
-    command: SELECT 1
-    connection: db`
+	yamlConfig := dedent.Dedent(`
+	connections:
+	  - name: db
+	    host: localhost
+	    port: 5433
+	    dbname: db
+	tasks:
+	  - id: 1
+	    type: psql
+	    command: SELECT 1
+	    connection: db`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -173,13 +175,13 @@ func TestConfigFromInvalidYAML(t *testing.T) {
 func TestConfigWithDependencies(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    command: true
-  - id: 2
-    command: true
-    depends_on: [1]`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    command: true
+	  - id: 2
+	    command: true
+	    depends_on: [1]`)
 	_, err := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -190,13 +192,13 @@ tasks:
 func TestConfigWithUnknownDependency(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    command: true
-  - id: 2
-    command: true
-    depends_on: [1, 3]`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    command: true
+	  - id: 2
+	    command: true
+	    depends_on: [1, 3]`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -209,18 +211,18 @@ tasks:
 func TestConfigWithDefaultConnection(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-connections:
-  - name: anotherdb
-    uri: postgresql://?host=localhost
-tasks:
-  - id: 1
-    type: psql
-    command: SELECT 1
-  - id: 2
-    type: psql
-    command: SELECT 2
-    connection: anotherdb`
+	yamlConfig := dedent.Dedent(`
+	connections:
+	  - name: anotherdb
+	    uri: postgresql://?host=localhost
+	tasks:
+	  - id: 1
+	    type: psql
+	    command: SELECT 1
+	  - id: 2
+	    type: psql
+	    command: SELECT 2
+	    connection: anotherdb`)
 	cnx := Connection{Host: "remote", User: "postgres"}
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
@@ -235,12 +237,12 @@ tasks:
 func TestConfigWithOutputLoader(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    loaded:
-      from: sh
-      command: echo true`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    loaded:
+	      from: sh
+	      command: echo true`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -253,11 +255,11 @@ tasks:
 func TestConfigWithFileLoader(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    type: psql
-    file: junk.sql`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    type: psql
+	    file: junk.sql`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
@@ -270,11 +272,11 @@ tasks:
 func TestConfigWithInvalidLoader(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := `
-tasks:
-  - id: 1
-    loaded:
-      from: invalid`
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    loaded:
+	      from: invalid`)
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
 		Build()
