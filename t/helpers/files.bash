@@ -1,9 +1,9 @@
 function teardown_files {
-    rm -f commands.sh queries.sql
+	rm -f commands.sh queries.sql
 }
 
 function create_commands() {
-    cat <<-EOF > commands.sh
+	cat <<-EOF > commands.sh
 	echo 1
 	echo 2
 	EOF
