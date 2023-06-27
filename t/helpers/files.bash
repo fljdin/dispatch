@@ -3,15 +3,15 @@ function teardown_files {
 }
 
 function create_commands() {
-    cat <<EOF > commands.sh
-echo 1
-echo 2
+    cat <<-EOF > commands.sh
+	echo 1
+	echo 2
 EOF
 }
 
 function create_queries() {
-    cat <<EOF > queries.sql
-SELECT 1;
-SELECT 2;
+    cat <<-EOF > queries.sql
+	SELECT 1;
+	SELECT 2;
 EOF
 }
