@@ -2,4 +2,6 @@
 .vscode/launch.json
 junk/
 t/*.log
+t/*.sh
+t/*.sql
 dispatch

@@ -30,6 +30,9 @@ jobs:
       - uses: mig4/setup-bats@v1
         with:
           bats-version: '1.9.0'
+        
+      - name: Build testing binary
+        run: go build -tags testing
 
       - name: Test with bats
         run: bats t

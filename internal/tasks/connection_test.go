@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,15 +30,19 @@ var testConnections = []struct {
 }
 
 func TestConnectionCombinedURI(t *testing.T) {
+	r := require.New(t)
+
 	for _, tc := range testConnections {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := tc.connection.CombinedURI()
-			require.Equal(t, tc.expected, actual)
+			r.Equal(tc.expected, actual)
 		})
 	}
 }
 
 func TestConnectionsURIbyName(t *testing.T) {
+	r := require.New(t)
+
 	var c Connections
 	expected := "postgresql://localhost"
 	c = append(c, Connection{
@@ -48,27 +51,31 @@ func TestConnectionsURIbyName(t *testing.T) {
 	})
 	uri, _ := c.GetURIByName("db")
 
-	assert.Equal(t, expected, uri)
+	r.Equal(expected, uri)
 }
 
 func TestConnectionsURIbyNameNotFound(t *testing.T) {
+	r := require.New(t)
+
 	var c Connections
 	c = append(c, Connection{
 		Name: "db",
 		URI:  "postgresql://localhost",
 	})
 	_, err := c.GetURIByName("nowhere")
-	require.NotNil(t, err)
+
+	r.NotNil(err)
 }
 
 func TestConnectionsCombinedURIbyName(t *testing.T) {
+	r := require.New(t)
+
 	c := Connections{Connection{
 		Name: "db",
 		Host: "localhost",
 	}}
-
 	expected := "postgresql://?host=localhost"
 	uri, _ := c.GetURIByName("db")
 
-	assert.Equal(t, expected, uri)
+	r.Equal(expected, uri)
 }
