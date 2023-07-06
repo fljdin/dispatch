@@ -1,0 +1,8 @@
+---
+workers: 1
+logfile: TestRunWithConfig.log
+
+tasks:
+  - id: 1
+    name: simple task
+    command: echo "hello world"
