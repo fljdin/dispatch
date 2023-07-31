@@ -6,23 +6,13 @@ import (
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/fljdin/dispatch/internal/tasks"
-	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/spf13/cobra"
-)
-
-var (
-	argMaxWorkers      int
-	argMaxWorkersDesc  string = "number of workers (default 2)"
-	argSqlFilename     string
-	argSqlFilenameDesc string = "file containing SQL statements"
-	argType            string
-	argTypeDesc        string = "parser type (default sh)"
 )
 
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Execute tasks",
-	RunE:  launch,
+	Short: "Run tasks from configuration file",
+	RunE:  run,
 }
 
 var defaultConnection tasks.Connection
@@ -46,7 +36,7 @@ func newConfig() (config.Config, error) {
 		Build()
 }
 
-func launch(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) error {
 	config, err := newConfig()
 	if err != nil {
 		return err
@@ -55,17 +45,6 @@ func launch(cmd *cobra.Command, args []string) error {
 	t, err := config.Tasks()
 	if err != nil {
 		return err
-	}
-
-	if len(argSqlFilename) > 0 {
-		t = append(t, tasks.Task{
-			ID: 1,
-			Action: actions.FileLoader{
-				File: argSqlFilename,
-				Type: argType,
-				URI:  config.DefaultConnection.CombinedURI(),
-			},
-		})
 	}
 
 	if len(t) == 0 {
@@ -96,9 +75,5 @@ func launch(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(runCmd)
 
-	// don't use defaulting feature from cobra as precedence rules are
-	// provided by ConfigBuilder
-	runCmd.Flags().IntVarP(&argMaxWorkers, "jobs", "j", 0, argMaxWorkersDesc)
-	runCmd.Flags().StringVarP(&argSqlFilename, "file", "f", "", argSqlFilenameDesc)
-	runCmd.Flags().StringVarP(&argType, "type", "t", "sh", argTypeDesc)
+	runCmd.Flags().StringVarP(&argParserType, "type", "t", "sh", argParserTypeDesc)
 }

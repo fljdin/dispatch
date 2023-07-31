@@ -31,11 +31,22 @@ function assert-diff() {
     assert-diff loaded_from_sql_output.log
 }
 
-@test "dispatch with --file and --type flags" {
+@test "exec with --file flags" {
     LOG=loaded_from_sh_file.log
     create_commands
-    dispatch run \
-      --jobs 1 --log $LOG \
-      --file commands.sh --type sh
+
+    dispatch exec \
+      --type sh --file commands.sh \
+      --jobs 1 --log $LOG
+    assert-diff $LOG
+}
+
+@test "exec with --to and --command flags" {
+    LOG=loaded_from_sql_output.log
+
+    dispatch exec \
+      --type psql --to sh \
+      --command "SELECT format('echo %s', i) FROM generate_series(1, 2) AS i" \
+      --jobs 1 --log $LOG
     assert-diff $LOG
 }

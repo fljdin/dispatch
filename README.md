@@ -16,18 +16,19 @@ Common use cases:
 
 ```sh
 Usage:
-  dispatch run [flags]
+  dispatch [command]
 
-Flags:
-  -f, --file string   file containing SQL statements
-  -j, --jobs int      number of workers (default 2)
-  -t, --type string   parser type (default "sh")
+Available Commands:
+  exec        Execute tasks from commands
+  help        Help about any command
+  run         Run tasks from configuration file
 
 Global Flags:
   -c, --config string   configuration file
   -d, --dbname string   database name to connect to
       --help            show help
   -h, --host string     database server host or socket directory
+  -j, --jobs int        number of workers (default 2)
   -l, --log string      log file
   -W, --password        force password prompt
   -p, --port int        database server port
@@ -35,15 +36,36 @@ Global Flags:
   -v, --verbose         verbose mode
 ```
 
-### Examples
+```sh
+Usage:
+  dispatch run [flags]
+
+Flags:
+  -t, --type string   parser type (default "sh")
+```
 
 ```sh
-cat <<EOF | psql -At > statements.sql
-SELECT format('VACUUM ANALYZE %I.%I;', schemaname, relname)
-  FROM pg_stat_user_tables WHERE last_analyze IS NULL
+Usage:
+  dispatch exec [flags]
+
+Flags:
+  -C, --command string   loader command to execute
+  -f, --file string      file containing commands to execute
+  -T, --to string        executor type (default "sh")
+  -t, --type string      parser type (default "sh")
+```
+
+### Examples
+
+Dispatch statements stored in a file:
+
+```sh
+cat <<EOF > statements.sql
+CREATE INDEX t1_idx1 ON t1(col1);
+CREATE INDEX t2_idx1 ON t2(col1);
 EOF
 
-dispatch run -j 2 -f statements.sql
+dispatch exec -j 2 --type psql --file statements.sql
 ```
 
 ```text
@@ -51,9 +73,16 @@ dispatch run -j 2 -f statements.sql
 2023/05/22 18:19:08 Worker 2 completed Task 0 (query #0) (success: true, elapsed: 12ms)
 ```
 
+Dispatch generated statements from a command:
+
+```sh
+dispatch exec --type psql --to sh \
+  --command "SELECT format('vacuumdb --table %s', tablename) FROM pg_tables WHERE tablename LIKE 'a%';"
+```
+
 ## Command parsing
 
-Internal parsers are used to load commands from `sh` or `psql` invocation. 
+Internal parsers are used to load commands from `sh` or `psql` invocation.
 
 **`sh` rules**
 
@@ -152,8 +181,9 @@ tasks:
     loaded:
       from: psql
       command: |
-        SELECT format('reindexdb -v -t %I;', tablename) FROM pg_tables 
-        WHERE schemaname = 'public' AND tablename NOT IN ('log')
+        SELECT format('reindexdb -v -t %I;', tablename) FROM pg_tables
+        WHERE schemaname = 'public' AND tablename NOT IN ('log'
+)
 ```
 
 ### Traces

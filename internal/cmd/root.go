@@ -12,10 +12,20 @@ import (
 )
 
 var (
+	argCommand            string
+	argCommandDesc        string = "loader command to execute"
 	argConfigFilename     string
 	argConfigFilenameDesc string = "configuration file"
+	argExecType           string
+	argExecTypeDesc       string = "executor type"
+	argFilename           string
+	argFilenameDesc       string = "file containing commands to execute"
 	argLogfile            string
 	argLogfileDesc        string = "log file"
+	argMaxWorkers         int
+	argMaxWorkersDesc     string = "number of workers (default 2)"
+	argParserType         string
+	argParserTypeDesc     string = "parser type"
 	argPgDbname           string
 	argPgDbnameDesc       string = "database name to connect to"
 	argPgHost             string
@@ -77,6 +87,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().IntVarP(&argMaxWorkers, "jobs", "j", 0, argMaxWorkersDesc)
 	rootCmd.PersistentFlags().StringVarP(&argConfigFilename, "config", "c", "", argConfigFilenameDesc)
 	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
 	rootCmd.PersistentFlags().StringVarP(&argLogfile, "log", "l", "", argLogfileDesc)
