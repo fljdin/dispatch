@@ -9,6 +9,7 @@ import (
 type Connection struct {
 	Name     string `yaml:"name"`
 	URI      string `yaml:"uri"`
+	Service  string `yaml:"service"`
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
 	Dbname   string `yaml:"dbname"`
@@ -19,6 +20,10 @@ type Connection struct {
 func (c Connection) CombinedURI() string {
 	uri := "postgresql://?"
 	params := url.Values{}
+
+	if c.Service != "" {
+		params.Add("service", c.Service)
+	}
 
 	if c.Host != "" {
 		params.Add("host", c.Host)

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -34,6 +35,8 @@ var (
 	argPgPortDesc         string = "database server port"
 	argPgPwdPrompt        bool
 	argPgPwdPromptdDesc   string = "force password prompt"
+	argPgService          string
+	argPgServiceDesc      string = "database service"
 	argPgUser             string
 	argPgUserDesc         string = "database user name"
 	argVerbose            bool
@@ -80,6 +83,19 @@ func ReadHiddenInput(prompt string, condition bool) string {
 	return value
 }
 
+func DefaultConnection() tasks.Connection {
+	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
+
+	return tasks.Connection{
+		Service:  argPgService,
+		Host:     argPgHost,
+		Port:     argPgPort,
+		Dbname:   argPgDbname,
+		User:     argPgUser,
+		Password: argPgPassword,
+	}
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
@@ -92,6 +108,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&argVerbose, "verbose", "v", false, argVerboseDesc)
 	rootCmd.PersistentFlags().StringVarP(&argLogfile, "log", "l", "", argLogfileDesc)
 
+	rootCmd.PersistentFlags().StringVarP(&argPgService, "service", "s", "", argPgServiceDesc)
 	rootCmd.PersistentFlags().StringVarP(&argPgHost, "host", "h", "", argPgHostDesc)
 	rootCmd.PersistentFlags().IntVarP(&argPgPort, "port", "p", 0, argPgPortDesc)
 	rootCmd.PersistentFlags().StringVarP(&argPgDbname, "dbname", "d", "", argPgDbnameDesc)

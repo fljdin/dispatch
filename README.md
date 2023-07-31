@@ -200,6 +200,7 @@ logfile: result.out
 * `connections`: declares named connections used by tasks
   * `name`: connection name (`default` applied to any unattached tasks)
   * `uri`: a valid connection URI, takes precedence over following values
+  * `service`: service defined in PGSERVICEFILE
   * `host`: database server host or socket directory
   * `port`: database server port
   * `dbname`: database name to connect to

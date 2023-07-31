@@ -5,7 +5,6 @@ import (
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
-	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/spf13/cobra"
 )
 
@@ -15,24 +14,12 @@ var runCmd = &cobra.Command{
 	RunE:  run,
 }
 
-var defaultConnection tasks.Connection
-
 func newConfig() (config.Config, error) {
-	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
-
-	defaultConnection = tasks.Connection{
-		Host:     argPgHost,
-		Port:     argPgPort,
-		Dbname:   argPgDbname,
-		User:     argPgUser,
-		Password: argPgPassword,
-	}
-
 	return config.NewBuilder().
 		FromYAML(argConfigFilename).
 		WithMaxWorkers(argMaxWorkers).
 		WithLogfile(argLogfile).
-		WithDefaultConnection(defaultConnection).
+		WithDefaultConnection(DefaultConnection()).
 		Build()
 }
 

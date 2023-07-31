@@ -27,6 +27,11 @@ var testConnections = []struct {
 		connection: Connection{Dbname: "postgres", User: "postgres"},
 		expected:   "postgresql://?dbname=postgres&user=postgres",
 	},
+	{
+		name:       "TestConnectionCombinedURI4",
+		connection: Connection{Service: "mydb", User: "postgres"},
+		expected:   "postgresql://?service=mydb&user=postgres",
+	},
 }
 
 func TestConnectionCombinedURI(t *testing.T) {

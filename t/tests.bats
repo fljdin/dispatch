@@ -4,6 +4,8 @@ function setup() {
     DIR="${BATS_TEST_FILENAME%/*}"
     PATH="$DIR/..:$PATH"
     cd $DIR
+
+    setup_service
 }
 
 function teardown() {
@@ -45,7 +47,7 @@ function assert-diff() {
     LOG=loaded_from_sql_output.log
 
     dispatch exec \
-      --type psql --to sh \
+      --service testing --type psql --to sh \
       --command "SELECT format('echo %s', i) FROM generate_series(1, 2) AS i" \
       --jobs 1 --log $LOG
     assert-diff $LOG

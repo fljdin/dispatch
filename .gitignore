@@ -4,4 +4,5 @@ junk/
 t/*.log
 t/*.sh
 t/*.sql
+t/*.conf
 dispatch

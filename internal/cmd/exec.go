@@ -17,15 +17,7 @@ var execCmd = &cobra.Command{
 
 func exec(cmd *cobra.Command, args []string) error {
 	t := []tasks.Task{}
-	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
-
-	defaultConnection = tasks.Connection{
-		Host:     argPgHost,
-		Port:     argPgPort,
-		Dbname:   argPgDbname,
-		User:     argPgUser,
-		Password: argPgPassword,
-	}
+	defaultConnection := DefaultConnection()
 
 	if len(argFilename) > 0 {
 		t = append(t, tasks.Task{
