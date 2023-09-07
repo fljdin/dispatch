@@ -2,8 +2,10 @@ package actions
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/fragment"
+	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
 
@@ -11,6 +13,15 @@ type FileLoader struct {
 	File string
 	Type string
 	URI  string
+}
+
+func (c FileLoader) language() fragment.Language {
+	switch c.Type {
+	case "psql":
+		return languages.PgSQL
+	default:
+		return languages.Shell
+	}
 }
 
 func (c FileLoader) Validate() error {
@@ -32,10 +43,7 @@ func (c FileLoader) Validate() error {
 
 func (c FileLoader) Run() (Report, []Action) {
 	startTime := Time()
-
-	parser, err := parser.NewBuilder(c.Type).
-		FromFile(c.File).
-		Build()
+	data, err := os.ReadFile(c.File)
 
 	if err != nil {
 		endTime := Time()
@@ -51,7 +59,7 @@ func (c FileLoader) Run() (Report, []Action) {
 	}
 
 	var commands []Action
-	for _, command := range parser.Parse() {
+	for _, command := range c.language().Split(string(data)) {
 		commands = append(commands, Command{
 			Text: command,
 			Type: c.Type,

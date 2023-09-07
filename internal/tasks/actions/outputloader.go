@@ -3,7 +3,8 @@ package actions
 import (
 	"fmt"
 
-	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/fragment"
+	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
 
@@ -12,6 +13,15 @@ type OutputLoader struct {
 	From string
 	Type string
 	URI  string
+}
+
+func (c OutputLoader) language() fragment.Language {
+	switch c.Type {
+	case "psql":
+		return languages.PgSQL
+	default:
+		return languages.Shell
+	}
 }
 
 func (c OutputLoader) Validate() error {
@@ -54,18 +64,8 @@ func (c OutputLoader) Run() (Report, []Action) {
 		return result, nil
 	}
 
-	parser, err := parser.NewBuilder(c.Type).
-		WithContent(result.Output).
-		Build()
-
-	if err != nil {
-		result.Status = KO
-		result.Error = err.Error()
-		return result, nil
-	}
-
 	var commands []Action
-	for _, command := range parser.Parse() {
+	for _, command := range c.language().Split(result.Output) {
 		commands = append(commands, Command{
 			Text: command,
 			Type: c.Type,
