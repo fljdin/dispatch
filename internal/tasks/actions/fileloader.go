@@ -2,8 +2,9 @@ package actions
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/fljdin/dispatch/internal/parser"
+	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
 
@@ -13,29 +14,35 @@ type FileLoader struct {
 	URI  string
 }
 
-func (c FileLoader) Validate() error {
+func (l FileLoader) load(input string) []string {
+	switch l.Type {
+	case "psql":
+		return languages.PgSQL.Split(input)
+	default:
+		return languages.Shell.Split(input)
+	}
+}
 
-	if !slices.Contains(CommandTypes, c.Type) {
-		return fmt.Errorf("%s is not supported", c.Type)
+func (l FileLoader) Validate() error {
+
+	if !slices.Contains(CommandTypes, l.Type) {
+		return fmt.Errorf("%s is not supported", l.Type)
 	}
 
-	if c.File != "" && c.Type == "" {
+	if l.File != "" && l.Type == "" {
 		return fmt.Errorf("type is required with a file")
 	}
 
-	if c.File == "" {
+	if l.File == "" {
 		return fmt.Errorf("file is required")
 	}
 
 	return nil
 }
 
-func (c FileLoader) Run() (Report, []Action) {
+func (l FileLoader) Run() (Report, []Action) {
 	startTime := Time()
-
-	parser, err := parser.NewBuilder(c.Type).
-		FromFile(c.File).
-		Build()
+	data, err := os.ReadFile(l.File)
 
 	if err != nil {
 		endTime := Time()
@@ -51,11 +58,11 @@ func (c FileLoader) Run() (Report, []Action) {
 	}
 
 	var commands []Action
-	for _, command := range parser.Parse() {
+	for _, command := range l.load(string(data)) {
 		commands = append(commands, Command{
 			Text: command,
-			Type: c.Type,
-			URI:  c.URI,
+			Type: l.Type,
+			URI:  l.URI,
 		})
 	}
 
@@ -66,7 +73,7 @@ func (c FileLoader) Run() (Report, []Action) {
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
 		Status:    OK,
-		Output:    fmt.Sprintf("%d loaded from %s", len(commands), c.File),
+		Output:    fmt.Sprintf("%d loaded from %s", len(commands), l.File),
 	}
 
 	return result, commands
