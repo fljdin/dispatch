@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 
-	"github.com/fljdin/fragment"
 	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
@@ -15,41 +14,41 @@ type OutputLoader struct {
 	URI  string
 }
 
-func (c OutputLoader) language() fragment.Language {
-	switch c.Type {
+func (l OutputLoader) load(input string) []string {
+	switch l.Type {
 	case "psql":
-		return languages.PgSQL
+		return languages.PgSQL.Split(input)
 	default:
-		return languages.Shell
+		return languages.Shell.Split(input)
 	}
 }
 
-func (c OutputLoader) Validate() error {
+func (l OutputLoader) Validate() error {
 
-	if c.Text == "" {
+	if l.Text == "" {
 		return fmt.Errorf("command is required")
 	}
 
-	if !slices.Contains(CommandTypes, c.Type) {
-		return fmt.Errorf("%s is not supported", c.Type)
+	if !slices.Contains(CommandTypes, l.Type) {
+		return fmt.Errorf("%s is not supported", l.Type)
 	}
 
-	if !slices.Contains(CommandTypes, c.From) {
-		return fmt.Errorf("%s is not supported", c.From)
+	if !slices.Contains(CommandTypes, l.From) {
+		return fmt.Errorf("%s is not supported", l.From)
 	}
 
 	return nil
 }
 
-func (c OutputLoader) Run() (Report, []Action) {
-	if c.From == "psql" {
-		c.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", c.Text)
+func (l OutputLoader) Run() (Report, []Action) {
+	if l.From == "psql" {
+		l.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", l.Text)
 	}
 
 	cmd := Command{
-		Text: c.Text,
-		Type: c.From,
-		URI:  c.URI,
+		Text: l.Text,
+		Type: l.From,
+		URI:  l.URI,
 	}
 
 	err := cmd.Validate()
@@ -65,11 +64,11 @@ func (c OutputLoader) Run() (Report, []Action) {
 	}
 
 	var commands []Action
-	for _, command := range c.language().Split(result.Output) {
+	for _, command := range l.load(result.Output) {
 		commands = append(commands, Command{
 			Text: command,
-			Type: c.Type,
-			URI:  c.URI,
+			Type: l.Type,
+			URI:  l.URI,
 		})
 	}
 

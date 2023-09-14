@@ -80,22 +80,6 @@ dispatch exec --type psql --to sh \
   --command "SELECT format('vacuumdb --table %s', tablename) FROM pg_tables WHERE tablename LIKE 'a%';"
 ```
 
-## Command parsing
-
-Internal parsers are used to load commands from `sh` or `psql` invocation.
-
-**`sh` rules**
-
-* commands are newline-separated
-* empty lines, escaped newline or comments are ignored
-* WARNING: multilines with Heredoc or quoted literals are not supported yet
-
-**`psql` rules**
-
-* queries are semicolon-separated or could be termined by a meta-command, like
-  `\g` or `\gexec`
-* transaction blocks and anonymous code blocks are detected as entire queries
-
 ## Configuration
 
 Use a valid YAML file to describe tasks.
@@ -152,7 +136,12 @@ tasks:
 #### Loader tasks
 
 A loader is an extended task that dispatch instructions from a result command or
-a file. To read and dispatch instructions from a file, use this:
+a file. Delimiter detection is provided by [Fragment] package and only `PgSQL`
+and `Shell` languages are supported.
+
+[Fragment]: https://github.com/fljdin/fragment
+
+To read and dispatch instructions from a file, use this:
 
 - `file`: instructions to be loaded from a file
 
