@@ -1,8 +1,6 @@
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fljdin/fragment v0.0.0-20230905063541-fc3e7e6f0b68 h1:bHi0gbXu2TKc6MB7k0a3mP+65dXDswq2bSN7kBBujbM=
-github.com/fljdin/fragment v0.0.0-20230905063541-fc3e7e6f0b68/go.mod h1:2tpbdejGrO2DMJaM2p23VUd+x/zJjyzchiWJRxRtkBI=
 github.com/fljdin/fragment v0.0.0-20230907113410-b8a526c9c145 h1:iDVY5TN2eQ7dOpIel4RANcfz3+PmcwwpQLKrhucAgi0=
 github.com/fljdin/fragment v0.0.0-20230907113410-b8a526c9c145/go.mod h1:JrYgq5pW7X+zNjZnoROFS8niSFARCCr0y5FjRJRVwZo=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
