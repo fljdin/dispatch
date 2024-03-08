@@ -3,7 +3,6 @@ package tasks
 import (
 	"fmt"
 
-	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"golang.org/x/exp/slices"
 )
 
@@ -11,7 +10,7 @@ type Task struct {
 	ID      int
 	SubID   int
 	Name    string
-	Action  actions.Action
+	Action  Action
 	Depends []int
 	Status  int
 }

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/tasks"
-	"github.com/fljdin/dispatch/internal/tasks/actions"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,7 +12,7 @@ func TestCreateTask(t *testing.T) {
 
 	task := Task{
 		ID: 1,
-		Action: actions.Command{
+		Action: Command{
 			Text: "echo test",
 		},
 	}
@@ -26,7 +25,7 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 	r := require.New(t)
 
 	task := Task{
-		Action: actions.Command{Text: "true"},
+		Action: Command{Text: "true"},
 	}
 	err := task.Validate()
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/config"
-	"github.com/fljdin/dispatch/internal/tasks/actions"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/lithammer/dedent"
 	"github.com/stretchr/testify/require"
 )
@@ -76,7 +76,7 @@ func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
 	tasks, _ := config.Tasks()
 
 	r.Equal(1, len(config.Connections))
-	r.Equal("postgresql://?host=remote", tasks[0].Action.(actions.Command).URI)
+	r.Equal("postgresql://?host=remote", tasks[0].Action.(Command).URI)
 }
 
 func TestConfigFromYAMLWithConnections(t *testing.T) {
@@ -98,7 +98,7 @@ func TestConfigFromYAMLWithConnections(t *testing.T) {
 		Build()
 	tasks, _ := config.Tasks()
 
-	r.Equal(cnx, tasks[0].Action.(actions.Command).URI)
+	r.Equal(cnx, tasks[0].Action.(Command).URI)
 }
 
 func TestConfigFromYAMLWithUnknownConnection(t *testing.T) {
@@ -138,7 +138,7 @@ func TestConfigFromYAMLWithCombinedURIConnection(t *testing.T) {
 	tasks, _ := config.Tasks()
 	expected := "postgresql://?dbname=db&host=localhost&port=5433"
 
-	r.Equal(expected, tasks[0].Action.(actions.Command).URI)
+	r.Equal(expected, tasks[0].Action.(Command).URI)
 }
 
 func TestConfigFromNonExistingFile(t *testing.T) {
@@ -229,8 +229,8 @@ func TestConfigWithDefaultConnection(t *testing.T) {
 		Build()
 	tasks, _ := config.Tasks()
 
-	r.Equal("postgresql://?host=remote&user=postgres", tasks[0].Action.(actions.Command).URI)
-	r.Equal("postgresql://?host=localhost", tasks[1].Action.(actions.Command).URI)
+	r.Equal("postgresql://?host=remote&user=postgres", tasks[0].Action.(Command).URI)
+	r.Equal("postgresql://?host=localhost", tasks[1].Action.(Command).URI)
 }
 
 func TestConfigWithOutputLoader(t *testing.T) {
@@ -247,8 +247,8 @@ func TestConfigWithOutputLoader(t *testing.T) {
 		Build()
 	tasks, _ := config.Tasks()
 
-	r.Equal("sh", tasks[0].Action.(actions.OutputLoader).From)
-	r.Equal("echo true", tasks[0].Action.(actions.OutputLoader).Text)
+	r.Equal("sh", tasks[0].Action.(OutputLoader).From)
+	r.Equal("echo true", tasks[0].Action.(OutputLoader).Text)
 }
 
 func TestConfigWithFileLoader(t *testing.T) {
@@ -265,7 +265,7 @@ func TestConfigWithFileLoader(t *testing.T) {
 	tasks, err := config.Tasks()
 
 	r.Nil(err)
-	r.Equal("junk.sql", tasks[0].Action.(actions.FileLoader).File)
+	r.Equal("junk.sql", tasks[0].Action.(FileLoader).File)
 }
 
 func TestConfigWithInvalidLoader(t *testing.T) {

@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/fljdin/dispatch/internal/tasks"
-	"github.com/fljdin/dispatch/internal/tasks/actions"
 )
 
 type YamlLoader struct {
@@ -40,11 +39,11 @@ func (t YamlTask) Normalize(cnx Connections) (tasks.Task, error) {
 		t.URI, _ = cnx.GetURIByName("default")
 	}
 
-	var action actions.Action
+	var action tasks.Action
 
 	if t.Loader != (YamlLoader{}) {
 		if t.Loader.Command != "" && t.Loader.From != "" {
-			action = actions.OutputLoader{
+			action = tasks.OutputLoader{
 				Text: t.Loader.Command,
 				From: t.Loader.From,
 				Type: t.Type,
@@ -52,13 +51,13 @@ func (t YamlTask) Normalize(cnx Connections) (tasks.Task, error) {
 			}
 		}
 	} else if t.File != "" {
-		action = actions.FileLoader{
+		action = tasks.FileLoader{
 			File: t.File,
 			Type: t.Type,
 			URI:  t.URI,
 		}
 	} else {
-		action = actions.Command{
+		action = tasks.Command{
 			Text: t.Command,
 			Type: t.Type,
 			URI:  t.URI,

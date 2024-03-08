@@ -1,7 +1,7 @@
 //go:build !testing
 // +build !testing
 
-package actions
+package tasks
 
 import "time"
 
