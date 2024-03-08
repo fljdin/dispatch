@@ -22,7 +22,7 @@ type YamlTask struct {
 	Loader     YamlLoader `yaml:"loaded,omitempty"`
 }
 
-func (t YamlTask) Normalize(cnx tasks.Connections) (tasks.Task, error) {
+func (t YamlTask) Normalize(cnx Connections) (tasks.Task, error) {
 
 	// auto-complete URI from named connections
 	if t.Connection != "" {

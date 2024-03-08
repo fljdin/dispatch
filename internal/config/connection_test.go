@@ -1,9 +1,9 @@
-package tasks_test
+package config_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/config"
 	"github.com/stretchr/testify/require"
 )
 
