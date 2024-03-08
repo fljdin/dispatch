@@ -1,9 +1,9 @@
-package tasks_test
+package queue_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/queue"
 	"github.com/stretchr/testify/require"
 )
 

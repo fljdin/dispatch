@@ -3,19 +3,20 @@ package dispatcher
 import (
 	"sync"
 
+	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Memory struct {
 	wgTasks   sync.WaitGroup
 	wgWorkers sync.WaitGroup
-	queue     tasks.Queue
+	queue     queue.Queue
 	results   chan tasks.Result
 }
 
 func NewMemory() *Memory {
 	return &Memory{
-		queue:   tasks.NewQueue(),
+		queue:   queue.New(),
 		results: make(chan tasks.Result),
 	}
 }

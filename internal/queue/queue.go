@@ -1,9 +1,10 @@
-package tasks
+package queue
 
 import (
 	"container/list"
 	"sync"
 
+	"github.com/fljdin/dispatch/internal/tasks"
 	"golang.org/x/exp/slices"
 )
 
@@ -13,7 +14,7 @@ type Queue struct {
 	tasks  *list.List
 }
 
-func NewQueue() Queue {
+func New() Queue {
 	return Queue{
 		status: NewStatusMap(),
 		tasks:  list.New(),
@@ -35,7 +36,7 @@ func (q *Queue) Len() int {
 	return q.tasks.Len()
 }
 
-func (q *Queue) Add(t Task) {
+func (q *Queue) Add(t tasks.Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -43,23 +44,23 @@ func (q *Queue) Add(t Task) {
 	q.status.Set(t.ID, t.SubID, t.Status)
 }
 
-func (q *Queue) Pop() (Task, bool) {
+func (q *Queue) Pop() (tasks.Task, bool) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
 	element := q.tasks.Front()
 	if element == nil {
-		return Task{}, false
+		return tasks.Task{}, false
 	}
 
-	task := element.Value.(Task)
+	task := element.Value.(tasks.Task)
 	q.tasks.Remove(element)
 
 	task.Status = q.evaluate(task)
 	return task, true
 }
 
-func (q *Queue) evaluate(t Task) int {
+func (q *Queue) evaluate(t tasks.Task) int {
 	for _, id := range t.Depends {
 		status := q.status.Get(id)
 

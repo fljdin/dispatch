@@ -5,6 +5,7 @@ import (
 	"time"
 
 	. "github.com/fljdin/dispatch/internal/logger"
+	. "github.com/fljdin/dispatch/internal/queue"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )

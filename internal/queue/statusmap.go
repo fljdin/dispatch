@@ -1,4 +1,4 @@
-package tasks
+package queue
 
 import (
 	"sync"

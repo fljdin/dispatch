@@ -4,6 +4,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/tasks"
 	"golang.org/x/exp/slices"
 )
@@ -12,7 +13,7 @@ func newTemplate(name string) *template.Template {
 	return template.New(name).Funcs(
 		template.FuncMap{
 			"isSucceeded": func(status int) bool {
-				s := []int{tasks.Ready, tasks.Succeeded}
+				s := []int{queue.Ready, queue.Succeeded}
 				return slices.Contains(s, status)
 			},
 			"roundToMilliseconds": func(duration time.Duration) time.Duration {

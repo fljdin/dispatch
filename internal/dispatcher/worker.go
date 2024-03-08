@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"context"
 
+	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -37,18 +38,18 @@ func (w *Worker) Start() {
 
 func (w *Worker) handle(t tasks.Task) {
 	switch t.Status {
-	case tasks.Waiting:
+	case queue.Waiting:
 		w.memory.ForwardTask(t)
 
-	case tasks.Interrupted:
+	case queue.Interrupted:
 		w.memory.results <- tasks.Result{
 			ID:      t.ID,
 			SubID:   t.SubID,
-			Status:  tasks.Interrupted,
+			Status:  queue.Interrupted,
 			Elapsed: 0,
 		}
 
-	case tasks.Ready:
+	case queue.Ready:
 		w.run(t)
 	}
 }
