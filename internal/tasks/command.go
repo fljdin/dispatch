@@ -1,4 +1,4 @@
-package actions
+package tasks
 
 import (
 	"bytes"
@@ -62,13 +62,13 @@ func (c Command) Run() (Report, []Action) {
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    OK,
+		Status:    Succeeded,
 		Output:    stdout.String(),
 		Error:     stderr.String(),
 	}
 
 	if err != nil {
-		result.Status = KO
+		result.Status = Failed
 	}
 
 	return result, nil

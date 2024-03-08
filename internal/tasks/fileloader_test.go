@@ -1,10 +1,10 @@
-package actions_test
+package tasks_test
 
 import (
 	"os"
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks/actions"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +37,7 @@ func TestFileLoaderRun(t *testing.T) {
 	}
 	result, commands := cmd.Run()
 
-	r.Equal(OK, result.Status)
+	r.Equal(Ready, result.Status)
 	r.Equal(Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
 	r.Equal(Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
 }

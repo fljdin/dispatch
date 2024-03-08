@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/config"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -83,10 +83,10 @@ func ReadHiddenInput(prompt string, condition bool) string {
 	return value
 }
 
-func DefaultConnection() tasks.Connection {
+func DefaultConnection() config.Connection {
 	argPgPassword := ReadHiddenInput("Password: ", argPgPwdPrompt)
 
-	return tasks.Connection{
+	return config.Connection{
 		Service:  argPgService,
 		Host:     argPgHost,
 		Port:     argPgPort,

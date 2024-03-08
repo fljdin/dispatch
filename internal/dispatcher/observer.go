@@ -29,7 +29,7 @@ func (o *Observer) Start() {
 		case <-o.context.Done():
 			return
 		case result := <-o.memory.results:
-			o.memory.SetStatus(result.ID, result.Status)
+			o.memory.SetStatus(result.ID, result.SubID, result.Status)
 			o.Log(result)
 			o.memory.wgTasks.Done()
 		}

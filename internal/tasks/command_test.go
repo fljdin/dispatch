@@ -1,9 +1,9 @@
-package actions_test
+package tasks_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks/actions"
+	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ func TestCommandBasicRun(t *testing.T) {
 	}
 	result, _ := cmd.Run()
 
-	r.Equal(OK, result.Status)
+	r.Equal(Succeeded, result.Status)
 	r.Contains(result.Output, "test")
 }
 
@@ -39,7 +39,7 @@ func TestCommandWithOutput(t *testing.T) {
 	cmd := Command{Text: "echo test"}
 	result, _ := cmd.Run()
 
-	r.Equal(OK, result.Status)
+	r.Equal(Succeeded, result.Status)
 	r.Contains(result.Output, "test")
 }
 
@@ -49,5 +49,5 @@ func TestCommandWithError(t *testing.T) {
 	cmd := Command{Text: "false"}
 	result, _ := cmd.Run()
 
-	r.Equal(KO, result.Status)
+	r.Equal(Failed, result.Status)
 }

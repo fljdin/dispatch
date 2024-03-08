@@ -1,4 +1,4 @@
-package actions
+package tasks
 
 import (
 	"fmt"
@@ -51,7 +51,7 @@ func (l FileLoader) Run() (Report, []Action) {
 			StartTime: startTime,
 			EndTime:   endTime,
 			Elapsed:   endTime.Sub(startTime),
-			Status:    KO,
+			Status:    Failed,
 			Error:     err.Error(),
 		}
 		return result, nil
@@ -72,7 +72,7 @@ func (l FileLoader) Run() (Report, []Action) {
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    OK,
+		Status:    Ready,
 		Output:    fmt.Sprintf("%d loaded from %s", len(commands), l.File),
 	}
 

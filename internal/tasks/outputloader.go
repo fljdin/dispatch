@@ -1,4 +1,4 @@
-package actions
+package tasks
 
 import (
 	"fmt"
@@ -54,12 +54,12 @@ func (l OutputLoader) Run() (Report, []Action) {
 	err := cmd.Validate()
 
 	if err != nil {
-		return Report{Status: KO, Error: err.Error()}, nil
+		return Report{Status: Failed, Error: err.Error()}, nil
 	}
 
 	result, _ := cmd.Run()
 
-	if result.Status == KO {
+	if result.Status == Failed {
 		return result, nil
 	}
 
@@ -72,5 +72,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 		})
 	}
 
+	result.Status = Ready
 	return result, commands
 }

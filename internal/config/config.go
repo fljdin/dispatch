@@ -9,11 +9,11 @@ import (
 var ConfigWorkersDefault int = 2
 
 type Config struct {
-	DeclaredTasks     []YamlTask        `yaml:"tasks"`
-	MaxWorkers        int               `yaml:"workers"`
-	Logfile           string            `yaml:"logfile"`
-	Connections       tasks.Connections `yaml:"connections"`
-	DefaultConnection tasks.Connection
+	DeclaredTasks     []YamlTask  `yaml:"tasks"`
+	MaxWorkers        int         `yaml:"workers"`
+	Logfile           string      `yaml:"logfile"`
+	Connections       Connections `yaml:"connections"`
+	DefaultConnection Connection
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -28,7 +28,7 @@ func (c *Config) ConfigureWorkers() {
 
 func (c *Config) ConfigureConnections() {
 	if _, err := c.Connections.GetURIByName("default"); err != nil {
-		c.Connections = append(c.Connections, tasks.Connection{
+		c.Connections = append(c.Connections, Connection{
 			Name: "default",
 			URI:  c.DefaultConnection.CombinedURI(),
 		})

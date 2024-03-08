@@ -1,20 +1,20 @@
-package tasks_test
+package queue_test
 
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/tasks"
-	. "github.com/fljdin/dispatch/internal/tasks/actions"
+	. "github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
 func TestQueuePush(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID: 1,
-		Action: Command{
+		Action: tasks.Command{
 			Text: "echo test",
 		},
 	})
@@ -25,7 +25,7 @@ func TestQueuePush(t *testing.T) {
 func TestQueuePopEmpty(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
+	queue := New()
 	_, ok := queue.Pop()
 
 	r.Equal(false, ok)
@@ -34,10 +34,10 @@ func TestQueuePopEmpty(t *testing.T) {
 func TestQueuePop(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID: 1,
-		Action: Command{
+		Action: tasks.Command{
 			Text: "echo test",
 		},
 	})
@@ -50,80 +50,80 @@ func TestQueuePop(t *testing.T) {
 func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID: 1,
-		Action: Command{
+		Action: tasks.Command{
 			Text: "echo test",
 		},
 	})
 	task, _ := queue.Pop()
 
-	r.Equal(Ready, task.Status)
+	r.Equal(tasks.Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID:      2,
 		Depends: []int{1},
-		Action: Command{
+		Action: tasks.Command{
 			Text: "true",
 		},
 	})
 	task, _ := queue.Pop()
 
-	r.Equal(Waiting, task.Status)
+	r.Equal(tasks.Waiting, task.Status)
 }
 
 func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID: 1,
-		Action: Command{
+		Action: tasks.Command{
 			Text: "true",
 		},
 	})
-	queue.Add(Task{
+	queue.Add(tasks.Task{
 		ID:      2,
 		Depends: []int{1},
-		Action: Command{
+		Action: tasks.Command{
 			Text: "true",
 		},
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, Succeeded)
+	queue.SetStatus(1, 0, tasks.Succeeded)
 	task, _ := queue.Pop()
 
-	r.Equal(Ready, task.Status)
+	r.Equal(tasks.Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	r := require.New(t)
 
-	queue := NewQueue()
-	queue.Add(Task{
+	queue := New()
+	queue.Add(tasks.Task{
 		ID: 1,
-		Action: Command{
+		Action: tasks.Command{
 			Text: "true",
 		},
 	})
-	queue.Add(Task{
+	queue.Add(tasks.Task{
 		ID:      2,
 		Depends: []int{1},
-		Action: Command{
+		Action: tasks.Command{
 			Text: "true",
 		},
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, Interrupted)
+	queue.SetStatus(1, 0, tasks.Interrupted)
 	task, _ := queue.Pop()
 
-	r.Equal(Interrupted, task.Status)
+	r.Equal(tasks.Interrupted, task.Status)
 }

@@ -1,4 +1,4 @@
-package actions
+package tasks
 
 import (
 	"time"
@@ -7,8 +7,11 @@ import (
 var CommandTypes = []string{"", "sh", "psql"}
 
 const (
-	OK int = iota + 2
-	KO
+	Waiting int = iota
+	Interrupted
+	Failed
+	Ready
+	Succeeded
 )
 
 type Report struct {
