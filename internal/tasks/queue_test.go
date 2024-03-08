@@ -97,7 +97,7 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, Succeeded)
+	queue.SetStatus(1, 0, Succeeded)
 	task, _ := queue.Pop()
 
 	r.Equal(Ready, task.Status)
@@ -122,7 +122,7 @@ func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, Interrupted)
+	queue.SetStatus(1, 0, Interrupted)
 	task, _ := queue.Pop()
 
 	r.Equal(Interrupted, task.Status)

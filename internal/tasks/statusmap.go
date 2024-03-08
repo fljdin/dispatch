@@ -6,35 +6,61 @@ import (
 
 const (
 	Waiting int = iota
+	Interrupted
+	Failed
 	Ready
 	Succeeded
-	Failed
-	Interrupted
 )
 
+type Status map[int]int
+
+func (s Status) Get() (status int) {
+	for _, v := range s {
+		if v == Interrupted {
+			return Interrupted
+		}
+		if v == Failed {
+			return Failed
+		}
+		if v == Waiting {
+			return Waiting
+		}
+	}
+	return Succeeded
+}
+
 type StatusMap struct {
-	m sync.Map
+	m   map[int]Status
+	mut sync.Mutex
+}
+
+func NewStatusMap() *StatusMap {
+	return &StatusMap{
+		m: make(map[int]Status),
+	}
 }
 
 func (sm *StatusMap) Get(id int) int {
-	status, exists := sm.m.Load(id)
+	sm.mut.Lock()
+	defer sm.mut.Unlock()
 
+	values, exists := sm.m[id]
 	if !exists {
 		return Waiting
 	}
 
-	return status.(int)
+	return values.Get()
 }
 
-func (sm *StatusMap) Set(id int, newStatus int) {
-	var status int
-	currentStatus := sm.Get(id)
+func (sm *StatusMap) Set(id, subid, status int) {
+	sm.mut.Lock()
+	defer sm.mut.Unlock()
 
-	if currentStatus > newStatus {
-		status = currentStatus
-	} else {
-		status = newStatus
+	values, exists := sm.m[id]
+	if !exists {
+		values = make(Status)
 	}
 
-	sm.m.Store(id, status)
+	values[subid] = status
+	sm.m[id] = values
 }

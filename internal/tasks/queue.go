@@ -3,18 +3,20 @@ package tasks
 import (
 	"container/list"
 	"sync"
+
+	"golang.org/x/exp/slices"
 )
 
 type Queue struct {
-	status StatusMap
-
-	mut   sync.Mutex
-	tasks *list.List
+	mut    sync.Mutex
+	status *StatusMap
+	tasks  *list.List
 }
 
 func NewQueue() Queue {
 	return Queue{
-		tasks: list.New(),
+		status: NewStatusMap(),
+		tasks:  list.New(),
 	}
 }
 
@@ -22,8 +24,8 @@ func (q *Queue) Status(taskId int) int {
 	return q.status.Get(taskId)
 }
 
-func (q *Queue) SetStatus(taskId int, status int) {
-	q.status.Set(taskId, status)
+func (q *Queue) SetStatus(taskId, taskSubId, status int) {
+	q.status.Set(taskId, taskSubId, status)
 }
 
 func (q *Queue) Len() int {
@@ -38,7 +40,7 @@ func (q *Queue) Add(t Task) {
 	defer q.mut.Unlock()
 
 	q.tasks.PushBack(t)
-	q.status.Set(t.ID, t.Status)
+	q.status.Set(t.ID, t.SubID, t.Status)
 }
 
 func (q *Queue) Pop() (Task, bool) {
@@ -59,11 +61,11 @@ func (q *Queue) Pop() (Task, bool) {
 
 func (q *Queue) evaluate(t Task) int {
 	for _, id := range t.Depends {
-		parentStatus := q.status.Get(id)
+		status := q.status.Get(id)
 
-		if parentStatus >= Failed {
+		if slices.Contains([]int{Interrupted, Failed}, status) {
 			return Interrupted
-		} else if parentStatus < Succeeded {
+		} else if status != Succeeded {
 			return Waiting
 		}
 	}

@@ -1,0 +1,16 @@
+# related to fljdin/dispatch#35
+workers: 2
+logfile: depends_on_loader_task.log
+
+tasks:
+  - id: 1
+    name: "task #1 must load two others"
+    loaded:
+      from: sh
+      command: |
+        echo -n "true\nsleep .1\n"
+  - id: 2
+    name: "task #2 must wait for all subtask completion"
+    from: sh
+    command: "true"
+    depends_on: [1]

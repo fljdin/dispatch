@@ -41,7 +41,7 @@ func TestOutputLoaderRun(t *testing.T) {
 	}
 	result, commands := cmd.Run()
 
-	r.Equal(OK, result.Status)
+	r.Equal(Loaded, result.Status)
 	r.Equal("true\nfalse\n", result.Output)
 	r.Equal(Command{Text: "true"}, commands[0])
 	r.Equal(Command{Text: "false"}, commands[1])

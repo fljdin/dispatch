@@ -24,8 +24,8 @@ func (m *Memory) Status(taskId int) int {
 	return m.queue.Status(taskId)
 }
 
-func (m *Memory) SetStatus(taskId int, status int) {
-	m.queue.SetStatus(taskId, status)
+func (m *Memory) SetStatus(taskId, taskSubId, status int) {
+	m.queue.SetStatus(taskId, taskSubId, status)
 }
 
 func (m *Memory) AddTask(task tasks.Task) {

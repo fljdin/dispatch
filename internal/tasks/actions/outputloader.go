@@ -72,5 +72,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 		})
 	}
 
+	result.Status = Loaded
 	return result, commands
 }

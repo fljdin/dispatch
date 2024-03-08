@@ -7,8 +7,9 @@ import (
 var CommandTypes = []string{"", "sh", "psql"}
 
 const (
-	OK int = iota + 2
-	KO
+	KO int = iota + 2
+	Loaded
+	OK
 )
 
 type Report struct {

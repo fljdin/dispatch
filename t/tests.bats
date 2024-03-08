@@ -52,3 +52,8 @@ function assert-diff() {
       --jobs 1 --log $LOG
     assert-diff $LOG
 }
+
+@test "#35 task depends on a loader task" {
+    dispatch run --config config/depends_on_loader_task.yaml
+    assert-diff depends_on_loader_task.log
+}

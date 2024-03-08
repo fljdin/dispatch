@@ -72,7 +72,7 @@ func (l FileLoader) Run() (Report, []Action) {
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    OK,
+		Status:    Loaded,
 		Output:    fmt.Sprintf("%d loaded from %s", len(commands), l.File),
 	}
 
