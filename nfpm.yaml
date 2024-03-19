@@ -9,7 +9,7 @@ platform: linux
 
 # Version. (required)
 # Hence, you should not prefix the version with 'v'.
-version: 0.6.1
+version: 0.6.2
 
 # Version Prerelease.
 prerelease: alpha1
