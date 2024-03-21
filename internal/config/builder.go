@@ -30,11 +30,6 @@ func (cb *ConfigBuilder) WithTask(task YamlTask) *ConfigBuilder {
 	return cb
 }
 
-func (cb *ConfigBuilder) WithDefaultConnection(cnx Connection) *ConfigBuilder {
-	cb.config.DefaultConnection = cnx
-	return cb
-}
-
 func (cb *ConfigBuilder) WithLogfile(filename string) *ConfigBuilder {
 	if len(filename) == 0 {
 		return cb
@@ -82,7 +77,6 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 	}
 
 	cb.config.ConfigureWorkers()
-	cb.config.ConfigureConnections()
 
 	return cb.config, cb.err
 }

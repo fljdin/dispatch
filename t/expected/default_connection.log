@@ -1,7 +1,0 @@
-===== Task 1 (command #0) (success: true, elapsed: 0s) =====
-Started at: 2000-01-01 00:00:00 +0000 UTC
-Ended at:   2000-01-01 00:00:00 +0000 UTC
-Error: 
-Output:
-You are connected to database "postgres" as user "postgres" on host "localhost" (address "::1") at port "5432".
-

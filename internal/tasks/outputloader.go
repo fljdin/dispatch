@@ -16,7 +16,6 @@ type OutputLoader struct {
 	Text      string
 	From      string
 	Type      string
-	URI       string
 	Variables NestedVariables
 }
 
@@ -55,7 +54,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 	cmd := Command{
 		Text:      l.Text,
 		Type:      l.From,
-		URI:       l.URI,
 		Variables: l.Variables.Inner,
 	}
 
@@ -77,7 +75,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 		commands = append(commands, Command{
 			Text:      command,
 			Type:      l.Type,
-			URI:       l.URI,
 			Variables: l.Variables.Outer,
 		})
 	}
