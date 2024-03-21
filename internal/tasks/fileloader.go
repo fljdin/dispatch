@@ -9,9 +9,10 @@ import (
 )
 
 type FileLoader struct {
-	File string
-	Type string
-	URI  string
+	File      string
+	Type      string
+	URI       string
+	Variables map[string]string
 }
 
 func (l FileLoader) load(input string) []string {
@@ -60,9 +61,10 @@ func (l FileLoader) Run() (Report, []Action) {
 	var commands []Action
 	for _, command := range l.load(string(data)) {
 		commands = append(commands, Command{
-			Text: command,
-			Type: l.Type,
-			URI:  l.URI,
+			Text:      command,
+			Type:      l.Type,
+			URI:       l.URI,
+			Variables: l.Variables,
 		})
 	}
 

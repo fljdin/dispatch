@@ -50,3 +50,13 @@ func TestEnvironmentNotFound(t *testing.T) {
 	_, err := envs.ByName("remote")
 	r.Error(err)
 }
+
+func TestEnvironmentInheritVariables(t *testing.T) {
+	r := require.New(t)
+
+	v := Variables{"foo": "bar"}
+	v = v.Inherit(Variables{"foo": "baz", "bar": "baz"})
+
+	r.Equal("bar", v["foo"])
+	r.Equal("baz", v["bar"])
+}
