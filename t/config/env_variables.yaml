@@ -1,0 +1,40 @@
+workers: 1
+logfile: env_variables.log
+
+environments:
+  - name: default
+    variables:
+      PGHOST: localhost
+      PGDATABASE: postgres
+      PGUSER: postgres
+      PGPORT: 5432
+  - name: testing
+    variables:
+      PGAPPNAME: testing
+
+tasks:
+  - id: 1
+    name: connect with default
+    type: psql
+    command: \conninfo
+
+  - id: 2
+    name: connect with testing
+    type: psql
+    command: |
+      show application_name;
+    env: testing
+
+  - id: 3
+    name: print environment variables
+    type: sh
+    command: |
+      echo "PGHOST     = $PGHOST"
+      echo "PGDATABASE = $PGDATABASE"
+      echo "PGUSER     = $PGUSER"
+      echo "PGPORT     = $PGPORT"
+    variables:
+      PGHOST: junk
+      PGDATABASE: junk
+      PGUSER: junk
+      PGPORT: junk

@@ -44,3 +44,8 @@ function assert-diff() {
     dispatch --config config/depends_on_loader_task.yaml
     assert-diff depends_on_loader_task.log
 }
+
+@test "#23 use environment variables" {
+    dispatch --config config/env_variables.yaml
+    assert-diff env_variables.log
+}

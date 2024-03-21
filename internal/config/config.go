@@ -9,11 +9,13 @@ import (
 var ConfigWorkersDefault int = 2
 
 type Config struct {
-	DeclaredTasks     []YamlTask  `yaml:"tasks"`
-	MaxWorkers        int         `yaml:"workers"`
-	Logfile           string      `yaml:"logfile"`
-	Connections       Connections `yaml:"connections"`
-	DefaultConnection Connection
+	DeclaredTasks      []YamlTask  `yaml:"tasks"`
+	MaxWorkers         int         `yaml:"workers"`
+	Logfile            string      `yaml:"logfile"`
+	Connections        Connections `yaml:"connections"`
+	DefaultConnection  Connection
+	Environments       Environments `yaml:"environments"`
+	DefaultEnvironment Environment
 }
 
 func (c *Config) ConfigureWorkers() {
@@ -40,7 +42,7 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {
-		task, err := declared.Normalize(c.Connections)
+		task, err := declared.Normalize(c.Connections, c.Environments)
 		if err != nil {
 			return nil, err
 		}
