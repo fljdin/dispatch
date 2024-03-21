@@ -44,6 +44,9 @@ Use a valid YAML file to describe tasks.
   + `sh` (default)
   + `psql`: needs PostgreSQL `psql` client to be installed
 - `command`: instruction to be executed
+- `env`: environment name as described below
+- `variables`: a map of key-value used as environment variables, takes
+  precedence over `env`
 - `uri`: connection string used by `psql`'s database option (`-d`)
 - `connection`: connection name as described below, overrides `uri`
 - `depends_on`: a list of identifiers of others tasks declared upstream
@@ -129,6 +132,30 @@ tasks:
 
 ```yaml
 logfile: result.out
+```
+
+### Named environments
+
+* `environments`: declares named environment used by commands
+  * `name`: environment name (`default` applied to all tasks)
+  * `variables`: a map of key-value used as environment variables
+
+```yaml
+environments:
+  - name: custom
+    variables:
+      PGHOST: remote.example.com
+      PGUSER: alice
+  - name: default
+    variables:
+      PGDATABASE: postgres
+
+tasks:
+  - id: 1
+    name: Use variables, custom env and default env scopes
+    env: custom
+    variables:
+      PGAPPNAME: my_app
 ```
 
 ### Named connections

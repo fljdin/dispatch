@@ -59,6 +59,65 @@ func TestConfigFromYAML(t *testing.T) {
 	r.Equal(1, tasks[0].ID)
 }
 
+func TestConfigFromYAMLWithDefaultEnvironment(t *testing.T) {
+	r := require.New(t)
+
+	yamlConfig := dedent.Dedent(`
+	environments:
+	  - name: default
+	    variables:
+	      key: bar
+	tasks:
+	  - id: 1
+	    command: true`)
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, _ := config.Tasks()
+
+	r.Equal("bar", tasks[0].Action.(Command).Variables["key"])
+}
+
+func TestConfigFromYAMLWithEnvironment(t *testing.T) {
+	r := require.New(t)
+
+	yamlConfig := dedent.Dedent(`
+	environments:
+	  - name: custom
+	    variables:
+	      key: foo
+	  - name: default
+	    variables:
+	      key: bar
+	tasks:
+	  - id: 1
+	    command: true
+	    env: custom`)
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, _ := config.Tasks()
+
+	r.Equal("foo", tasks[0].Action.(Command).Variables["key"])
+}
+
+func TestConfigFromYAMLWithUnknownEnvironment(t *testing.T) {
+	r := require.New(t)
+
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    command: true
+	    env: custom`)
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	_, err := config.Tasks()
+
+	r.NotNil(err)
+	r.Contains(err.Error(), "environment not found")
+}
+
 func TestConfigFromYAMLWithDefaultConnection(t *testing.T) {
 	r := require.New(t)
 
