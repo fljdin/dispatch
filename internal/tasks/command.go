@@ -13,7 +13,6 @@ import (
 type Command struct {
 	Text      string
 	Type      string
-	URI       string
 	Variables map[string]string
 }
 
@@ -36,7 +35,7 @@ func (c Command) getExecCommand() *exec.Cmd {
 	switch c.Type {
 	case "psql":
 		// ON_ERROR_STOP is used to retrieve the correct exit code
-		cmd = exec.Command("psql", "-v", "ON_ERROR_STOP=1", "-d", c.URI)
+		cmd = exec.Command("psql", "-v", "ON_ERROR_STOP=1")
 
 		// use input pipe to handle \g meta-commands
 		textPipe, _ := cmd.StdinPipe()

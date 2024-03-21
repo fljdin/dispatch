@@ -22,27 +22,13 @@ type YamlTask struct {
 	Name        string     `yaml:"name,omitempty"`
 	Command     string     `yaml:"command"`
 	File        string     `yaml:"file"`
-	URI         string     `yaml:"uri,omitempty"`
-	Connection  string     `yaml:"connection,omitempty"`
 	Depends     []int      `yaml:"depends_on,omitempty"`
 	Loader      YamlLoader `yaml:"loaded,omitempty"`
 	Environment string     `yaml:"env,omitempty"`
 	Variables   Variables  `yaml:"variables,omitempty"`
 }
 
-func (t YamlTask) Normalize(cnx Connections, env Environments) (tasks.Task, error) {
-
-	// auto-complete URI from named connections
-	if t.Connection != "" {
-		uri, err := cnx.GetURIByName(t.Connection)
-
-		if err != nil {
-			return tasks.Task{}, err
-		}
-
-		t.URI = uri
-	}
-
+func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 	// make variables map if it's nil
 	if t.Variables == nil {
 		t.Variables = make(Variables)
@@ -63,11 +49,6 @@ func (t YamlTask) Normalize(cnx Connections, env Environments) (tasks.Task, erro
 	// variables take precedence over default variables
 	if env, err := env.ByName("default"); err == nil {
 		t.Variables = t.Variables.Inherit(env.Variables)
-	}
-
-	// use default connection if no URI is provided
-	if t.URI == "" {
-		t.URI, _ = cnx.GetURIByName("default")
 	}
 
 	var action tasks.Action
@@ -98,7 +79,6 @@ func (t YamlTask) Normalize(cnx Connections, env Environments) (tasks.Task, erro
 				Text: t.Loader.Command,
 				From: t.Loader.From,
 				Type: t.Type,
-				URI:  t.URI,
 				Variables: tasks.NestedVariables{
 					Outer: t.Variables,
 					Inner: t.Loader.Variables,
@@ -109,14 +89,12 @@ func (t YamlTask) Normalize(cnx Connections, env Environments) (tasks.Task, erro
 		action = tasks.FileLoader{
 			File:      t.File,
 			Type:      t.Type,
-			URI:       t.URI,
 			Variables: t.Variables,
 		}
 	} else {
 		action = tasks.Command{
 			Text:      t.Command,
 			Type:      t.Type,
-			URI:       t.URI,
 			Variables: t.Variables,
 		}
 	}

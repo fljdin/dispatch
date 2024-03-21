@@ -47,12 +47,7 @@ Use a valid YAML file to describe tasks.
 - `env`: environment name as described below
 - `variables`: a map of key-value used as environment variables, takes
   precedence over `env`
-- `uri`: connection string used by `psql`'s database option (`-d`)
-- `connection`: connection name as described below, overrides `uri`
 - `depends_on`: a list of identifiers of others tasks declared upstream
-
-> All PostgreSQL environment variables can be used in place of `uri` as it used
-> `psql` client.
 
 ```yaml
 # run the following shell commands simultaneously
@@ -70,7 +65,8 @@ tasks:
     type: psql
     name: run this statement
     command: SELECT user;
-    uri: postgresql://localhost
+    variables:
+      PGHOST: localhost
 ```
 
 ```yaml
@@ -158,34 +154,6 @@ tasks:
     env: custom
     variables:
       PGAPPNAME: my_app
-```
-
-### Named connections
-
-* `connections`: declares named connections used by tasks
-  * `name`: connection name (`default` applied to any unattached tasks)
-  * `uri`: a valid connection URI, takes precedence over following values
-  * `service`: service defined in PGSERVICEFILE
-  * `host`: database server host or socket directory
-  * `port`: database server port
-  * `dbname`: database name to connect to
-  * `user`: database user name
-  * `password`: user password
-
-```yaml
-connections:
-  - name: db
-    uri: postgresql://remote
-  - name: default
-    host: localhost
-    dbname: postgres
-    user: postgres
-
-tasks:
-  - id: 1
-    type: psql
-    command: \conninfo
-    connection: db
 ```
 
 ### Parallelism

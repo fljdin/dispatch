@@ -16,11 +16,6 @@ function assert-diff() {
     diff expected/$1 $1
 }
 
-@test "task with default connection" {
-    dispatch --config config/default_connection.yaml
-    assert-diff default_connection.log
-}
-
 @test "tasks loaded from a shell file" {
     create_commands
 

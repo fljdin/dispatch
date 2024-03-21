@@ -11,7 +11,6 @@ import (
 type FileLoader struct {
 	File      string
 	Type      string
-	URI       string
 	Variables map[string]string
 }
 
@@ -63,7 +62,6 @@ func (l FileLoader) Run() (Report, []Action) {
 		commands = append(commands, Command{
 			Text:      command,
 			Type:      l.Type,
-			URI:       l.URI,
 			Variables: l.Variables,
 		})
 	}
