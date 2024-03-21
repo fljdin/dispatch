@@ -11,4 +11,4 @@ tasks:
     loaded:
       from: psql
       command: |
-        SELECT format('echo %s', i) FROM generate_series(1, 2) AS i
+        SELECT format('sleep .0%s', i) FROM generate_series(1, 2) AS i

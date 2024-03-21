@@ -1,0 +1,8 @@
+workers: 1
+logfile: loaded_from_sh_file.log
+
+tasks:
+  - id: 1
+    name: dispatch commands from a sh file
+    type: sh
+    file: commands.sh
