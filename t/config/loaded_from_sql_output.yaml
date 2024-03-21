@@ -1,10 +1,16 @@
 workers: 1
 logfile: loaded_from_sql_output.log
 
+environments:
+  - name: default
+    variables:
+      PGHOST: localhost
+      PGUSER: postgres
+
 tasks:
   - id: 1
     type: sh
     loaded:
       from: psql
       command: |
-        SELECT format('sleep .0%s', i) FROM generate_series(1, 2) AS i
+        SELECT format('echo %s', i) FROM generate_series(1, 2) AS i
