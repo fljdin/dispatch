@@ -1,6 +1,8 @@
 package tasks
 
-import "time"
+import (
+	"time"
+)
 
 type Result struct {
 	ID        int
@@ -12,4 +14,14 @@ type Result struct {
 	Status    int
 	Output    string
 	Error     string
+}
+
+func (r Result) LoggerArgs() []any {
+	return []any{
+		"status", StatusTypes[r.Status],
+		"elapsed", r.Elapsed.Round(time.Millisecond),
+		"task", r.ID,
+		"command", r.SubID,
+		"worker", r.WorkerID,
+	}
 }

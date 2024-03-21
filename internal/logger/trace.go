@@ -3,9 +3,24 @@ package logger
 import (
 	"bytes"
 	"os"
+	"text/template"
+	"time"
 
 	"github.com/fljdin/dispatch/internal/tasks"
 )
+
+func newTemplate(name string) *template.Template {
+	return template.New(name).Funcs(
+		template.FuncMap{
+			"isSucceeded": func(status int) bool {
+				return tasks.IsSucceeded(status)
+			},
+			"roundToMilliseconds": func(duration time.Duration) time.Duration {
+				return duration.Round(time.Millisecond)
+			},
+		},
+	)
+}
 
 const TraceTemplate string = `===== Task {{.ID}} (command #{{.SubID}}) (success: {{if isSucceeded .Status}}true{{else}}false{{end}}, elapsed: {{roundToMilliseconds .Elapsed}}) =====
 Started at: {{.StartTime}}

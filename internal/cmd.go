@@ -3,12 +3,12 @@ package internal
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/lithammer/dedent"
-	"golang.org/x/exp/slog"
 )
 
 var (
@@ -53,6 +53,7 @@ func newConfig() (config.Config, error) {
 
 func Dispatch(version string) {
 	parseFlags()
+	setupLogging()
 
 	if argVersion {
 		fmt.Println(version)
@@ -60,7 +61,7 @@ func Dispatch(version string) {
 	}
 
 	if argConfigFilename == "" {
-		slog.Error("Missing configuration file")
+		slog.Error("missing configuration file")
 		os.Exit(1)
 	}
 
@@ -96,8 +97,11 @@ func Dispatch(version string) {
 		dispatcher.AddTask(t)
 	}
 
-	slog.Debug("Loading configuration", "loaded tasks", len(t))
-	slog.Debug("Loading configuration", "max workers", config.MaxWorkers)
+	slog.Debug(
+		"loading configuration",
+		"tasks", len(t),
+		"workers", config.MaxWorkers,
+	)
 
 	dispatcher.Wait()
 	os.Exit(0)

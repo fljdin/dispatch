@@ -2,9 +2,17 @@ package tasks
 
 import (
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 var CommandTypes = []string{"", "sh", "psql"}
+var StatusTypes = []string{"waiting", "interrupted", "failed", "ready", "succeeded"}
+
+func IsSucceeded(status int) bool {
+	s := []int{Ready, Succeeded}
+	return slices.Contains(s, status)
+}
 
 const (
 	Waiting int = iota
