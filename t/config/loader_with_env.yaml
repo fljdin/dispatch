@@ -2,6 +2,10 @@ workers: 1
 logfile: loader_with_env.log
 
 environments:
+  - name: default
+    variables:
+      PGHOST: localhost
+      PGUSER: postgres
   - name: bar
     variables:
       PGAPPNAME: bar
@@ -16,6 +20,6 @@ tasks:
       from: psql
       env: bar
       command: |
-        SELECT format('sleep .01 && echo %s', current_setting('application_name'))
+        SELECT format('echo %s', current_setting('application_name'))
         UNION
-        SELECT format('sleep .02 && echo $PGAPPNAME')
+        SELECT format('echo $PGAPPNAME')

@@ -23,14 +23,14 @@ function teardown_files {
 
 function create_commands() {
 	cat <<-EOF > commands.sh
-	sleep .01
-	sleep .02
+	echo 1
+	echo 2
 	EOF
 }
 
 function create_queries() {
     cat <<-EOF > queries.sql
-	SELECT pg_sleep(.01);
-	SELECT pg_sleep(.02);
+	SELECT 1;
+	SELECT 2;
 	EOF
 }

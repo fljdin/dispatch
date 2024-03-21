@@ -117,6 +117,23 @@ func TestConfigFromYAMLWithUnknownEnvironment(t *testing.T) {
 	r.Contains(err.Error(), "environment not found")
 }
 
+func TestConfigFromYAMLWithTaskVariables(t *testing.T) {
+	r := require.New(t)
+
+	yamlConfig := dedent.Dedent(`
+	tasks:
+	  - id: 1
+	    command: true
+	    variables:
+	      key: bar`)
+	config, _ := NewBuilder().
+		WithYAML(yamlConfig).
+		Build()
+	tasks, _ := config.Tasks()
+
+	r.Equal("bar", tasks[0].Action.(Command).Variables["key"])
+}
+
 func TestConfigFromNonExistingFile(t *testing.T) {
 	r := require.New(t)
 

@@ -3,20 +3,20 @@ Started at: 2000-01-01 00:00:00 +0000 UTC
 Ended at:   2000-01-01 00:00:00 +0000 UTC
 Error: 
 Output:
-sleep .01 && echo bar
-sleep .02 && echo $PGAPPNAME
+echo $PGAPPNAME
+echo bar
 
 ===== Task 1 (command #1) (success: true, elapsed: 0s) =====
 Started at: 2000-01-01 00:00:00 +0000 UTC
 Ended at:   2000-01-01 00:00:00 +0000 UTC
 Error: 
 Output:
-bar
+foo
 
 ===== Task 1 (command #2) (success: true, elapsed: 0s) =====
 Started at: 2000-01-01 00:00:00 +0000 UTC
 Ended at:   2000-01-01 00:00:00 +0000 UTC
 Error: 
 Output:
-foo
+bar
 
