@@ -16,68 +16,15 @@ Common use cases:
 
 ```sh
 Usage:
-  dispatch [command]
+  dispatch [options]
 
-Available Commands:
-  exec        Execute tasks from commands
-  help        Help about any command
-  run         Run tasks from configuration file
-
-Global Flags:
-  -c, --config string   configuration file
-  -d, --dbname string   database name to connect to
-      --help            show help
-  -h, --host string     database server host or socket directory
-  -j, --jobs int        number of workers (default 2)
-  -l, --log string      log file
-  -W, --password        force password prompt
-  -p, --port int        database server port
-  -U, --user string     database user name
-  -v, --verbose         verbose mode
-```
-
-```sh
-Usage:
-  dispatch run [flags]
-
-Flags:
-  -t, --type string   parser type (default "sh")
-```
-
-```sh
-Usage:
-  dispatch exec [flags]
-
-Flags:
-  -C, --command string   loader command to execute
-  -f, --file string      file containing commands to execute
-  -T, --to string        executor type (default "sh")
-  -t, --type string      parser type (default "sh")
-```
-
-### Examples
-
-Dispatch statements stored in a file:
-
-```sh
-cat <<EOF > statements.sql
-CREATE INDEX t1_idx1 ON t1(col1);
-CREATE INDEX t2_idx1 ON t2(col1);
-EOF
-
-dispatch exec -j 2 --type psql --file statements.sql
-```
-
-```text
-2023/05/22 18:19:08 Worker 1 completed Task 0 (query #1) (success: true, elapsed: 12ms)
-2023/05/22 18:19:08 Worker 2 completed Task 0 (query #0) (success: true, elapsed: 12ms)
-```
-
-Dispatch generated statements from a command:
-
-```sh
-dispatch exec --type psql --to sh \
-  --command "SELECT format('vacuumdb --table %s', tablename) FROM pg_tables WHERE tablename LIKE 'a%';"
+Options:
+  -j, --jobs <number>        number of workers (default 2)
+  -c, --config <filename>    configuration file
+  -o, --output <filename>    output log file
+  -v, --verbose              verbose mode
+  -h, --help                 show this help
+      --version              show version
 ```
 
 ## Configuration
