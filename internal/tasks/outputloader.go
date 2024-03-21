@@ -7,11 +7,17 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type NestedVariables struct {
+	Outer map[string]string
+	Inner map[string]string
+}
+
 type OutputLoader struct {
-	Text string
-	From string
-	Type string
-	URI  string
+	Text      string
+	From      string
+	Type      string
+	URI       string
+	Variables NestedVariables
 }
 
 func (l OutputLoader) load(input string) []string {
@@ -45,10 +51,12 @@ func (l OutputLoader) Run() (Report, []Action) {
 		l.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", l.Text)
 	}
 
+	// run command with inner variables
 	cmd := Command{
-		Text: l.Text,
-		Type: l.From,
-		URI:  l.URI,
+		Text:      l.Text,
+		Type:      l.From,
+		URI:       l.URI,
+		Variables: l.Variables.Inner,
 	}
 
 	err := cmd.Validate()
@@ -65,10 +73,12 @@ func (l OutputLoader) Run() (Report, []Action) {
 
 	var commands []Action
 	for _, command := range l.load(result.Output) {
+		// pass outer variables to children
 		commands = append(commands, Command{
-			Text: command,
-			Type: l.Type,
-			URI:  l.URI,
+			Text:      command,
+			Type:      l.Type,
+			URI:       l.URI,
+			Variables: l.Variables.Outer,
 		})
 	}
 
