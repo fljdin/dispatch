@@ -1,9 +1,11 @@
 package main
 
-import (
-	"github.com/fljdin/dispatch/internal/cmd"
+import "github.com/fljdin/dispatch/internal"
+
+var (
+	version string = "*unreleased*"
 )
 
 func main() {
-	cmd.Execute()
+	internal.Dispatch(version)
 }
