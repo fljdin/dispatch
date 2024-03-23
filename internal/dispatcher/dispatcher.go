@@ -7,15 +7,15 @@ import (
 )
 
 type Dispatcher struct {
-	cancel   func()
-	context  context.Context
-	workers  int
-	observer *Observer
-	memory   *Memory
+	cancel  func()
+	context context.Context
+	workers int
+	monitor *Monitor
+	memory  *Memory
 }
 
 func (d *Dispatcher) Wait() {
-	d.launchObserver()
+	d.launchMonitor()
 	d.launchWorkers()
 
 	d.memory.WaitForTasks()
@@ -31,8 +31,8 @@ func (d *Dispatcher) Status(taskId int) int {
 	return d.memory.Status(taskId)
 }
 
-func (d *Dispatcher) launchObserver() {
-	go d.observer.Start()
+func (d *Dispatcher) launchMonitor() {
+	go d.monitor.Start()
 }
 
 func (d *Dispatcher) launchWorkers() {

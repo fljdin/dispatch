@@ -53,16 +53,16 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		results: make(chan tasks.Result, 10),
 	}
 
-	db.dispatcher.observer = NewObserver(
+	db.dispatcher.monitor = NewMonitor(
 		db.dispatcher.memory,
 		db.dispatcher.context,
 	)
 
 	if db.consoleEnabled {
-		db.dispatcher.observer.WithConsole()
+		db.dispatcher.monitor.WithConsole()
 	}
 
-	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
+	if err := db.dispatcher.monitor.WithTrace(db.logfileName); err != nil {
 		db.err = err
 	}
 
