@@ -44,6 +44,7 @@ func (w *Worker) handle(t tasks.Task) {
 		w.memory.results <- tasks.Result{
 			ID:      t.ID,
 			SubID:   t.SubID,
+			Name:    t.Name,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
@@ -61,12 +62,15 @@ func (w *Worker) run(t tasks.Task) {
 			ID:     t.ID,
 			SubID:  id + 1,
 			Action: command,
+			Name:   t.Name,
 		})
 	}
 
 	w.memory.results <- tasks.Result{
 		ID:        t.ID,
 		SubID:     t.SubID,
+		Name:      t.Name,
+		Action:    t.Action.String(),
 		WorkerID:  w.ID,
 		Status:    report.Status,
 		StartTime: report.StartTime,

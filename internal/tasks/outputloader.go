@@ -28,6 +28,10 @@ func (l OutputLoader) load(input string) []string {
 	}
 }
 
+func (l OutputLoader) String() string {
+	return l.Text
+}
+
 func (l OutputLoader) Validate() error {
 
 	if l.Text == "" {

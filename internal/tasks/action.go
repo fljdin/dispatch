@@ -34,4 +34,5 @@ type Report struct {
 type Action interface {
 	Validate() error
 	Run() (Report, []Action)
+	String() string
 }

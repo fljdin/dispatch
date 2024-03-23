@@ -58,12 +58,12 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		db.dispatcher.context,
 	)
 
-	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
-		db.err = err
-	}
-
 	if db.consoleEnabled {
 		db.dispatcher.observer.WithConsole()
+	}
+
+	if err := db.dispatcher.observer.WithTrace(db.logfileName); err != nil {
+		db.err = err
 	}
 
 	return db.dispatcher, db.err

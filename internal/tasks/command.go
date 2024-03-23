@@ -16,6 +16,10 @@ type Command struct {
 	Variables map[string]string
 }
 
+func (c Command) String() string {
+	return c.Text
+}
+
 func (c Command) Validate() error {
 
 	if !slices.Contains(CommandTypes, c.Type) {

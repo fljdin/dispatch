@@ -9,6 +9,7 @@ environments:
 
 tasks:
   - id: 1
+    name: dispatch queries from a sql output
     type: sh
     loaded:
       from: psql
