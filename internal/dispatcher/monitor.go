@@ -36,10 +36,6 @@ func (m *Monitor) Start() {
 	}
 }
 
-func (m *Monitor) WithConsole() {
-	m.loggers = append(m.loggers, &logger.Console{})
-}
-
 func (m *Monitor) WithTrace(filename string) error {
 
 	if len(filename) > 0 {

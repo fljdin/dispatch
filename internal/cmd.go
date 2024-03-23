@@ -87,7 +87,6 @@ func Dispatch(version string) {
 	dispatcher, err := dispatcher.NewBuilder().
 		WithProcesses(config.Processes).
 		WithLogfile(config.Logfile).
-		WithConsole().
 		Build()
 
 	if err != nil {
@@ -102,7 +101,7 @@ func Dispatch(version string) {
 	slog.Debug(
 		"loading configuration",
 		"tasks", len(t),
-		"processes", config.Processes,
+		"procs", config.Processes,
 	)
 
 	dispatcher.Wait()

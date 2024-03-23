@@ -15,6 +15,10 @@ type Task struct {
 	Status  int
 }
 
+func (t Task) Code() string {
+	return fmt.Sprintf("[%d:%d]", t.ID, t.SubID)
+}
+
 func (t Task) Validate() error {
 	if t.ID == 0 {
 		return fmt.Errorf("id is required")

@@ -15,7 +15,6 @@ func TestTraceRender(t *testing.T) {
 	trace := Trace{Filename: "dummy.txt"}
 	data, err := trace.Parse(Result{
 		ID:        1,
-		ProcID:    1,
 		SubID:     0,
 		Status:    Succeeded,
 		StartTime: time.Now(),

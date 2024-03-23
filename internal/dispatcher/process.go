@@ -2,6 +2,9 @@ package dispatcher
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/fljdin/dispatch/internal/tasks"
 )
@@ -46,7 +49,6 @@ func (p *Process) handle(t tasks.Task) {
 			SubID:   t.SubID,
 			Name:    t.Name,
 			Action:  t.Action.String(),
-			ProcID:  p.ID,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
@@ -57,6 +59,8 @@ func (p *Process) handle(t tasks.Task) {
 }
 
 func (p *Process) run(t tasks.Task) {
+	slog.Debug(t.Code(), "action", t.Action.String(), "proc", p.ID)
+
 	report, commands := t.Action.Run()
 
 	for id, command := range commands {
@@ -68,12 +72,33 @@ func (p *Process) run(t tasks.Task) {
 		})
 	}
 
+	logAttrs := []any{
+		"status", tasks.StatusTypes[report.Status],
+		"name", t.Name,
+		"elapsed", report.Elapsed.Round(time.Millisecond),
+	}
+
+	if !tasks.IsSucceeded(report.Status) {
+		slog.Error(t.Code(), logAttrs...)
+	} else {
+		slog.Info(t.Code(), logAttrs...)
+	}
+
+	if len(report.Error) > 0 {
+		msg := fmt.Sprintf("%s Error:\n%s", t.Code(), report.Error)
+		slog.Error(msg)
+	}
+
+	if len(report.Output) > 0 {
+		msg := fmt.Sprintf("%s Output:\n%s", t.Code(), report.Output)
+		slog.Debug(msg)
+	}
+
 	p.memory.results <- tasks.Result{
 		ID:        t.ID,
 		SubID:     t.SubID,
 		Name:      t.Name,
 		Action:    t.Action.String(),
-		ProcID:    p.ID,
 		Status:    report.Status,
 		StartTime: report.StartTime,
 		EndTime:   report.EndTime,
