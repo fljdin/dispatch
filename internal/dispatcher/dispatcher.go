@@ -7,20 +7,20 @@ import (
 )
 
 type Dispatcher struct {
-	cancel  func()
-	context context.Context
-	workers int
-	monitor *Monitor
-	memory  *Memory
+	cancel    func()
+	context   context.Context
+	processes int
+	monitor   *Monitor
+	memory    *Memory
 }
 
 func (d *Dispatcher) Wait() {
 	d.launchMonitor()
-	d.launchWorkers()
+	d.launchProcesses()
 
 	d.memory.WaitForTasks()
 	d.cancel()
-	d.memory.WaitForWorkers()
+	d.memory.WaitForProcesses()
 }
 
 func (d *Dispatcher) AddTask(task tasks.Task) {
@@ -35,13 +35,13 @@ func (d *Dispatcher) launchMonitor() {
 	go d.monitor.Start()
 }
 
-func (d *Dispatcher) launchWorkers() {
-	for i := 1; i <= d.workers; i++ {
-		worker := &Worker{
+func (d *Dispatcher) launchProcesses() {
+	for i := 1; i <= d.processes; i++ {
+		process := &Process{
 			ID:      i,
 			memory:  d.memory,
 			context: d.context,
 		}
-		go worker.Start()
+		go process.Start()
 	}
 }

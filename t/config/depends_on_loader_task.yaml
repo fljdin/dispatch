@@ -1,5 +1,5 @@
 # related to fljdin/dispatch#35
-workers: 2
+procs: 2
 logfile: depends_on_loader_task.log
 
 tasks:

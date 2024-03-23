@@ -6,59 +6,61 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-type Worker struct {
+type Process struct {
 	ID      int
 	memory  *Memory
 	context context.Context
 }
 
-func NewWorker(memory *Memory, ctx context.Context) *Worker {
-	return &Worker{
+func NewProcess(memory *Memory, ctx context.Context) *Process {
+	return &Process{
 		memory:  memory,
 		context: ctx,
 	}
 }
 
-func (w *Worker) Start() {
-	w.memory.StartWorker()
-	defer w.memory.EndWorker()
+func (p *Process) Start() {
+	p.memory.StartProcess()
+	defer p.memory.EndProcess()
 
 	for {
 		select {
-		case <-w.context.Done():
+		case <-p.context.Done():
 			return
 		default:
-			if task, ok := w.memory.queue.Pop(); ok {
-				w.handle(task)
+			if task, ok := p.memory.queue.Pop(); ok {
+				p.handle(task)
 			}
 		}
 	}
 }
 
-func (w *Worker) handle(t tasks.Task) {
+func (p *Process) handle(t tasks.Task) {
 	switch t.Status {
 	case tasks.Waiting:
-		w.memory.ForwardTask(t)
+		p.memory.ForwardTask(t)
 
 	case tasks.Interrupted:
-		w.memory.results <- tasks.Result{
+		p.memory.results <- tasks.Result{
 			ID:      t.ID,
 			SubID:   t.SubID,
 			Name:    t.Name,
+			Action:  t.Action.String(),
+			ProcID:  p.ID,
 			Status:  tasks.Interrupted,
 			Elapsed: 0,
 		}
 
 	case tasks.Ready:
-		w.run(t)
+		p.run(t)
 	}
 }
 
-func (w *Worker) run(t tasks.Task) {
+func (p *Process) run(t tasks.Task) {
 	report, commands := t.Action.Run()
 
 	for id, command := range commands {
-		w.memory.AddTask(tasks.Task{
+		p.memory.AddTask(tasks.Task{
 			ID:     t.ID,
 			SubID:  id + 1,
 			Action: command,
@@ -66,12 +68,12 @@ func (w *Worker) run(t tasks.Task) {
 		})
 	}
 
-	w.memory.results <- tasks.Result{
+	p.memory.results <- tasks.Result{
 		ID:        t.ID,
 		SubID:     t.SubID,
 		Name:      t.Name,
 		Action:    t.Action.String(),
-		WorkerID:  w.ID,
+		ProcID:    p.ID,
 		Status:    report.Status,
 		StartTime: report.StartTime,
 		EndTime:   report.EndTime,

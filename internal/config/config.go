@@ -6,23 +6,23 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-var ConfigWorkersDefault int = 2
+const ProcessesDefault int = 2
 
 type Config struct {
 	DeclaredTasks      []YamlTask   `yaml:"tasks"`
-	MaxWorkers         int          `yaml:"workers"`
+	Processes          int          `yaml:"procs"`
 	Logfile            string       `yaml:"logfile"`
 	Environments       Environments `yaml:"environments"`
 	DefaultEnvironment Environment
 }
 
-func (c *Config) ConfigureWorkers() {
-	if c.MaxWorkers < 1 {
-		c.MaxWorkers = ConfigWorkersDefault
+func (c *Config) ConfigureProcesses() {
+	if c.Processes < 1 {
+		c.Processes = ProcessesDefault
 	}
 
-	if c.MaxWorkers > runtime.NumCPU() {
-		c.MaxWorkers = runtime.NumCPU()
+	if c.Processes > runtime.NumCPU() {
+		c.Processes = runtime.NumCPU()
 	}
 }
 

@@ -20,9 +20,9 @@ func NewBuilder() *DispatcherBuilder {
 
 	return &DispatcherBuilder{
 		dispatcher: Dispatcher{
-			context: ctx,
-			cancel:  cancel,
-			workers: 1,
+			context:   ctx,
+			cancel:    cancel,
+			processes: 1,
 		},
 		consoleEnabled: false,
 	}
@@ -38,14 +38,14 @@ func (db *DispatcherBuilder) WithConsole() *DispatcherBuilder {
 	return db
 }
 
-func (db *DispatcherBuilder) WithWorkerNumber(count int) *DispatcherBuilder {
-	db.dispatcher.workers = count
+func (db *DispatcherBuilder) WithProcesses(count int) *DispatcherBuilder {
+	db.dispatcher.processes = count
 	return db
 }
 
 func (db *DispatcherBuilder) Build() (Dispatcher, error) {
-	if db.dispatcher.workers < 1 {
-		db.err = fmt.Errorf("dispatcher need a positive worker number")
+	if db.dispatcher.processes < 1 {
+		db.err = fmt.Errorf("dispatcher need a positive processes number")
 	}
 
 	db.dispatcher.memory = &Memory{

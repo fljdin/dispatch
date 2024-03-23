@@ -14,17 +14,17 @@ Common use cases:
 
 ## Usage
 
-```sh
+```text
 Usage:
   dispatch [options]
 
 Options:
-  -j, --jobs <number>        number of workers (default 2)
-  -c, --config <filename>    configuration file
-  -o, --output <filename>    output log file
-  -v, --verbose              verbose mode
-  -h, --help                 show this help
-      --version              show version
+  -c, --config=FILE    configuration file
+  -h, --help           display this help and exit
+  -o, --output=FILE    output log file
+  -P, --procs=PROCS    number of processes (default 2)
+  -v, --verbose        verbose mode
+      --version        show version
 ```
 
 ## Configuration
@@ -158,12 +158,12 @@ tasks:
 
 ### Parallelism
 
-* `workers`: declares number of workers
-  - explicit argument passed to command takes precedence
+* `procs`: declares number of processes
+  - option `--procs` takes precedence
   - limited by the number of logical CPUs usable by the main process
 
 ```yaml
-workers: 1
+procs: 1
 
 # run the following tasks sequentially
 tasks:

@@ -21,8 +21,8 @@ func NewMonitor(memory *Memory, ctx context.Context) *Monitor {
 }
 
 func (m *Monitor) Start() {
-	m.memory.StartWorker()
-	defer m.memory.EndWorker()
+	m.memory.StartProcess()
+	defer m.memory.EndProcess()
 
 	for {
 		select {

@@ -10,7 +10,7 @@ type Result struct {
 	Name      string
 	Action    string
 	SubID     int
-	WorkerID  int
+	ProcID    int
 	StartTime time.Time
 	EndTime   time.Time
 	Elapsed   time.Duration
@@ -28,6 +28,6 @@ func (r Result) LoggerArgs() []any {
 		"status", StatusTypes[r.Status],
 		"name", r.Name,
 		"elapsed", r.Elapsed.Round(time.Millisecond),
-		"worker", r.WorkerID,
+		"proc", r.ProcID,
 	}
 }
