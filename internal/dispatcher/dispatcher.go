@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"context"
 
+	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -12,6 +13,27 @@ type Dispatcher struct {
 	processes int
 	monitor   *Monitor
 	memory    *Memory
+}
+
+func New(procs int) Dispatcher {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	d := Dispatcher{
+		context:   ctx,
+		cancel:    cancel,
+		processes: procs,
+		memory: &Memory{
+			queue:   queue.New(),
+			results: make(chan tasks.Result, 10),
+		},
+	}
+
+	d.monitor = NewMonitor(
+		d.memory,
+		d.context,
+	)
+
+	return d
 }
 
 func (d *Dispatcher) Wait() {

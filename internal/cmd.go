@@ -93,14 +93,7 @@ func Dispatch(version string) {
 		setupLogging(f)
 	}
 
-	dispatcher, err := dispatcher.NewBuilder().
-		WithProcesses(config.Processes).
-		Build()
-
-	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
-	}
+	dispatcher := dispatcher.New(config.Processes)
 
 	for _, t := range t {
 		dispatcher.AddTask(t)
