@@ -1,26 +1,21 @@
-===== Task 1 (command #0) (success: true, elapsed: 0s) =====
-Started at: 2000-01-01 00:00:00 +0000 UTC
-Ended at:   2000-01-01 00:00:00 +0000 UTC
-Error: 
-Output:
+2000-01-01 00:00:00 INFO   loading configuration tasks=3 procs=1
+2000-01-01 00:00:00 INFO   [1:0] status=succeeded name="connect with default" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [1:0] action=\conninfo
+2000-01-01 00:00:00 INFO   [1:0] Output:
 You are connected to database "postgres" as user "postgres" on host "localhost" (address "::1") at port "5432".
 
-===== Task 2 (command #0) (success: true, elapsed: 0s) =====
-Started at: 2000-01-01 00:00:00 +0000 UTC
-Ended at:   2000-01-01 00:00:00 +0000 UTC
-Error: 
-Output:
+2000-01-01 00:00:00 INFO   [2:0] status=succeeded name="connect with testing" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [2:0] action="show application_name;\n"
+2000-01-01 00:00:00 INFO   [2:0] Output:
  application_name 
 ------------------
  testing
 (1 row)
 
 
-===== Task 3 (command #0) (success: true, elapsed: 0s) =====
-Started at: 2000-01-01 00:00:00 +0000 UTC
-Ended at:   2000-01-01 00:00:00 +0000 UTC
-Error: 
-Output:
+2000-01-01 00:00:00 INFO   [3:0] status=succeeded name="print environment variables" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [3:0] action="echo \"PGHOST     = $PGHOST\"\necho \"PGDATABASE = $PGDATABASE\"\necho \"PGUSER     = $PGUSER\"\necho \"PGPORT     = $PGPORT\"\n"
+2000-01-01 00:00:00 INFO   [3:0] Output:
 PGHOST     = junk
 PGDATABASE = junk
 PGUSER     = junk

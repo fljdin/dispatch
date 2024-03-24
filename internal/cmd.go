@@ -15,7 +15,7 @@ var (
 	argConfig        string
 	argConfigDesc    string = "configuration file"
 	argOutput        string
-	argOutputDesc    string = "output log file"
+	argOutputDesc    string = "redirect output to file"
 	argProcesses     int
 	argProcessesDesc string = fmt.Sprintf("number of processes (default %d)", config.ProcessesDefault)
 	argVerbose       bool
@@ -55,7 +55,7 @@ func newConfig() (config.Config, error) {
 
 func Dispatch(version string) {
 	parseFlags()
-	setupLogging()
+	setupLogging(os.Stderr)
 
 	if argVersion {
 		fmt.Println(version)
@@ -84,9 +84,17 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
+	if config.Logfile != "" {
+		f, err := openOutputFile(config.Logfile)
+		if err != nil {
+			slog.Error(err.Error())
+			os.Exit(1)
+		}
+		setupLogging(f)
+	}
+
 	dispatcher, err := dispatcher.NewBuilder().
 		WithProcesses(config.Processes).
-		WithLogfile(config.Logfile).
 		Build()
 
 	if err != nil {
@@ -98,7 +106,7 @@ func Dispatch(version string) {
 		dispatcher.AddTask(t)
 	}
 
-	slog.Debug(
+	slog.Info(
 		"loading configuration",
 		"tasks", len(t),
 		"procs", config.Processes,

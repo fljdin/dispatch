@@ -7,17 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDispatcherBuilderWithInvalidTraceFile(t *testing.T) {
-	r := require.New(t)
-
-	_, err := NewBuilder().
-		WithLogfile("not/exists.out").
-		Build()
-
-	r.NotNil(err)
-	r.Contains(err.Error(), "no such file or directory")
-}
-
 func TestDispatcherBuilderWithNegativeProcsNumber(t *testing.T) {
 	r := require.New(t)
 

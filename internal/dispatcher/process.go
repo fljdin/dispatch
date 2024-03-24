@@ -59,8 +59,6 @@ func (p *Process) handle(t tasks.Task) {
 }
 
 func (p *Process) run(t tasks.Task) {
-	slog.Debug(t.Code(), "action", t.Action.String(), "proc", p.ID)
-
 	report, commands := t.Action.Run()
 
 	for id, command := range commands {
@@ -75,6 +73,7 @@ func (p *Process) run(t tasks.Task) {
 	logAttrs := []any{
 		"status", tasks.StatusTypes[report.Status],
 		"name", t.Name,
+		"start", report.StartTime.Format(time.DateTime),
 		"elapsed", report.Elapsed.Round(time.Millisecond),
 	}
 
@@ -83,6 +82,7 @@ func (p *Process) run(t tasks.Task) {
 	} else {
 		slog.Info(t.Code(), logAttrs...)
 	}
+	slog.Info(t.Code(), "action", t.Action.String())
 
 	if len(report.Error) > 0 {
 		msg := fmt.Sprintf("%s Error:\n%s", t.Code(), report.Error)
@@ -91,7 +91,7 @@ func (p *Process) run(t tasks.Task) {
 
 	if len(report.Output) > 0 {
 		msg := fmt.Sprintf("%s Output:\n%s", t.Code(), report.Output)
-		slog.Debug(msg)
+		slog.Info(msg)
 	}
 
 	p.memory.results <- tasks.Result{

@@ -8,7 +8,7 @@ tasks:
     loaded:
       from: sh
       command: |
-        echo -n "true\nsleep .1\n"
+        echo -n "sleep .2\nsleep .1\n"
 
   - id: 2
     name: "task #2 must wait for all subtask completion"

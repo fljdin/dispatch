@@ -9,9 +9,8 @@ import (
 )
 
 type DispatcherBuilder struct {
-	dispatcher  Dispatcher
-	logfileName string
-	err         error
+	dispatcher Dispatcher
+	err        error
 }
 
 func NewBuilder() *DispatcherBuilder {
@@ -24,11 +23,6 @@ func NewBuilder() *DispatcherBuilder {
 			processes: 1,
 		},
 	}
-}
-
-func (db *DispatcherBuilder) WithLogfile(filename string) *DispatcherBuilder {
-	db.logfileName = filename
-	return db
 }
 
 func (db *DispatcherBuilder) WithProcesses(count int) *DispatcherBuilder {
@@ -50,10 +44,6 @@ func (db *DispatcherBuilder) Build() (Dispatcher, error) {
 		db.dispatcher.memory,
 		db.dispatcher.context,
 	)
-
-	if err := db.dispatcher.monitor.WithTrace(db.logfileName); err != nil {
-		db.err = err
-	}
 
 	return db.dispatcher, db.err
 }
