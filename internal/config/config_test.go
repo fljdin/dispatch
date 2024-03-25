@@ -10,41 +10,41 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfigWithDefaultMaxWorkers(t *testing.T) {
+func TestConfigWithDefaultProcesses(t *testing.T) {
 	r := require.New(t)
 
 	config, _ := NewBuilder().Build()
 
-	r.Equal(2, config.MaxWorkers)
+	r.Equal(ProcessesDefault, config.Processes)
 }
 
-func TestConfigWithMaxWorkers(t *testing.T) {
+func TestConfigWithMaxProcesses(t *testing.T) {
 	r := require.New(t)
 
 	config, _ := NewBuilder().
-		WithMaxWorkers(1).
+		WithProcesses(1).
 		Build()
 
-	r.Equal(1, config.MaxWorkers)
+	r.Equal(1, config.Processes)
 }
 
-func TestConfigWithMaxWorkersOverrided(t *testing.T) {
+func TestConfigWithProcessesOverrided(t *testing.T) {
 	r := require.New(t)
 
-	yamlConfig := "workers: 2"
+	yamlConfig := "procs: 2"
 	config, _ := NewBuilder().
 		WithYAML(yamlConfig).
-		WithMaxWorkers(1).
+		WithProcesses(1).
 		Build()
 
-	r.Equal(1, config.MaxWorkers)
+	r.Equal(1, config.Processes)
 }
 
 func TestConfigFromYAML(t *testing.T) {
 	r := require.New(t)
 
 	yamlConfig := dedent.Dedent(`
-	workers: 1
+	procs: 1
 	tasks:
 	  - id: 1
 	    command: true
@@ -54,7 +54,7 @@ func TestConfigFromYAML(t *testing.T) {
 		Build()
 	tasks, _ := config.Tasks()
 
-	r.Equal(1, config.MaxWorkers)
+	r.Equal(1, config.Processes)
 	r.Equal(1, tasks[0].ID)
 }
 

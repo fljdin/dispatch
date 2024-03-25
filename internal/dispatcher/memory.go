@@ -8,10 +8,10 @@ import (
 )
 
 type Memory struct {
-	wgTasks   sync.WaitGroup
-	wgWorkers sync.WaitGroup
-	queue     queue.Queue
-	results   chan tasks.Result
+	wgTasks sync.WaitGroup
+	wgProcs sync.WaitGroup
+	queue   queue.Queue
+	results chan tasks.Result
 }
 
 func NewMemory() *Memory {
@@ -38,18 +38,18 @@ func (m *Memory) ForwardTask(task tasks.Task) {
 	m.queue.Add(task)
 }
 
-func (m *Memory) StartWorker() {
-	m.wgWorkers.Add(1)
+func (m *Memory) StartProcess() {
+	m.wgProcs.Add(1)
 }
 
-func (m *Memory) EndWorker() {
-	m.wgWorkers.Done()
+func (m *Memory) EndProcess() {
+	m.wgProcs.Done()
 }
 
 func (m *Memory) WaitForTasks() {
 	m.wgTasks.Wait()
 }
 
-func (m *Memory) WaitForWorkers() {
-	m.wgWorkers.Wait()
+func (m *Memory) WaitForProcesses() {
+	m.wgProcs.Wait()
 }

@@ -12,7 +12,7 @@ import (
 func TestDispatcherAddTask(t *testing.T) {
 	r := require.New(t)
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "true"},
@@ -24,7 +24,7 @@ func TestDispatcherAddTask(t *testing.T) {
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	r := require.New(t)
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "false"},
@@ -43,7 +43,7 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	r := require.New(t)
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID:     1,
 		Action: Command{Text: "true"},
@@ -62,7 +62,7 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	r := require.New(t)
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID:     1,
 		SubID:  0,
@@ -81,7 +81,7 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 func TestDispatcherWithOutputLoader(t *testing.T) {
 	r := require.New(t)
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID: 1,
 		Action: OutputLoader{
@@ -105,7 +105,7 @@ func TestDispatcherWithFileLoader(t *testing.T) {
 	defer tempFile.Close()
 	defer os.Remove(tempFile.Name())
 
-	dispatcher, _ := NewBuilder().Build()
+	dispatcher := New(1)
 	dispatcher.AddTask(Task{
 		ID: 1,
 		Action: FileLoader{

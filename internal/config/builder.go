@@ -16,12 +16,12 @@ func NewBuilder() *ConfigBuilder {
 	return &ConfigBuilder{}
 }
 
-func (cb *ConfigBuilder) WithMaxWorkers(value int) *ConfigBuilder {
+func (cb *ConfigBuilder) WithProcesses(value int) *ConfigBuilder {
 	if value < 1 {
 		return cb
 	}
 
-	cb.config.MaxWorkers = value
+	cb.config.Processes = value
 	return cb
 }
 
@@ -76,7 +76,7 @@ func (cb *ConfigBuilder) Build() (Config, error) {
 		return cb.config, cb.err
 	}
 
-	cb.config.ConfigureWorkers()
+	cb.config.ConfigureProcesses()
 
 	return cb.config, cb.err
 }

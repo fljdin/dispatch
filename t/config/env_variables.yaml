@@ -1,4 +1,4 @@
-workers: 1
+procs: 1
 logfile: env_variables.log
 
 environments:

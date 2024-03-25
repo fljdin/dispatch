@@ -3,64 +3,67 @@ package internal
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/lithammer/dedent"
-	"golang.org/x/exp/slog"
 )
 
 var (
-	argConfigFilename     string
-	argConfigFilenameDesc string = "configuration file"
-	argOutputFile         string
-	argOutputFileDesc     string = "output log file"
-	argMaxWorkers         int
-	argMaxWorkersDesc     string = "number of workers (default 2)"
-	argVerbose            bool
-	argVerboseDesc        string = "verbose mode"
-	argVersion            bool
-	argVersionDesc        string = "show version"
+	argConfig        string
+	argConfigDesc    string = "configuration file"
+	argOutput        string
+	argOutputDesc    string = "redirect output to file"
+	argProcesses     int
+	argProcessesDesc string = fmt.Sprintf("number of processes (default %d)", config.ProcessesDefault)
+	argVerbose       bool
+	argVerboseDesc   string = "verbose mode"
+	argVersion       bool
+	argVersionDesc   string = "show version"
 
 	usageStr string = dedent.Dedent(`
-	Usage:
-	  dispatch [options]
-	
-	Options:
-	  -j, --jobs <number>        %s
-	  -c, --config <filename>    %s
-	  -o, --output <filename>    %s
-	  -v, --verbose              %s
-	  -h, --help                 show this help
-	      --version              %s
+		Usage:
+		  dispatch [options]
+
+		Options:
+		  -c, --config=FILE    %s
+		  -h, --help           display this help and exit
+		  -o, --output=FILE    %s
+		  -P, --procs=PROCS    %s
+		  -v, --verbose        %s
+		      --version        %s
  	`)[1:]
 
 	usage string = fmt.Sprintf(
 		usageStr,
-		argMaxWorkersDesc,
-		argConfigFilenameDesc, argOutputFileDesc,
-		argVerboseDesc, argVersionDesc)
+		argConfigDesc,
+		argOutputDesc,
+		argProcessesDesc,
+		argVerboseDesc,
+		argVersionDesc)
 )
 
 func newConfig() (config.Config, error) {
 	return config.NewBuilder().
-		FromYAML(argConfigFilename).
-		WithMaxWorkers(argMaxWorkers).
-		WithLogfile(argOutputFile).
+		FromYAML(argConfig).
+		WithProcesses(argProcesses).
+		WithLogfile(argOutput).
 		Build()
 }
 
 func Dispatch(version string) {
 	parseFlags()
+	setupLogging(os.Stderr)
 
 	if argVersion {
 		fmt.Println(version)
 		return
 	}
 
-	if argConfigFilename == "" {
-		slog.Error("Missing configuration file")
+	if argConfig == "" {
+		slog.Error("missing configuration file")
 		os.Exit(1)
 	}
 
@@ -81,23 +84,26 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
-	dispatcher, err := dispatcher.NewBuilder().
-		WithWorkerNumber(config.MaxWorkers).
-		WithLogfile(config.Logfile).
-		WithConsole().
-		Build()
-
-	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
+	if config.Logfile != "" {
+		f, err := openOutputFile(config.Logfile)
+		if err != nil {
+			slog.Error(err.Error())
+			os.Exit(1)
+		}
+		setupLogging(f)
 	}
+
+	dispatcher := dispatcher.New(config.Processes)
 
 	for _, t := range t {
 		dispatcher.AddTask(t)
 	}
 
-	slog.Debug("Loading configuration", "loaded tasks", len(t))
-	slog.Debug("Loading configuration", "max workers", config.MaxWorkers)
+	slog.Info(
+		"loading configuration",
+		"tasks", len(t),
+		"procs", config.Processes,
+	)
 
 	dispatcher.Wait()
 	os.Exit(0)
@@ -108,19 +114,19 @@ func parseFlags() {
 		fmt.Fprint(flag.CommandLine.Output(), usage)
 	}
 
-	flag.BoolVar(&argVersion, "version", false, argVersionDesc)
+	flag.StringVar(&argConfig, "c", "", argConfigDesc)
+	flag.StringVar(&argConfig, "config", "", argConfigDesc)
 
-	flag.IntVar(&argMaxWorkers, "j", 0, argMaxWorkersDesc)
-	flag.IntVar(&argMaxWorkers, "jobs", 0, argMaxWorkersDesc)
+	flag.StringVar(&argOutput, "o", "", argOutputDesc)
+	flag.StringVar(&argOutput, "output", "", argOutputDesc)
 
-	flag.StringVar(&argConfigFilename, "c", "", argConfigFilenameDesc)
-	flag.StringVar(&argConfigFilename, "config", "", argConfigFilenameDesc)
-
-	flag.StringVar(&argOutputFile, "o", "", argOutputFileDesc)
-	flag.StringVar(&argOutputFile, "output", "", argOutputFileDesc)
+	flag.IntVar(&argProcesses, "P", 0, argProcessesDesc)
+	flag.IntVar(&argProcesses, "procs", 0, argProcessesDesc)
 
 	flag.BoolVar(&argVerbose, "v", false, argVerboseDesc)
 	flag.BoolVar(&argVerbose, "verbose", false, argVerboseDesc)
+
+	flag.BoolVar(&argVersion, "version", false, argVersionDesc)
 
 	flag.Parse()
 }

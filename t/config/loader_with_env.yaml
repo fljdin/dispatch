@@ -1,4 +1,4 @@
-workers: 1
+procs: 1
 logfile: loader_with_env.log
 
 environments:

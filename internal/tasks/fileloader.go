@@ -23,6 +23,10 @@ func (l FileLoader) load(input string) []string {
 	}
 }
 
+func (l FileLoader) String() string {
+	return fmt.Sprintf("from %s with %s", l.File, l.Type)
+}
+
 func (l FileLoader) Validate() error {
 
 	if !slices.Contains(CommandTypes, l.Type) {
