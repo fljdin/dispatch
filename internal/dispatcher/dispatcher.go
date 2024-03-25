@@ -11,7 +11,6 @@ type Dispatcher struct {
 	cancel    func()
 	context   context.Context
 	processes int
-	monitor   *Monitor
 	memory    *Memory
 }
 
@@ -27,11 +26,6 @@ func New(procs int) Dispatcher {
 			results: make(chan tasks.Result, 10),
 		},
 	}
-
-	d.monitor = NewMonitor(
-		d.memory,
-		d.context,
-	)
 
 	return d
 }
@@ -49,17 +43,21 @@ func (d *Dispatcher) AddTask(task tasks.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d *Dispatcher) Status(taskId int) int {
+func (d Dispatcher) Status(taskId int) int {
 	return d.memory.Status(taskId)
 }
 
-func (d *Dispatcher) launchMonitor() {
-	go d.monitor.Start()
+func (d Dispatcher) launchMonitor() {
+	monitor := Monitor{
+		memory:  d.memory,
+		context: d.context,
+	}
+	go monitor.Start()
 }
 
-func (d *Dispatcher) launchProcesses() {
+func (d Dispatcher) launchProcesses() {
 	for i := 1; i <= d.processes; i++ {
-		process := &Process{
+		process := Process{
 			ID:      i,
 			memory:  d.memory,
 			context: d.context,

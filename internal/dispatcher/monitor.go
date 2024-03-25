@@ -9,13 +9,6 @@ type Monitor struct {
 	context context.Context
 }
 
-func NewMonitor(memory *Memory, ctx context.Context) *Monitor {
-	return &Monitor{
-		memory:  memory,
-		context: ctx,
-	}
-}
-
 func (m *Monitor) Start() {
 	m.memory.StartProcess()
 	defer m.memory.EndProcess()

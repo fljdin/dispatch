@@ -15,13 +15,6 @@ type Process struct {
 	context context.Context
 }
 
-func NewProcess(memory *Memory, ctx context.Context) *Process {
-	return &Process{
-		memory:  memory,
-		context: ctx,
-	}
-}
-
 func (p *Process) Start() {
 	p.memory.StartProcess()
 	defer p.memory.EndProcess()
