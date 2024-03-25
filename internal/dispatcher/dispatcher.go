@@ -23,7 +23,7 @@ func New(procs int) Dispatcher {
 		processes: procs,
 		memory: &Memory{
 			queue:   queue.New(),
-			results: make(chan tasks.Result, 10),
+			results: make(chan Result, 10),
 		},
 	}
 

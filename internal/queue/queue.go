@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/tasks"
-	"golang.org/x/exp/slices"
 )
 
 type Queue struct {
@@ -64,7 +63,7 @@ func (q *Queue) evaluate(t tasks.Task) int {
 	for _, id := range t.Depends {
 		status := q.status.Get(id)
 
-		if slices.Contains([]int{tasks.Interrupted, tasks.Failed}, status) {
+		if tasks.IsFailed(status) {
 			return tasks.Interrupted
 		} else if status != tasks.Succeeded {
 			return tasks.Waiting

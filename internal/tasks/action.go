@@ -14,6 +14,11 @@ func IsSucceeded(status int) bool {
 	return slices.Contains(s, status)
 }
 
+func IsFailed(status int) bool {
+	s := []int{Interrupted, Failed}
+	return slices.Contains(s, status)
+}
+
 const (
 	Waiting int = iota
 	Interrupted

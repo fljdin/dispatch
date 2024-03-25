@@ -37,13 +37,10 @@ func (p *Process) handle(t tasks.Task) {
 		p.memory.ForwardTask(t)
 
 	case tasks.Interrupted:
-		p.memory.results <- tasks.Result{
-			ID:      t.ID,
-			SubID:   t.SubID,
-			Name:    t.Name,
-			Action:  t.Action.String(),
-			Status:  tasks.Interrupted,
-			Elapsed: 0,
+		p.memory.results <- Result{
+			ID:     t.ID,
+			SubID:  t.SubID,
+			Status: tasks.Interrupted,
 		}
 
 	case tasks.Ready:
@@ -87,16 +84,9 @@ func (p *Process) run(t tasks.Task) {
 		slog.Info(msg)
 	}
 
-	p.memory.results <- tasks.Result{
-		ID:        t.ID,
-		SubID:     t.SubID,
-		Name:      t.Name,
-		Action:    t.Action.String(),
-		Status:    report.Status,
-		StartTime: report.StartTime,
-		EndTime:   report.EndTime,
-		Elapsed:   report.Elapsed,
-		Output:    report.Output,
-		Error:     report.Error,
+	p.memory.results <- Result{
+		ID:     t.ID,
+		SubID:  t.SubID,
+		Status: report.Status,
 	}
 }

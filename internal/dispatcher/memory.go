@@ -11,13 +11,13 @@ type Memory struct {
 	wgTasks sync.WaitGroup
 	wgProcs sync.WaitGroup
 	queue   queue.Queue
-	results chan tasks.Result
+	results chan Result
 }
 
 func NewMemory() *Memory {
 	return &Memory{
 		queue:   queue.New(),
-		results: make(chan tasks.Result),
+		results: make(chan Result),
 	}
 }
 
