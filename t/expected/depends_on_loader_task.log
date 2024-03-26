@@ -1,13 +1,13 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=2 procs=2
-2000-01-01 00:00:00 INFO   [1:0] status=ready name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [2:0] status=succeeded name="task #2 must wait for all subtask completion" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [2:0] action=true
+2000-01-01 00:00:00 INFO   [1:0] status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
 2000-01-01 00:00:00 INFO   [1:0] action="echo -n \"sleep .2\\nsleep .1\\n\"\n"
 2000-01-01 00:00:00 INFO   [1:0] Output:
 sleep .2
 sleep .1
 
-2000-01-01 00:00:00 INFO   [1:2] status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   [1:2] action="sleep .1"
 2000-01-01 00:00:00 INFO   [1:1] status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
 2000-01-01 00:00:00 INFO   [1:1] action="sleep .2"
-2000-01-01 00:00:00 INFO   [2:0] status=succeeded name="task #2 must wait for all subtask completion" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   [2:0] action=true
+2000-01-01 00:00:00 INFO   [1:2] status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [1:2] action="sleep .1"

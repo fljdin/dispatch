@@ -84,6 +84,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 		})
 	}
 
-	result.Status = status.Ready
+	result.Status = status.Succeeded
 	return result, commands
 }

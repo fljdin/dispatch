@@ -1,75 +1,104 @@
 package queue
 
 import (
-	"container/list"
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
+	om "github.com/wk8/go-ordered-map/v2"
 )
 
 type Queue struct {
-	mut    sync.Mutex
-	status *StatusMap
-	tasks  *list.List
+	mut   sync.Mutex
+	tasks *om.OrderedMap[int, []tasks.Task]
 }
 
 func New() Queue {
 	return Queue{
-		status: NewStatusMap(),
-		tasks:  list.New(),
+		tasks: om.New[int, []tasks.Task](),
 	}
-}
-
-func (q *Queue) Status(taskId int) status.Status {
-	return q.status.Get(taskId)
-}
-
-func (q *Queue) SetStatus(taskId, taskSubId int, status status.Status) {
-	q.status.Set(taskId, taskSubId, status)
-}
-
-func (q *Queue) Len() int {
-	q.mut.Lock()
-	defer q.mut.Unlock()
-
-	return q.tasks.Len()
 }
 
 func (q *Queue) Add(t tasks.Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	q.tasks.PushBack(t)
-	q.status.Set(t.ID, t.SubID, t.Status)
+	subs, exists := q.tasks.Get(t.ID)
+	if !exists {
+		q.tasks.Set(t.ID, []tasks.Task{t})
+		return
+	}
+
+	subs = append(subs, t)
+	q.tasks.Set(t.ID, subs)
 }
 
-func (q *Queue) Pop() (tasks.Task, bool) {
+func (q *Queue) Update(id, subid int, s status.Status) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	element := q.tasks.Front()
-	if element == nil {
-		return tasks.Task{}, false
+	// update status in queue
+	if t, exists := q.tasks.Get(id); exists {
+		t[subid].Status = s
+		q.tasks.Set(id, t)
+		return
 	}
-
-	task := element.Value.(tasks.Task)
-	q.tasks.Remove(element)
-
-	task.Status = q.evaluate(task)
-	return task, true
 }
 
-func (q *Queue) evaluate(t tasks.Task) status.Status {
-	for _, id := range t.Depends {
-		s := q.status.Get(id)
+func (q *Queue) Next() (tasks.Task, bool) {
+	q.mut.Lock()
+	defer q.mut.Unlock()
 
-		if s.IsFailed() {
-			return status.Interrupted
-		} else if s != status.Succeeded {
-			return status.Waiting
+	for pair := q.tasks.Oldest(); pair != nil; pair = pair.Next() {
+	next:
+		for _, sub := range pair.Value {
+			// ignore already processed tasks
+			if sub.Status != status.Waiting {
+				continue next
+			}
+
+			for _, id := range sub.Depends {
+				dep := q.Evaluate(id)
+
+				// interrupt if a dependency failed
+				if dep.IsFailed() {
+					sub.Status = status.Interrupted
+					return sub, true
+				}
+
+				// wait until a dependency succeeds
+				if !dep.IsSucceeded() {
+					continue next
+				}
+			}
+
+			sub.Status = status.Ready
+			return sub, true
 		}
 	}
 
-	return status.Ready
+	// no task found
+	return tasks.Task{}, false
+}
+
+func (q *Queue) Evaluate(id int) status.Status {
+	subs, exists := q.tasks.Get(id)
+	if !exists {
+		return status.Waiting
+	}
+
+	for _, sub := range subs {
+		switch sub.Status {
+		case status.Waiting, status.Ready, status.Running:
+			return status.Waiting
+
+		case status.Failed, status.Interrupted:
+			return status.Failed
+
+		default:
+			continue
+		}
+	}
+
+	return status.Succeeded
 }

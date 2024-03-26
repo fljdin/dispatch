@@ -2,6 +2,8 @@ package dispatcher
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 
 	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/status"
@@ -24,7 +26,8 @@ func New(procs int) Dispatcher {
 		processes: procs,
 		memory: &Memory{
 			queue:   queue.New(),
-			results: make(chan Result, 10),
+			tasks:   make(chan tasks.Task, procs),
+			results: make(chan Result, procs),
 		},
 	}
 
@@ -32,6 +35,15 @@ func New(procs int) Dispatcher {
 }
 
 func (d *Dispatcher) Wait() {
+	// fill tasks channel with ready tasks
+	for i := 0; i < d.processes; i++ {
+		if task, ok := d.memory.queue.Next(); ok {
+			d.memory.tasks <- task
+			d.memory.queue.Update(task.ID, task.SubID, status.Running)
+			slog.Debug("new task sent to internal channel", "task", fmt.Sprintf("%d:%d", task.ID, task.SubID))
+		}
+	}
+
 	d.launchMonitor()
 	d.launchProcesses()
 
@@ -44,8 +56,8 @@ func (d *Dispatcher) AddTask(task tasks.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d Dispatcher) Status(taskId int) status.Status {
-	return d.memory.Status(taskId)
+func (d Dispatcher) Evaluate(id int) status.Status {
+	return d.memory.Evaluate(id)
 }
 
 func (d Dispatcher) launchMonitor() {

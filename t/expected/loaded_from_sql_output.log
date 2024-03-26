@@ -1,5 +1,5 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
-2000-01-01 00:00:00 INFO   [1:0] status=ready name="dispatch queries from a sql output" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [1:0] status=succeeded name="dispatch queries from a sql output" start="2000-01-01 00:00:00" elapsed=0s
 2000-01-01 00:00:00 INFO   [1:0] action="SELECT format('echo %s', i) FROM generate_series(1, 2) AS i\n"
 2000-01-01 00:00:00 INFO   [1:0] Output:
 echo 1

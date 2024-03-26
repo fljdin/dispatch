@@ -2,6 +2,8 @@ package dispatcher
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 )
 
 type Monitor struct {
@@ -18,8 +20,17 @@ func (m *Monitor) Start() {
 		case <-m.context.Done():
 			return
 		case result := <-m.memory.results:
-			m.memory.SetStatus(result.ID, result.SubID, result.Status)
+			m.memory.Update(result.ID, result.SubID, result.Status)
 			m.memory.wgTasks.Done()
+
+			// fill back the tasks channel
+			if task, ok := m.memory.queue.Next(); ok {
+				m.memory.tasks <- task
+				slog.Debug(
+					fmt.Sprintf("task=%s", task),
+					"msg", "task sent to internal channel",
+				)
+			}
 		}
 	}
 }

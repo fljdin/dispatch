@@ -24,28 +24,13 @@ func (p *Process) Start() {
 		select {
 		case <-p.context.Done():
 			return
-		default:
-			if task, ok := p.memory.queue.Pop(); ok {
-				p.handle(task)
+		case task := <-p.memory.tasks:
+			if task.Status == status.Interrupted {
+				p.interrupt(task)
+				continue
 			}
+			p.run(task)
 		}
-	}
-}
-
-func (p *Process) handle(t tasks.Task) {
-	switch t.Status {
-	case status.Waiting:
-		p.memory.ForwardTask(t)
-
-	case status.Interrupted:
-		p.memory.results <- Result{
-			ID:     t.ID,
-			SubID:  t.SubID,
-			Status: status.Interrupted,
-		}
-
-	case status.Ready:
-		p.run(t)
 	}
 }
 
@@ -90,4 +75,16 @@ func (p *Process) run(t tasks.Task) {
 		SubID:  t.SubID,
 		Status: report.Status,
 	}
+}
+
+func (p *Process) interrupt(t tasks.Task) {
+	logAttrs := []any{
+		"status", status.Interrupted,
+		"name", t.Name,
+	}
+
+	slog.Info(t.Code(), logAttrs...)
+
+	p.memory.Update(t.ID, t.SubID, t.Status)
+	p.memory.wgTasks.Done()
 }

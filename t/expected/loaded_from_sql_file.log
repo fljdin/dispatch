@@ -1,5 +1,5 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
-2000-01-01 00:00:00 INFO   [1:0] status=ready name="dispatch queries from a sql file" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   [1:0] status=succeeded name="dispatch queries from a sql file" start="2000-01-01 00:00:00" elapsed=0s
 2000-01-01 00:00:00 INFO   [1:0] action="from queries.sql with psql"
 2000-01-01 00:00:00 INFO   [1:0] Output:
 2 loaded from queries.sql

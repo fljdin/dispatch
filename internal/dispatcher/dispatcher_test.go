@@ -19,7 +19,7 @@ func TestDispatcherAddTask(t *testing.T) {
 		Action: Command{Text: "true"},
 	})
 
-	r.Equal(Waiting, dispatcher.Status(1))
+	r.Equal(Waiting, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
@@ -37,8 +37,8 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
-	r.Equal(Interrupted, dispatcher.Status(2))
+	r.Equal(Failed, dispatcher.Evaluate(1))
+	r.Equal(Failed, dispatcher.Evaluate(2))
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
@@ -56,8 +56,8 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Succeeded, dispatcher.Status(1))
-	r.Equal(Succeeded, dispatcher.Status(2))
+	r.Equal(Succeeded, dispatcher.Evaluate(1))
+	r.Equal(Succeeded, dispatcher.Evaluate(2))
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
@@ -76,7 +76,7 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherWithOutputLoader(t *testing.T) {
@@ -92,7 +92,7 @@ func TestDispatcherWithOutputLoader(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherWithFileLoader(t *testing.T) {
@@ -115,5 +115,5 @@ func TestDispatcherWithFileLoader(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }

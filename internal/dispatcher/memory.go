@@ -12,22 +12,16 @@ type Memory struct {
 	wgTasks sync.WaitGroup
 	wgProcs sync.WaitGroup
 	queue   queue.Queue
+	tasks   chan tasks.Task
 	results chan Result
 }
 
-func NewMemory() *Memory {
-	return &Memory{
-		queue:   queue.New(),
-		results: make(chan Result),
-	}
+func (m *Memory) Evaluate(id int) status.Status {
+	return m.queue.Evaluate(id)
 }
 
-func (m *Memory) Status(taskId int) status.Status {
-	return m.queue.Status(taskId)
-}
-
-func (m *Memory) SetStatus(taskId, taskSubId int, status status.Status) {
-	m.queue.SetStatus(taskId, taskSubId, status)
+func (m *Memory) Update(id, subid int, status status.Status) {
+	m.queue.Update(id, subid, status)
 }
 
 func (m *Memory) AddTask(task tasks.Task) {

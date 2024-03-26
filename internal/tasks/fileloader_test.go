@@ -38,7 +38,7 @@ func TestFileLoaderRun(t *testing.T) {
 	}
 	result, commands := cmd.Run()
 
-	r.Equal(Ready, result.Status)
+	r.Equal(Succeeded, result.Status)
 	r.Equal(Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
 	r.Equal(Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
 }
