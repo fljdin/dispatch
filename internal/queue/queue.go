@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"sync"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -20,11 +21,11 @@ func New() Queue {
 	}
 }
 
-func (q *Queue) Status(taskId int) int {
+func (q *Queue) Status(taskId int) status.Status {
 	return q.status.Get(taskId)
 }
 
-func (q *Queue) SetStatus(taskId, taskSubId, status int) {
+func (q *Queue) SetStatus(taskId, taskSubId int, status status.Status) {
 	q.status.Set(taskId, taskSubId, status)
 }
 
@@ -59,16 +60,16 @@ func (q *Queue) Pop() (tasks.Task, bool) {
 	return task, true
 }
 
-func (q *Queue) evaluate(t tasks.Task) int {
+func (q *Queue) evaluate(t tasks.Task) status.Status {
 	for _, id := range t.Depends {
-		status := q.status.Get(id)
+		s := q.status.Get(id)
 
-		if tasks.IsFailed(status) {
-			return tasks.Interrupted
-		} else if status != tasks.Succeeded {
-			return tasks.Waiting
+		if s.IsFailed() {
+			return status.Interrupted
+		} else if s != status.Succeeded {
+			return status.Waiting
 		}
 	}
 
-	return tasks.Ready
+	return status.Ready
 }

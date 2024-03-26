@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"golang.org/x/exp/slices"
 )
 
@@ -75,13 +76,13 @@ func (c Command) Run() (Report, []Action) {
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    Succeeded,
+		Status:    status.Succeeded,
 		Output:    stdout.String(),
 		Error:     stderr.String(),
 	}
 
 	if err != nil {
-		result.Status = Failed
+		result.Status = status.Failed
 	}
 
 	return result, nil

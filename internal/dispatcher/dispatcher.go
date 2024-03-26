@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -43,7 +44,7 @@ func (d *Dispatcher) AddTask(task tasks.Task) {
 	d.memory.AddTask(task)
 }
 
-func (d Dispatcher) Status(taskId int) int {
+func (d Dispatcher) Status(taskId int) status.Status {
 	return d.memory.Status(taskId)
 }
 

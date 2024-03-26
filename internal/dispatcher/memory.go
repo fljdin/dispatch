@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -21,11 +22,11 @@ func NewMemory() *Memory {
 	}
 }
 
-func (m *Memory) Status(taskId int) int {
+func (m *Memory) Status(taskId int) status.Status {
 	return m.queue.Status(taskId)
 }
 
-func (m *Memory) SetStatus(taskId, taskSubId, status int) {
+func (m *Memory) SetStatus(taskId, taskSubId int, status status.Status) {
 	m.queue.SetStatus(taskId, taskSubId, status)
 }
 

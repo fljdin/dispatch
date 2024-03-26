@@ -3,6 +3,7 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"golang.org/x/exp/slices"
 )
 
@@ -12,7 +13,7 @@ type Task struct {
 	Name    string
 	Action  Action
 	Depends []int
-	Status  int
+	Status  status.Status
 }
 
 func (t Task) Code() string {

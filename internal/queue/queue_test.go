@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +60,7 @@ func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
 	})
 	task, _ := queue.Pop()
 
-	r.Equal(tasks.Ready, task.Status)
+	r.Equal(status.Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
@@ -75,7 +76,7 @@ func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
 	})
 	task, _ := queue.Pop()
 
-	r.Equal(tasks.Waiting, task.Status)
+	r.Equal(status.Waiting, task.Status)
 }
 
 func TestQueueDependentTaskMustBeReady(t *testing.T) {
@@ -97,10 +98,10 @@ func TestQueueDependentTaskMustBeReady(t *testing.T) {
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, 0, tasks.Succeeded)
+	queue.SetStatus(1, 0, status.Succeeded)
 	task, _ := queue.Pop()
 
-	r.Equal(tasks.Ready, task.Status)
+	r.Equal(status.Ready, task.Status)
 }
 
 func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
@@ -122,8 +123,8 @@ func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
 	})
 
 	_, _ = queue.Pop()
-	queue.SetStatus(1, 0, tasks.Interrupted)
+	queue.SetStatus(1, 0, status.Interrupted)
 	task, _ := queue.Pop()
 
-	r.Equal(tasks.Interrupted, task.Status)
+	r.Equal(status.Interrupted, task.Status)
 }

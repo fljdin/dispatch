@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -33,17 +34,17 @@ func (p *Process) Start() {
 
 func (p *Process) handle(t tasks.Task) {
 	switch t.Status {
-	case tasks.Waiting:
+	case status.Waiting:
 		p.memory.ForwardTask(t)
 
-	case tasks.Interrupted:
+	case status.Interrupted:
 		p.memory.results <- Result{
 			ID:     t.ID,
 			SubID:  t.SubID,
-			Status: tasks.Interrupted,
+			Status: status.Interrupted,
 		}
 
-	case tasks.Ready:
+	case status.Ready:
 		p.run(t)
 	}
 }
@@ -61,13 +62,13 @@ func (p *Process) run(t tasks.Task) {
 	}
 
 	logAttrs := []any{
-		"status", tasks.StatusTypes[report.Status],
+		"status", report.Status,
 		"name", t.Name,
 		"start", report.StartTime.Format(time.DateTime),
 		"elapsed", report.Elapsed.Round(time.Millisecond),
 	}
 
-	if !tasks.IsSucceeded(report.Status) {
+	if report.Status.IsFailed() {
 		slog.Error(t.Code(), logAttrs...)
 	} else {
 		slog.Info(t.Code(), logAttrs...)
