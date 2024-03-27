@@ -3,6 +3,7 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
@@ -64,12 +65,12 @@ func (l OutputLoader) Run() (Report, []Action) {
 	err := cmd.Validate()
 
 	if err != nil {
-		return Report{Status: Failed, Error: err.Error()}, nil
+		return Report{Status: status.Failed, Error: err.Error()}, nil
 	}
 
 	result, _ := cmd.Run()
 
-	if result.Status == Failed {
+	if result.Status == status.Failed {
 		return result, nil
 	}
 
@@ -83,6 +84,6 @@ func (l OutputLoader) Run() (Report, []Action) {
 		})
 	}
 
-	result.Status = Ready
+	result.Status = status.Succeeded
 	return result, commands
 }

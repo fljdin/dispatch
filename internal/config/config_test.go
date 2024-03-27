@@ -55,7 +55,7 @@ func TestConfigFromYAML(t *testing.T) {
 	tasks, _ := config.Tasks()
 
 	r.Equal(1, config.Processes)
-	r.Equal(1, tasks[0].ID)
+	r.Equal(1, tasks[0].Identifier.ID)
 }
 
 func TestConfigFromYAMLWithDefaultEnvironment(t *testing.T) {

@@ -11,7 +11,7 @@ func TestCreateTask(t *testing.T) {
 	r := require.New(t)
 
 	task := Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 		Action: Command{
 			Text: "echo test",
 		},
@@ -37,7 +37,7 @@ func TestTaskVerifyCommandRequired(t *testing.T) {
 	r := require.New(t)
 
 	task := Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 	}
 	err := task.Validate()
 

@@ -45,7 +45,7 @@ func (c Config) Tasks() ([]tasks.Task, error) {
 		}
 
 		finalTasks = append(finalTasks, task)
-		identifiers = append(identifiers, task.ID)
+		identifiers = append(identifiers, task.Identifier.ID)
 	}
 
 	return finalTasks, nil

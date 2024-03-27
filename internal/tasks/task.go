@@ -3,24 +3,40 @@ package tasks
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"golang.org/x/exp/slices"
 )
 
-type Task struct {
-	ID      int
-	SubID   int
-	Name    string
-	Action  Action
-	Depends []int
-	Status  int
+type TaskIdentifier struct {
+	ID    int
+	SubID int
 }
 
-func (t Task) Code() string {
-	return fmt.Sprintf("[%d:%d]", t.ID, t.SubID)
+func NewId(id, subid int) TaskIdentifier {
+	return TaskIdentifier{
+		ID:    id,
+		SubID: subid,
+	}
+}
+
+func (t TaskIdentifier) IsZero() bool {
+	return t.ID == 0 && t.SubID == 0
+}
+
+type Task struct {
+	Identifier TaskIdentifier
+	Name       string
+	Action     Action
+	Depends    []int
+	Status     status.Status
+}
+
+func (t Task) String() string {
+	return fmt.Sprintf("%d:%d", t.Identifier.ID, t.Identifier.SubID)
 }
 
 func (t Task) Validate() error {
-	if t.ID == 0 {
+	if t.Identifier.IsZero() {
 		return fmt.Errorf("id is required")
 	}
 
@@ -43,7 +59,7 @@ func (t Task) ValidateDependencies(identifiers []int) error {
 	}
 
 	if !exists {
-		return fmt.Errorf("task %d depends on unknown task %d", t.ID, t.Depends)
+		return fmt.Errorf("task %d depends on unknown task %d", t.Identifier.ID, t.Depends)
 	}
 
 	return nil

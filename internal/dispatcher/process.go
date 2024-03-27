@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
@@ -23,80 +24,58 @@ func (p *Process) Start() {
 		select {
 		case <-p.context.Done():
 			return
-		default:
-			if task, ok := p.memory.queue.Pop(); ok {
-				p.handle(task)
-			}
+		case task := <-p.memory.tasks:
+			p.run(task)
 		}
-	}
-}
-
-func (p *Process) handle(t tasks.Task) {
-	switch t.Status {
-	case tasks.Waiting:
-		p.memory.ForwardTask(t)
-
-	case tasks.Interrupted:
-		p.memory.results <- tasks.Result{
-			ID:      t.ID,
-			SubID:   t.SubID,
-			Name:    t.Name,
-			Action:  t.Action.String(),
-			Status:  tasks.Interrupted,
-			Elapsed: 0,
-		}
-
-	case tasks.Ready:
-		p.run(t)
 	}
 }
 
 func (p *Process) run(t tasks.Task) {
-	report, commands := t.Action.Run()
+	if t.Status == status.Interrupted {
+		slog.Error(
+			fmt.Sprintf("task=%s", t),
+			"status", status.Interrupted,
+			"name", t.Name,
+		)
 
+		p.memory.Done(t.Identifier, t.Status)
+		return
+	}
+
+	report, commands := t.Action.Run()
 	for id, command := range commands {
 		p.memory.AddTask(tasks.Task{
-			ID:     t.ID,
-			SubID:  id + 1,
-			Action: command,
-			Name:   t.Name,
+			Identifier: tasks.NewId(t.Identifier.ID, id+1),
+			Action:     command,
+			Name:       t.Name,
 		})
 	}
 
-	logAttrs := []any{
-		"status", tasks.StatusTypes[report.Status],
+	var slogFunc func(string, ...any) = slog.Info
+	if report.Status.IsFailed() {
+		slogFunc = slog.Error
+	}
+
+	slogFunc(
+		fmt.Sprintf("task=%s", t),
+		"status", report.Status,
 		"name", t.Name,
 		"start", report.StartTime.Format(time.DateTime),
 		"elapsed", report.Elapsed.Round(time.Millisecond),
-	}
+	)
 
-	if !tasks.IsSucceeded(report.Status) {
-		slog.Error(t.Code(), logAttrs...)
-	} else {
-		slog.Info(t.Code(), logAttrs...)
-	}
-	slog.Info(t.Code(), "action", t.Action.String())
+	slogFunc(fmt.Sprintf("task=%s action: %s", t, t.Action.String()))
 
 	if len(report.Error) > 0 {
-		msg := fmt.Sprintf("%s Error:\n%s", t.Code(), report.Error)
-		slog.Error(msg)
+		slogFunc(fmt.Sprintf("task=%s error: %s", t, report.Error))
 	}
 
 	if len(report.Output) > 0 {
-		msg := fmt.Sprintf("%s Output:\n%s", t.Code(), report.Output)
-		slog.Info(msg)
+		slogFunc(fmt.Sprintf("task=%s output: %s", t, report.Output))
 	}
 
-	p.memory.results <- tasks.Result{
-		ID:        t.ID,
-		SubID:     t.SubID,
-		Name:      t.Name,
-		Action:    t.Action.String(),
-		Status:    report.Status,
-		StartTime: report.StartTime,
-		EndTime:   report.EndTime,
-		Elapsed:   report.Elapsed,
-		Output:    report.Output,
-		Error:     report.Error,
+	p.memory.results <- Result{
+		Identifier: t.Identifier,
+		Status:     report.Status,
 	}
 }

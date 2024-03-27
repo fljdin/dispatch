@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	. "github.com/fljdin/dispatch/internal/dispatcher"
+	. "github.com/fljdin/dispatch/internal/status"
 	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
@@ -14,11 +15,11 @@ func TestDispatcherAddTask(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "true"},
 	})
 
-	r.Equal(Waiting, dispatcher.Status(1))
+	r.Equal(Waiting, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
@@ -26,18 +27,18 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "false"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
-		ID:      2,
-		Depends: []int{1},
-		Action:  Command{Text: "true"},
+		Identifier: NewId(2, 0),
+		Depends:    []int{1},
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
-	r.Equal(Interrupted, dispatcher.Status(2))
+	r.Equal(Failed, dispatcher.Evaluate(1))
+	r.Equal(Failed, dispatcher.Evaluate(2))
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
@@ -45,18 +46,18 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.AddTask(Task{
-		ID:      2,
-		Depends: []int{1},
-		Action:  Command{Text: "true"},
+		Identifier: NewId(2, 0),
+		Depends:    []int{1},
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
-	r.Equal(Succeeded, dispatcher.Status(1))
-	r.Equal(Succeeded, dispatcher.Status(2))
+	r.Equal(Succeeded, dispatcher.Evaluate(1))
+	r.Equal(Succeeded, dispatcher.Evaluate(2))
 }
 
 func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
@@ -64,18 +65,16 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		SubID:  0,
-		Action: Command{Text: "false"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
-		ID:     1,
-		SubID:  1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 1),
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherWithOutputLoader(t *testing.T) {
@@ -83,7 +82,7 @@ func TestDispatcherWithOutputLoader(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 		Action: OutputLoader{
 			Text: `echo -n "true\nfalse"`,
 			From: "sh",
@@ -91,7 +90,7 @@ func TestDispatcherWithOutputLoader(t *testing.T) {
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }
 
 func TestDispatcherWithFileLoader(t *testing.T) {
@@ -107,12 +106,12 @@ func TestDispatcherWithFileLoader(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 		Action: FileLoader{
 			File: tempFile.Name(),
 		},
 	})
 	dispatcher.Wait()
 
-	r.Equal(Failed, dispatcher.Status(1))
+	r.Equal(Failed, dispatcher.Evaluate(1))
 }

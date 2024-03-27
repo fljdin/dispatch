@@ -18,8 +18,12 @@ func (m *Monitor) Start() {
 		case <-m.context.Done():
 			return
 		case result := <-m.memory.results:
-			m.memory.SetStatus(result.ID, result.SubID, result.Status)
-			m.memory.wgTasks.Done()
+			m.memory.Done(result.Identifier, result.Status)
+
+			// fill back the tasks channel
+			if task, ok := m.memory.queue.Next(); ok {
+				m.memory.SendTask(task)
+			}
 		}
 	}
 }

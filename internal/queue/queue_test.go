@@ -3,127 +3,124 @@ package queue_test
 import (
 	"testing"
 
-	. "github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
-func TestQueuePush(t *testing.T) {
+func TestQueueNext(t *testing.T) {
 	r := require.New(t)
+	var (
+		ok    bool
+		ready tasks.Task
+	)
 
-	queue := New()
+	queue := queue.New()
 	queue.Add(tasks.Task{
-		ID: 1,
-		Action: tasks.Command{
-			Text: "echo test",
-		},
+		Identifier: tasks.NewId(1, 0),
+		Status:     status.Waiting,
 	})
 
-	r.Equal(1, queue.Len())
+	ready, ok = queue.Next()
+	r.True(ok) // task 1 is immediately ready
+	r.Equal(1, ready.Identifier.ID)
+
+	queue.Update(tasks.NewId(1, 0), status.Succeeded)
+
+	_, ok = queue.Next()
+	r.False(ok) // queue is empty
 }
 
-func TestQueuePopEmpty(t *testing.T) {
+func TestQueueEvaluate(t *testing.T) {
 	r := require.New(t)
 
-	queue := New()
-	_, ok := queue.Pop()
+	queue := queue.New()
+	queue.Add(tasks.Task{Identifier: tasks.NewId(1, 0), Status: status.Succeeded})
+	queue.Add(tasks.Task{Identifier: tasks.NewId(1, 1), Status: status.Failed})
 
-	r.Equal(false, ok)
+	r.Equal(status.Failed, queue.Evaluate(1))
+
+	queue.Add(tasks.Task{Identifier: tasks.NewId(2, 0), Status: status.Succeeded})
+	queue.Add(tasks.Task{Identifier: tasks.NewId(2, 1), Status: status.Waiting})
+
+	r.Equal(status.Waiting, queue.Evaluate(2))
+
+	queue.Add(tasks.Task{Identifier: tasks.NewId(3, 0), Status: status.Succeeded})
+	queue.Add(tasks.Task{Identifier: tasks.NewId(3, 1), Status: status.Succeeded})
+
+	r.Equal(status.Succeeded, queue.Evaluate(3))
+
+	queue.Add(tasks.Task{Identifier: tasks.NewId(4, 0), Status: status.Succeeded})
+	queue.Add(tasks.Task{Identifier: tasks.NewId(4, 1), Status: status.Interrupted})
+
+	r.Equal(status.Failed, queue.Evaluate(4))
 }
 
-func TestQueuePop(t *testing.T) {
+func TestQueueTaskWithDependencies(t *testing.T) {
 	r := require.New(t)
+	var (
+		ok    bool
+		ready tasks.Task
+	)
 
-	queue := New()
+	queue := queue.New()
 	queue.Add(tasks.Task{
-		ID: 1,
-		Action: tasks.Command{
-			Text: "echo test",
-		},
+		Identifier: tasks.NewId(1, 0),
+		Status:     status.Waiting,
+		Depends:    []int{2},
 	})
-	task, _ := queue.Pop()
 
-	r.Equal(1, task.ID)
-	r.Equal(0, queue.Len())
+	_, ok = queue.Next()
+	r.False(ok) // task 1 is waiting for task 2
+
+	queue.Add(tasks.Task{
+		Identifier: tasks.NewId(2, 0),
+		Status:     status.Waiting,
+	})
+
+	ready, ok = queue.Next()
+	r.True(ok) // task 2 is ready
+	r.Equal(2, ready.Identifier.ID)
+
+	queue.Update(tasks.NewId(2, 0), status.Succeeded)
+
+	ready, ok = queue.Next()
+	r.True(ok) // task 1 is ready
+	r.Equal(1, ready.Identifier.ID)
 }
 
-func TestQueueAutonomousTaskMustBeReady(t *testing.T) {
+func TestQueueTaskIsInterrupted(t *testing.T) {
 	r := require.New(t)
+	var (
+		ok    bool
+		ready tasks.Task
+	)
 
-	queue := New()
+	queue := queue.New()
 	queue.Add(tasks.Task{
-		ID: 1,
-		Action: tasks.Command{
-			Text: "echo test",
-		},
-	})
-	task, _ := queue.Pop()
-
-	r.Equal(tasks.Ready, task.Status)
-}
-
-func TestQueueDependentTaskMustBeWaiting(t *testing.T) {
-	r := require.New(t)
-
-	queue := New()
-	queue.Add(tasks.Task{
-		ID:      2,
-		Depends: []int{1},
-		Action: tasks.Command{
-			Text: "true",
-		},
-	})
-	task, _ := queue.Pop()
-
-	r.Equal(tasks.Waiting, task.Status)
-}
-
-func TestQueueDependentTaskMustBeReady(t *testing.T) {
-	r := require.New(t)
-
-	queue := New()
-	queue.Add(tasks.Task{
-		ID: 1,
-		Action: tasks.Command{
-			Text: "true",
-		},
-	})
-	queue.Add(tasks.Task{
-		ID:      2,
-		Depends: []int{1},
-		Action: tasks.Command{
-			Text: "true",
-		},
+		Identifier: tasks.NewId(1, 0),
+		Status:     status.Waiting,
+		Depends:    []int{2},
 	})
 
-	_, _ = queue.Pop()
-	queue.SetStatus(1, 0, tasks.Succeeded)
-	task, _ := queue.Pop()
+	ready, ok = queue.Next()
+	r.False(ok) // task 1 is waiting for task 2
 
-	r.Equal(tasks.Ready, task.Status)
-}
-
-func TestQueueDependentTaskMustBeInterrupted(t *testing.T) {
-	r := require.New(t)
-
-	queue := New()
 	queue.Add(tasks.Task{
-		ID: 1,
-		Action: tasks.Command{
-			Text: "true",
-		},
+		Identifier: tasks.NewId(2, 0),
+		Status:     status.Waiting,
 	})
+	queue.Update(tasks.NewId(2, 0), status.Succeeded)
+
 	queue.Add(tasks.Task{
-		ID:      2,
-		Depends: []int{1},
-		Action: tasks.Command{
-			Text: "true",
-		},
+		Identifier: tasks.NewId(2, 1),
+		Status:     status.Waiting,
 	})
+	queue.Update(tasks.NewId(2, 1), status.Failed)
 
-	_, _ = queue.Pop()
-	queue.SetStatus(1, 0, tasks.Interrupted)
-	task, _ := queue.Pop()
-
-	r.Equal(tasks.Interrupted, task.Status)
+	ready, ok = queue.Next()
+	r.True(ok) // task 1 is ready
+	r.Equal(1, ready.Identifier.ID)
+	r.Equal(status.Interrupted, ready.Status)
 }

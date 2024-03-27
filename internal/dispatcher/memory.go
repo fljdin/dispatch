@@ -1,32 +1,30 @@
 package dispatcher
 
 import (
+	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
+
+type Result struct {
+	Identifier tasks.TaskIdentifier
+	Status     status.Status
+}
 
 type Memory struct {
 	wgTasks sync.WaitGroup
 	wgProcs sync.WaitGroup
 	queue   queue.Queue
-	results chan tasks.Result
+	tasks   chan tasks.Task
+	results chan Result
 }
 
-func NewMemory() *Memory {
-	return &Memory{
-		queue:   queue.New(),
-		results: make(chan tasks.Result),
-	}
-}
-
-func (m *Memory) Status(taskId int) int {
-	return m.queue.Status(taskId)
-}
-
-func (m *Memory) SetStatus(taskId, taskSubId, status int) {
-	m.queue.SetStatus(taskId, taskSubId, status)
+func (m *Memory) Evaluate(id int) status.Status {
+	return m.queue.Evaluate(id)
 }
 
 func (m *Memory) AddTask(task tasks.Task) {
@@ -34,8 +32,19 @@ func (m *Memory) AddTask(task tasks.Task) {
 	m.wgTasks.Add(1)
 }
 
-func (m *Memory) ForwardTask(task tasks.Task) {
-	m.queue.Add(task)
+func (m *Memory) Done(tid tasks.TaskIdentifier, status status.Status) {
+	m.queue.Update(tid, status)
+	m.wgTasks.Done()
+}
+
+func (m *Memory) SendTask(task tasks.Task) {
+	m.queue.Update(task.Identifier, status.Running)
+	slog.Debug(
+		fmt.Sprintf("task=%s", task),
+		"msg", "task sent to internal channel",
+	)
+
+	m.tasks <- task
 }
 
 func (m *Memory) StartProcess() {

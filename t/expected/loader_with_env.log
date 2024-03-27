@@ -1,17 +1,17 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
-2000-01-01 00:00:00 INFO   [1:0] status=ready name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   [1:0] action="SELECT format('echo %s', current_setting('application_name'))\nUNION\nSELECT format('echo $PGAPPNAME')\n"
-2000-01-01 00:00:00 INFO   [1:0] Output:
-echo $PGAPPNAME
+2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:0 action: SELECT format('echo %s', current_setting('application_name'))
+UNION
+SELECT format('echo $PGAPPNAME')
+
+2000-01-01 00:00:00 INFO   task=1:0 output: echo $PGAPPNAME
 echo bar
 
-2000-01-01 00:00:00 INFO   [1:1] status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   [1:1] action="echo $PGAPPNAME"
-2000-01-01 00:00:00 INFO   [1:1] Output:
-foo
+2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:1 action: echo $PGAPPNAME
+2000-01-01 00:00:00 INFO   task=1:1 output: foo
 
-2000-01-01 00:00:00 INFO   [1:2] status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   [1:2] action="echo bar"
-2000-01-01 00:00:00 INFO   [1:2] Output:
-bar
+2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:2 action: echo bar
+2000-01-01 00:00:00 INFO   task=1:2 output: bar
 

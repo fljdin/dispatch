@@ -3,27 +3,13 @@ package tasks
 import (
 	"time"
 
-	"golang.org/x/exp/slices"
+	"github.com/fljdin/dispatch/internal/status"
 )
 
 var CommandTypes = []string{"", "sh", "psql"}
-var StatusTypes = []string{"waiting", "interrupted", "failed", "ready", "succeeded"}
-
-func IsSucceeded(status int) bool {
-	s := []int{Ready, Succeeded}
-	return slices.Contains(s, status)
-}
-
-const (
-	Waiting int = iota
-	Interrupted
-	Failed
-	Ready
-	Succeeded
-)
 
 type Report struct {
-	Status    int
+	Status    status.Status
 	StartTime time.Time
 	EndTime   time.Time
 	Elapsed   time.Duration

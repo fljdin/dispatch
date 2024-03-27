@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
 )
@@ -24,7 +25,7 @@ func (l FileLoader) load(input string) []string {
 }
 
 func (l FileLoader) String() string {
-	return fmt.Sprintf("from %s with %s", l.File, l.Type)
+	return fmt.Sprintf("execute %s with %s", l.File, l.Type)
 }
 
 func (l FileLoader) Validate() error {
@@ -55,7 +56,7 @@ func (l FileLoader) Run() (Report, []Action) {
 			StartTime: startTime,
 			EndTime:   endTime,
 			Elapsed:   endTime.Sub(startTime),
-			Status:    Failed,
+			Status:    status.Failed,
 			Error:     err.Error(),
 		}
 		return result, nil
@@ -76,7 +77,7 @@ func (l FileLoader) Run() (Report, []Action) {
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),
-		Status:    Ready,
+		Status:    status.Succeeded,
 		Output:    fmt.Sprintf("%d loaded from %s", len(commands), l.File),
 	}
 

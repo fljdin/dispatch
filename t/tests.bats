@@ -35,8 +35,13 @@ function assert-diff() {
     assert-diff loaded_from_sql_output.log
 }
 
+@test "task must be interrupter" {
+    dispatch --config config/interrupted_task.yaml
+    assert-diff interrupted_task.log
+}
+
 @test "#35 task depends on a loader task" {
-    dispatch --config config/depends_on_loader_task.yaml
+    dispatch --verbose --config config/depends_on_loader_task.yaml
     assert-diff depends_on_loader_task.log
 }
 
