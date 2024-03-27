@@ -8,6 +8,11 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
+type Result struct {
+	Identifier tasks.TaskIdentifier
+	Status     status.Status
+}
+
 type Memory struct {
 	wgTasks sync.WaitGroup
 	wgProcs sync.WaitGroup
@@ -20,8 +25,8 @@ func (m *Memory) Evaluate(id int) status.Status {
 	return m.queue.Evaluate(id)
 }
 
-func (m *Memory) Update(id, subid int, status status.Status) {
-	m.queue.Update(id, subid, status)
+func (m *Memory) Update(tid tasks.TaskIdentifier, status status.Status) {
+	m.queue.Update(tid, status)
 }
 
 func (m *Memory) AddTask(task tasks.Task) {

@@ -20,7 +20,7 @@ func (m *Monitor) Start() {
 		case <-m.context.Done():
 			return
 		case result := <-m.memory.results:
-			m.memory.Update(result.ID, result.SubID, result.Status)
+			m.memory.Update(result.Identifier, result.Status)
 			m.memory.wgTasks.Done()
 
 			// fill back the tasks channel

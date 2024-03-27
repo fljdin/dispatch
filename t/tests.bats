@@ -36,7 +36,7 @@ function assert-diff() {
 }
 
 @test "#35 task depends on a loader task" {
-    dispatch --config config/depends_on_loader_task.yaml
+    dispatch --verbose --config config/depends_on_loader_task.yaml
     assert-diff depends_on_loader_task.log
 }
 

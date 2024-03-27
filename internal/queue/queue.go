@@ -23,24 +23,24 @@ func (q *Queue) Add(t tasks.Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	subs, exists := q.tasks.Get(t.ID)
+	subs, exists := q.tasks.Get(t.Identifier.ID)
 	if !exists {
-		q.tasks.Set(t.ID, []tasks.Task{t})
+		q.tasks.Set(t.Identifier.ID, []tasks.Task{t})
 		return
 	}
 
 	subs = append(subs, t)
-	q.tasks.Set(t.ID, subs)
+	q.tasks.Set(t.Identifier.ID, subs)
 }
 
-func (q *Queue) Update(id, subid int, s status.Status) {
+func (q *Queue) Update(tid tasks.TaskIdentifier, s status.Status) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
 	// update status in queue
-	if t, exists := q.tasks.Get(id); exists {
-		t[subid].Status = s
-		q.tasks.Set(id, t)
+	if t, exists := q.tasks.Get(tid.ID); exists {
+		t[tid.SubID].Status = s
+		q.tasks.Set(tid.ID, t)
 		return
 	}
 }

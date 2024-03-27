@@ -36,13 +36,13 @@ func (p *Process) Start() {
 
 func (p *Process) run(t tasks.Task) {
 	report, commands := t.Action.Run()
+	msg := fmt.Sprintf("task=%s", t)
 
 	for id, command := range commands {
 		p.memory.AddTask(tasks.Task{
-			ID:     t.ID,
-			SubID:  id + 1,
-			Action: command,
-			Name:   t.Name,
+			Identifier: tasks.NewId(t.Identifier.ID, id+1),
+			Action:     command,
+			Name:       t.Name,
 		})
 	}
 
@@ -54,26 +54,24 @@ func (p *Process) run(t tasks.Task) {
 	}
 
 	if report.Status.IsFailed() {
-		slog.Error(t.Code(), logAttrs...)
+		slog.Error(msg, logAttrs...)
 	} else {
-		slog.Info(t.Code(), logAttrs...)
+		slog.Info(msg, logAttrs...)
 	}
-	slog.Info(t.Code(), "action", t.Action.String())
+
+	slog.Info(fmt.Sprintf("%s action:\n%s", msg, t.Action.String()))
 
 	if len(report.Error) > 0 {
-		msg := fmt.Sprintf("%s Error:\n%s", t.Code(), report.Error)
-		slog.Error(msg)
+		slog.Error(fmt.Sprintf("%s error:\n%s", msg, report.Error))
 	}
 
 	if len(report.Output) > 0 {
-		msg := fmt.Sprintf("%s Output:\n%s", t.Code(), report.Output)
-		slog.Info(msg)
+		slog.Info(fmt.Sprintf("%s output:\n%s", msg, report.Output))
 	}
 
 	p.memory.results <- Result{
-		ID:     t.ID,
-		SubID:  t.SubID,
-		Status: report.Status,
+		Identifier: t.Identifier,
+		Status:     report.Status,
 	}
 }
 
@@ -83,8 +81,8 @@ func (p *Process) interrupt(t tasks.Task) {
 		"name", t.Name,
 	}
 
-	slog.Info(t.Code(), logAttrs...)
+	slog.Info(t.String(), logAttrs...)
 
-	p.memory.Update(t.ID, t.SubID, t.Status)
+	p.memory.Update(t.Identifier, t.Status)
 	p.memory.wgTasks.Done()
 }

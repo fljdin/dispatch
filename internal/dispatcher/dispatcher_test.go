@@ -15,8 +15,8 @@ func TestDispatcherAddTask(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "true"},
 	})
 
 	r.Equal(Waiting, dispatcher.Evaluate(1))
@@ -27,13 +27,13 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "false"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
-		ID:      2,
-		Depends: []int{1},
-		Action:  Command{Text: "true"},
+		Identifier: NewId(2, 0),
+		Depends:    []int{1},
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -46,13 +46,13 @@ func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.AddTask(Task{
-		ID:      2,
-		Depends: []int{1},
-		Action:  Command{Text: "true"},
+		Identifier: NewId(2, 0),
+		Depends:    []int{1},
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -65,14 +65,12 @@ func TestDispatcherStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID:     1,
-		SubID:  0,
-		Action: Command{Text: "false"},
+		Identifier: NewId(1, 0),
+		Action:     Command{Text: "false"},
 	})
 	dispatcher.AddTask(Task{
-		ID:     1,
-		SubID:  1,
-		Action: Command{Text: "true"},
+		Identifier: NewId(1, 1),
+		Action:     Command{Text: "true"},
 	})
 	dispatcher.Wait()
 
@@ -84,7 +82,7 @@ func TestDispatcherWithOutputLoader(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 		Action: OutputLoader{
 			Text: `echo -n "true\nfalse"`,
 			From: "sh",
@@ -108,7 +106,7 @@ func TestDispatcherWithFileLoader(t *testing.T) {
 
 	dispatcher := New(1)
 	dispatcher.AddTask(Task{
-		ID: 1,
+		Identifier: NewId(1, 0),
 		Action: FileLoader{
 			File: tempFile.Name(),
 		},

@@ -100,9 +100,9 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 	}
 
 	return tasks.Task{
-		ID:      t.ID,
-		Name:    t.Name,
-		Action:  action,
-		Depends: t.Depends,
+		Identifier: tasks.NewId(t.ID, 0),
+		Name:       t.Name,
+		Action:     action,
+		Depends:    t.Depends,
 	}, nil
 }

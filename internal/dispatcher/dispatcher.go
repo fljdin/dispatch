@@ -39,8 +39,11 @@ func (d *Dispatcher) Wait() {
 	for i := 0; i < d.processes; i++ {
 		if task, ok := d.memory.queue.Next(); ok {
 			d.memory.tasks <- task
-			d.memory.queue.Update(task.ID, task.SubID, status.Running)
-			slog.Debug("new task sent to internal channel", "task", fmt.Sprintf("%d:%d", task.ID, task.SubID))
+			d.memory.queue.Update(task.Identifier, status.Running)
+			slog.Debug(
+				fmt.Sprintf("task=%s", task),
+				"msg", "task sent to internal channel",
+			)
 		}
 	}
 
