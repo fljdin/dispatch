@@ -12,7 +12,7 @@ func TestCommandBasicRun(t *testing.T) {
 	r := require.New(t)
 
 	cmd := Command{
-		Type: "sh",
+		Type: Shell,
 		Text: "echo test",
 	}
 	result, _ := cmd.Run()

@@ -1,6 +1,6 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:0 action: SELECT format('echo %s', current_setting('application_name'))
+2000-01-01 00:00:00 INFO   task=1:0 cmd=psql action: SELECT format('echo %s', current_setting('application_name'))
 UNION
 SELECT format('echo $PGAPPNAME')
 
@@ -8,10 +8,10 @@ SELECT format('echo $PGAPPNAME')
 echo bar
 
 2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:1 action: echo $PGAPPNAME
+2000-01-01 00:00:00 INFO   task=1:1 cmd=sh action: echo $PGAPPNAME
 2000-01-01 00:00:00 INFO   task=1:1 output: foo
 
 2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="Loader with environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:2 action: echo bar
+2000-01-01 00:00:00 INFO   task=1:2 cmd=sh action: echo bar
 2000-01-01 00:00:00 INFO   task=1:2 output: bar
 

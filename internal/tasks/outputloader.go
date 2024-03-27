@@ -33,6 +33,10 @@ func (l OutputLoader) String() string {
 	return l.Text
 }
 
+func (l OutputLoader) Command() string {
+	return l.From
+}
+
 func (l OutputLoader) Validate() error {
 
 	if l.Text == "" {

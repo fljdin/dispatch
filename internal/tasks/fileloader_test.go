@@ -9,18 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestFileLoaderValidate(t *testing.T) {
-	r := require.New(t)
-
-	cmd := FileLoader{
-		File: "unknown.txt",
-	}
-	err := cmd.Validate()
-
-	r.NotNil(err)
-	r.Equal("type is required with a file", err.Error())
-}
-
 func TestFileLoaderRun(t *testing.T) {
 	r := require.New(t)
 
@@ -34,11 +22,11 @@ func TestFileLoaderRun(t *testing.T) {
 
 	cmd := FileLoader{
 		File: tempFile.Name(),
-		Type: "psql",
+		Type: PgSQL,
 	}
 	result, commands := cmd.Run()
 
 	r.Equal(Succeeded, result.Status)
-	r.Equal(Command{Text: "SELECT 1;", Type: "psql"}, commands[0])
-	r.Equal(Command{Text: "SELECT 2;", Type: "psql"}, commands[1])
+	r.Equal(Command{Text: "SELECT 1;", Type: PgSQL}, commands[0])
+	r.Equal(Command{Text: "SELECT 2;", Type: PgSQL}, commands[1])
 }

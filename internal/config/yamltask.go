@@ -51,6 +51,11 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 		t.Variables = t.Variables.Inherit(env.Variables)
 	}
 
+	// use shell as default type
+	if t.Type == "" {
+		t.Type = tasks.Shell
+	}
+
 	var action tasks.Action
 
 	if !t.Loader.IsZero() {

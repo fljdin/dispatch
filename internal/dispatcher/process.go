@@ -64,7 +64,7 @@ func (p *Process) run(t tasks.Task) {
 		"elapsed", report.Elapsed.Round(time.Millisecond),
 	)
 
-	slogFunc(fmt.Sprintf("task=%s action: %s", t, t.Action.String()))
+	slogFunc(fmt.Sprintf("task=%s cmd=%s action: %s", t, t.Action.Command(), t.Action.String()))
 
 	if len(report.Error) > 0 {
 		slogFunc(fmt.Sprintf("task=%s error: %s", t, report.Error))

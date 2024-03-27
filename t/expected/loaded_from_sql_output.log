@@ -1,15 +1,15 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="dispatch queries from a sql output" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:0 action: SELECT format('echo %s', i) FROM generate_series(1, 2) AS i
+2000-01-01 00:00:00 INFO   task=1:0 cmd=psql action: SELECT format('echo %s', i) FROM generate_series(1, 2) AS i
 
 2000-01-01 00:00:00 INFO   task=1:0 output: echo 1
 echo 2
 
 2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="dispatch queries from a sql output" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:1 action: echo 1
+2000-01-01 00:00:00 INFO   task=1:1 cmd=sh action: echo 1
 2000-01-01 00:00:00 INFO   task=1:1 output: 1
 
 2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="dispatch queries from a sql output" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:2 action: echo 2
+2000-01-01 00:00:00 INFO   task=1:2 cmd=sh action: echo 2
 2000-01-01 00:00:00 INFO   task=1:2 output: 2
 
