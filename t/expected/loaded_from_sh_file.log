@@ -1,12 +1,12 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="dispatch commands from a sh file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:0 action: execute commands.sh with sh
+2000-01-01 00:00:00 INFO   task=1:0 cmd=sh action: execute commands.sh
 2000-01-01 00:00:00 INFO   task=1:0 output: 2 loaded from commands.sh
 2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="dispatch commands from a sh file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:1 action: echo 1
+2000-01-01 00:00:00 INFO   task=1:1 cmd=sh action: echo 1
 2000-01-01 00:00:00 INFO   task=1:1 output: 1
 
 2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="dispatch commands from a sh file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:2 action: echo 2
+2000-01-01 00:00:00 INFO   task=1:2 cmd=sh action: echo 2
 2000-01-01 00:00:00 INFO   task=1:2 output: 2
 

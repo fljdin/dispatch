@@ -1,9 +1,9 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="dispatch queries from a sql file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:0 action: execute queries.sql with psql
+2000-01-01 00:00:00 INFO   task=1:0 cmd=psql action: execute queries.sql
 2000-01-01 00:00:00 INFO   task=1:0 output: 2 loaded from queries.sql
 2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="dispatch queries from a sql file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:1 action: SELECT 1;
+2000-01-01 00:00:00 INFO   task=1:1 cmd=psql action: SELECT 1;
 2000-01-01 00:00:00 INFO   task=1:1 output:  ?column? 
 ----------
         1
@@ -11,7 +11,7 @@
 
 
 2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="dispatch queries from a sql file" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:2 action: SELECT 2;
+2000-01-01 00:00:00 INFO   task=1:2 cmd=psql action: SELECT 2;
 2000-01-01 00:00:00 INFO   task=1:2 output:  ?column? 
 ----------
         2

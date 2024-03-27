@@ -21,6 +21,10 @@ func (c Command) String() string {
 	return c.Text
 }
 
+func (c Command) Command() string {
+	return c.Type
+}
+
 func (c Command) Validate() error {
 
 	if !slices.Contains(CommandTypes, c.Type) {

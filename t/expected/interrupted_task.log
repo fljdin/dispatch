@@ -1,4 +1,4 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=2 procs=1
 2000-01-01 00:00:00 ERROR  task=1:0 status=failed name="task #1 must fail" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 ERROR  task=1:0 action: false
+2000-01-01 00:00:00 ERROR  task=1:0 cmd=sh action: false
 2000-01-01 00:00:00 ERROR  task=2:0 status=interrupted name="task #2 must be interrupted"

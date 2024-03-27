@@ -25,17 +25,17 @@ func (l FileLoader) load(input string) []string {
 }
 
 func (l FileLoader) String() string {
-	return fmt.Sprintf("execute %s with %s", l.File, l.Type)
+	return fmt.Sprintf("execute %s", l.File)
+}
+
+func (l FileLoader) Command() string {
+	return l.Type
 }
 
 func (l FileLoader) Validate() error {
 
 	if !slices.Contains(CommandTypes, l.Type) {
 		return fmt.Errorf("%s is not supported", l.Type)
-	}
-
-	if l.File != "" && l.Type == "" {
-		return fmt.Errorf("type is required with a file")
 	}
 
 	if l.File == "" {

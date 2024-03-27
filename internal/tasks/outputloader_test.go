@@ -25,8 +25,8 @@ func TestOutputLoaderWithFailedCommand(t *testing.T) {
 	r := require.New(t)
 
 	cmd := OutputLoader{
+		From: Shell,
 		Text: `echo true ; false`,
-		From: "sh",
 	}
 	result, _ := cmd.Run()
 
@@ -37,8 +37,8 @@ func TestOutputLoaderRun(t *testing.T) {
 	r := require.New(t)
 
 	cmd := OutputLoader{
+		From: Shell,
 		Text: "echo true; echo false",
-		From: "sh",
 	}
 	result, commands := cmd.Run()
 

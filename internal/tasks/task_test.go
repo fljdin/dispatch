@@ -13,6 +13,7 @@ func TestCreateTask(t *testing.T) {
 	task := Task{
 		Identifier: NewId(1, 0),
 		Action: Command{
+			Type: Shell,
 			Text: "echo test",
 		},
 	}
