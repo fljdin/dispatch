@@ -1,0 +1,12 @@
+procs: 1
+logfile: interrupted_task.log
+
+tasks:
+  - id: 1
+    name: "task #1 must fail"
+    command: false
+
+  - id: 2
+    name: "task #2 must be interrupted"
+    command: true
+    depends_on: [1]
