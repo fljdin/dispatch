@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fljdin/dispatch/internal/helper"
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/fragment/languages"
 	"golang.org/x/exp/slices"
@@ -46,11 +47,11 @@ func (l FileLoader) Validate() error {
 }
 
 func (l FileLoader) Run() (Report, []Action) {
-	startTime := Time()
+	startTime := helper.Now()
 	data, err := os.ReadFile(l.File)
 
 	if err != nil {
-		endTime := Time()
+		endTime := helper.Now()
 
 		result := Report{
 			StartTime: startTime,
@@ -71,7 +72,7 @@ func (l FileLoader) Run() (Report, []Action) {
 		})
 	}
 
-	endTime := Time()
+	endTime := helper.Now()
 
 	result := Report{
 		StartTime: startTime,

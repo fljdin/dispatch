@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/helper"
 	"github.com/lmittmann/tint"
 )
 
@@ -41,7 +41,7 @@ func setupLogging(w *os.File) {
 			case slog.TimeKey:
 				return slog.Attr{
 					Key:   "time",
-					Value: slog.TimeValue(tasks.Time()),
+					Value: slog.TimeValue(helper.Now()),
 				}
 			case slog.LevelKey:
 				a.Value = slog.StringValue(levelStrings[a.Value.String()])

@@ -1,10 +1,10 @@
 //go:build !testing
 // +build !testing
 
-package tasks
+package helper
 
 import "time"
 
-func Time() time.Time {
+func Now() time.Time {
 	return time.Now()
 }
