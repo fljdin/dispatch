@@ -10,9 +10,10 @@ const ProcessesDefault int = 2
 
 type Config struct {
 	DeclaredTasks      []YamlTask   `yaml:"tasks"`
-	Processes          int          `yaml:"procs"`
-	Logfile            string       `yaml:"logfile"`
 	Environments       Environments `yaml:"environments"`
+	Logfile            string       `yaml:"logfile"`
+	Processes          int          `yaml:"procs"`
+	Verbose            bool         `yaml:"verbose"`
 	DefaultEnvironment Environment
 }
 

@@ -39,6 +39,13 @@ func (cb *ConfigBuilder) WithLogfile(filename string) *ConfigBuilder {
 	return cb
 }
 
+func (cb *ConfigBuilder) WithVerbose(verbose bool) *ConfigBuilder {
+	if verbose {
+		cb.config.Verbose = true
+	}
+	return cb
+}
+
 func (cb *ConfigBuilder) WithYAML(yamlString string) *ConfigBuilder {
 	if cb.err != nil {
 		return cb

@@ -1,4 +1,4 @@
-2000-01-01 00:00:00 INFO   loading configuration tasks=4 procs=1
+2000-01-01 00:00:00 INFO   loading configuration tasks=4 procs=1 verbose=false
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="connect with default" start="2000-01-01 00:00:00" elapsed=0s
 2000-01-01 00:00:00 INFO   task=1:0 cmd=psql action: \conninfo
 2000-01-01 00:00:00 INFO   task=1:0 output: You are connected to database "postgres" as user "postgres" on host "localhost" (address "::1") at port "5432".

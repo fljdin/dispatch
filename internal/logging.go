@@ -14,7 +14,7 @@ func openOutputFile(filename string) (*os.File, error) {
 	return os.OpenFile(filename, flag, 0644)
 }
 
-func setupLogging(w *os.File) {
+func setupLogging(out *os.File, verbose bool) {
 	var (
 		h     slog.Handler
 		level slog.Level = slog.LevelInfo
@@ -27,11 +27,11 @@ func setupLogging(w *os.File) {
 		"ERROR": "ERROR ",
 	}
 
-	if argVerbose {
+	if verbose {
 		level = slog.LevelDebug
 	}
 
-	h = tint.NewHandler(w, &tint.Options{
+	h = tint.NewHandler(out, &tint.Options{
 		Level:      level,
 		TimeFormat: time.DateTime,
 		NoColor:    true,

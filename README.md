@@ -119,17 +119,17 @@ tasks:
       from: psql
       command: |
         SELECT format('reindexdb -v -t %I;', tablename) FROM pg_tables
-        WHERE schemaname = 'public' AND tablename NOT IN ('log'
-)
+        WHERE schemaname = 'public' AND tablename NOT IN ('log')
 ```
 
 ### Traces
 
-* `logfile`: summary of the tasks execution (default: disabled)
-  - must be a valid path
+* `logfile`: redirect output to a file
+* `verbose`: print debugging messages
 
 ```yaml
 logfile: result.out
+verbose: false
 ```
 
 ### Named environments
