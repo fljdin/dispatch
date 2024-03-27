@@ -1,6 +1,8 @@
 package dispatcher
 
 import (
+	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/fljdin/dispatch/internal/queue"
@@ -25,17 +27,24 @@ func (m *Memory) Evaluate(id int) status.Status {
 	return m.queue.Evaluate(id)
 }
 
-func (m *Memory) Update(tid tasks.TaskIdentifier, status status.Status) {
-	m.queue.Update(tid, status)
-}
-
 func (m *Memory) AddTask(task tasks.Task) {
 	m.queue.Add(task)
 	m.wgTasks.Add(1)
 }
 
-func (m *Memory) ForwardTask(task tasks.Task) {
-	m.queue.Add(task)
+func (m *Memory) Done(tid tasks.TaskIdentifier, status status.Status) {
+	m.queue.Update(tid, status)
+	m.wgTasks.Done()
+}
+
+func (m *Memory) SendTask(task tasks.Task) {
+	m.queue.Update(task.Identifier, status.Running)
+	slog.Debug(
+		fmt.Sprintf("task=%s", task),
+		"msg", "task sent to internal channel",
+	)
+
+	m.tasks <- task
 }
 
 func (m *Memory) StartProcess() {

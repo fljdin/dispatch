@@ -1,30 +1,24 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=3 procs=1
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="connect with default" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=1:0 action:
-\conninfo
-2000-01-01 00:00:00 INFO   task=1:0 output:
-You are connected to database "postgres" as user "postgres" on host "localhost" (address "::1") at port "5432".
+2000-01-01 00:00:00 INFO   task=1:0 action: \conninfo
+2000-01-01 00:00:00 INFO   task=1:0 output: You are connected to database "postgres" as user "postgres" on host "localhost" (address "::1") at port "5432".
 
 2000-01-01 00:00:00 INFO   task=2:0 status=succeeded name="connect with testing" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=2:0 action:
-show application_name;
+2000-01-01 00:00:00 INFO   task=2:0 action: show application_name;
 
-2000-01-01 00:00:00 INFO   task=2:0 output:
- application_name 
+2000-01-01 00:00:00 INFO   task=2:0 output:  application_name 
 ------------------
  testing
 (1 row)
 
 
 2000-01-01 00:00:00 INFO   task=3:0 status=succeeded name="print environment variables" start="2000-01-01 00:00:00" elapsed=0s
-2000-01-01 00:00:00 INFO   task=3:0 action:
-echo "PGHOST     = $PGHOST"
+2000-01-01 00:00:00 INFO   task=3:0 action: echo "PGHOST     = $PGHOST"
 echo "PGDATABASE = $PGDATABASE"
 echo "PGUSER     = $PGUSER"
 echo "PGPORT     = $PGPORT"
 
-2000-01-01 00:00:00 INFO   task=3:0 output:
-PGHOST     = junk
+2000-01-01 00:00:00 INFO   task=3:0 output: PGHOST     = junk
 PGDATABASE = junk
 PGUSER     = junk
 PGPORT     = junk

@@ -2,8 +2,6 @@ package dispatcher
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
 
 	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/status"
@@ -38,12 +36,7 @@ func (d *Dispatcher) Wait() {
 	// fill tasks channel with ready tasks
 	for i := 0; i < d.processes; i++ {
 		if task, ok := d.memory.queue.Next(); ok {
-			d.memory.tasks <- task
-			d.memory.queue.Update(task.Identifier, status.Running)
-			slog.Debug(
-				fmt.Sprintf("task=%s", task),
-				"msg", "task sent to internal channel",
-			)
+			d.memory.SendTask(task)
 		}
 	}
 
