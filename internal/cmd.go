@@ -55,6 +55,7 @@ func newConfig() (config.Config, error) {
 
 func Dispatch(version string) {
 	parseFlags()
+	setEnvirons()
 	setupLogging(os.Stderr)
 
 	if argVersion {
@@ -129,4 +130,8 @@ func parseFlags() {
 	flag.BoolVar(&argVersion, "version", false, argVersionDesc)
 
 	flag.Parse()
+}
+
+func setEnvirons() {
+	os.Setenv("PGAPPNAME", "dispatch")
 }
