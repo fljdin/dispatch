@@ -1,5 +1,5 @@
 procs: 1
-logfile: env_variables.log
+output: env_variables.log
 
 environments:
   - name: default

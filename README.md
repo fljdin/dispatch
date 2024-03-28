@@ -21,7 +21,7 @@ Usage:
 Options:
   -c, --config=FILE    configuration file
   -h, --help           display this help and exit
-  -o, --output=FILE    output log file
+  -o, --output=FILE    redirect output to file
   -P, --procs=PROCS    number of processes (default 2)
   -v, --verbose        verbose mode
       --version        show version
@@ -122,16 +122,6 @@ tasks:
         WHERE schemaname = 'public' AND tablename NOT IN ('log')
 ```
 
-### Traces
-
-* `logfile`: redirect output to a file
-* `verbose`: print debugging messages
-
-```yaml
-logfile: result.out
-verbose: false
-```
-
 ### Named environments
 
 * `environments`: declares named environment used by commands
@@ -171,6 +161,16 @@ tasks:
     command: echo foo
   - id: 2
     command: echo bar
+```
+
+### Traces
+
+* `output`: redirect output to a file
+* `verbose`: print debugging messages
+
+```yaml
+output: result.out
+verbose: true
 ```
 
 ## Testing

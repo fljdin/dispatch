@@ -1,5 +1,5 @@
 procs: 1
-logfile: loader_with_env.log
+output: loader_with_env.log
 
 environments:
   - name: default

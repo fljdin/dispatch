@@ -1,5 +1,5 @@
 procs: 1
-logfile: interrupted_task.log
+output: interrupted_task.log
 
 tasks:
   - id: 1

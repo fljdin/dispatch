@@ -1,30 +1,37 @@
 package config
 
 import (
-	"runtime"
+	"fmt"
+	"os"
 
 	"github.com/fljdin/dispatch/internal/tasks"
+	"gopkg.in/yaml.v2"
 )
 
 const ProcessesDefault int = 2
 
 type Config struct {
-	DeclaredTasks      []YamlTask   `yaml:"tasks"`
-	Environments       Environments `yaml:"environments"`
-	Logfile            string       `yaml:"logfile"`
-	Processes          int          `yaml:"procs"`
-	Verbose            bool         `yaml:"verbose"`
-	DefaultEnvironment Environment
+	DeclaredTasks []YamlTask   `yaml:"tasks"`
+	Environments  Environments `yaml:"environments"`
 }
 
-func (c *Config) ConfigureProcesses() {
-	if c.Processes < 1 {
-		c.Processes = ProcessesDefault
+func New(path string) (Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, fmt.Errorf("error reading yaml file: %w", err)
 	}
 
-	if c.Processes > runtime.NumCPU() {
-		c.Processes = runtime.NumCPU()
+	return NewFromRaw(string(data))
+}
+
+func NewFromRaw(raw string) (Config, error) {
+	var config Config
+	err := yaml.Unmarshal([]byte(raw), &config)
+	if err != nil {
+		return Config{}, fmt.Errorf("error parsing yaml config: %w", err)
 	}
+
+	return config, nil
 }
 
 func (c Config) Tasks() ([]tasks.Task, error) {
