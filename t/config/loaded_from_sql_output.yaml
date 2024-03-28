@@ -1,5 +1,5 @@
 procs: 1
-logfile: loaded_from_sql_output.log
+output: loaded_from_sql_output.log
 
 environments:
   - name: default

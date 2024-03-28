@@ -1,5 +1,5 @@
 procs: 1
-logfile: env_variables.log
+output: env_variables.log
 
 environments:
   - name: default
@@ -17,15 +17,19 @@ tasks:
     name: connect with default
     type: psql
     command: \conninfo
-
+  
   - id: 2
-    name: connect with testing
+    name: use predefined environment PGAPPNAME
     type: psql
-    command: |
-      show application_name;
-    env: testing
+    command: show application_name
 
   - id: 3
+    name: use testing environment PGAPPNAME
+    type: psql
+    command: show application_name
+    env: testing
+
+  - id: 4
     name: print environment variables
     type: sh
     command: |

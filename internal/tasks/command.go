@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/fljdin/dispatch/internal/helper"
 	"github.com/fljdin/dispatch/internal/status"
 	"golang.org/x/exp/slices"
 )
@@ -66,7 +67,7 @@ func (c Command) getExecCommand() *exec.Cmd {
 }
 
 func (c Command) Run() (Report, []Action) {
-	startTime := Time()
+	startTime := helper.Now()
 
 	var stdout, stderr bytes.Buffer
 	cmd := c.getExecCommand()
@@ -74,7 +75,7 @@ func (c Command) Run() (Report, []Action) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 
-	endTime := Time()
+	endTime := helper.Now()
 
 	result := Report{
 		StartTime: startTime,

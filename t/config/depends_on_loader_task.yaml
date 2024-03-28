@@ -1,6 +1,7 @@
 # related to fljdin/dispatch#35
 procs: 2
-logfile: depends_on_loader_task.log
+verbose: true
+output: depends_on_loader_task.log
 
 tasks:
   - id: 1

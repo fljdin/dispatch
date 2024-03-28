@@ -18,6 +18,8 @@ function setup_service {
 }
 
 function teardown_files {
+	rm -f *.log
+	rm -f $PGPASSFILE $PGSERVICEFILE
 	rm -f commands.sh queries.sql
 }
 

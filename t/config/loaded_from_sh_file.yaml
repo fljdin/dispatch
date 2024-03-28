@@ -1,5 +1,5 @@
 procs: 1
-logfile: loaded_from_sh_file.log
+output: loaded_from_sh_file.log
 
 tasks:
   - id: 1

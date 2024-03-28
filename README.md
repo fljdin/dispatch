@@ -21,7 +21,7 @@ Usage:
 Options:
   -c, --config=FILE    configuration file
   -h, --help           display this help and exit
-  -o, --output=FILE    output log file
+  -o, --output=FILE    redirect output to file
   -P, --procs=PROCS    number of processes (default 2)
   -v, --verbose        verbose mode
       --version        show version
@@ -119,17 +119,7 @@ tasks:
       from: psql
       command: |
         SELECT format('reindexdb -v -t %I;', tablename) FROM pg_tables
-        WHERE schemaname = 'public' AND tablename NOT IN ('log'
-)
-```
-
-### Traces
-
-* `logfile`: summary of the tasks execution (default: disabled)
-  - must be a valid path
-
-```yaml
-logfile: result.out
+        WHERE schemaname = 'public' AND tablename NOT IN ('log')
 ```
 
 ### Named environments
@@ -171,6 +161,16 @@ tasks:
     command: echo foo
   - id: 2
     command: echo bar
+```
+
+### Traces
+
+* `output`: redirect output to a file
+* `verbose`: print debugging messages
+
+```yaml
+output: result.out
+verbose: true
 ```
 
 ## Testing

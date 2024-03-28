@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/helper"
 	"github.com/lmittmann/tint"
 )
 
@@ -14,7 +14,7 @@ func openOutputFile(filename string) (*os.File, error) {
 	return os.OpenFile(filename, flag, 0644)
 }
 
-func setupLogging(w *os.File) {
+func setupLogging(out *os.File, verbose bool) {
 	var (
 		h     slog.Handler
 		level slog.Level = slog.LevelInfo
@@ -27,11 +27,11 @@ func setupLogging(w *os.File) {
 		"ERROR": "ERROR ",
 	}
 
-	if argVerbose {
+	if verbose {
 		level = slog.LevelDebug
 	}
 
-	h = tint.NewHandler(w, &tint.Options{
+	h = tint.NewHandler(out, &tint.Options{
 		Level:      level,
 		TimeFormat: time.DateTime,
 		NoColor:    true,
@@ -41,7 +41,7 @@ func setupLogging(w *os.File) {
 			case slog.TimeKey:
 				return slog.Attr{
 					Key:   "time",
-					Value: slog.TimeValue(tasks.Time()),
+					Value: slog.TimeValue(helper.Now()),
 				}
 			case slog.LevelKey:
 				a.Value = slog.StringValue(levelStrings[a.Value.String()])

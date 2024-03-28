@@ -8,72 +8,66 @@ import (
 
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/dispatcher"
+	"github.com/knadh/koanf/v2"
 	"github.com/lithammer/dedent"
 )
 
 var (
-	argConfig        string
-	argConfigDesc    string = "configuration file"
-	argOutput        string
-	argOutputDesc    string = "redirect output to file"
-	argProcesses     int
-	argProcessesDesc string = fmt.Sprintf("number of processes (default %d)", config.ProcessesDefault)
-	argVerbose       bool
-	argVerboseDesc   string = "verbose mode"
-	argVersion       bool
-	argVersionDesc   string = "show version"
-
-	usageStr string = dedent.Dedent(`
+	usage string = fmt.Sprintf(dedent.Dedent(`
 		Usage:
 		  dispatch [options]
 
 		Options:
-		  -c, --config=FILE    %s
+		  -c, --config=FILE    configuration file
 		  -h, --help           display this help and exit
-		  -o, --output=FILE    %s
-		  -P, --procs=PROCS    %s
-		  -v, --verbose        %s
-		      --version        %s
- 	`)[1:]
-
-	usage string = fmt.Sprintf(
-		usageStr,
-		argConfigDesc,
-		argOutputDesc,
-		argProcessesDesc,
-		argVerboseDesc,
-		argVersionDesc)
+		  -o, --output=FILE    redirect output to file
+		  -P, --procs=PROCS    number of processes (default %d)
+		  -v, --verbose        verbose mode
+		      --version        show version
+ 	`)[1:], config.ProcessesDefault)
 )
 
-func newConfig() (config.Config, error) {
-	return config.NewBuilder().
-		FromYAML(argConfig).
-		WithProcesses(argProcesses).
-		WithLogfile(argOutput).
-		Build()
-}
-
 func Dispatch(version string) {
-	parseFlags()
-	setupLogging(os.Stderr)
+	setEnvirons()
+	setupLogging(os.Stderr, false)
 
-	if argVersion {
+	f := parseFlags()
+	k := koanf.New(".")
+
+	// load from the flag set
+	if err := config.LoadFlags(k, f); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
+	if k.Bool("version") {
 		fmt.Println(version)
 		return
 	}
 
-	if argConfig == "" {
-		slog.Error("missing configuration file")
+	// load from the YAML defined by the config flag
+	if err := config.LoadYaml(k, k.String("config")); err != nil {
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	config, err := newConfig()
+	// redirect output to a file if specified
+	if output := k.String("output"); output != "" {
+		w, err := openOutputFile(output)
+		if err != nil {
+			slog.Error(err.Error())
+			os.Exit(1)
+		}
+		setupLogging(w, k.Bool("verbose"))
+	}
+
+	cfg, err := config.New(k.String("config"))
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
 	}
 
-	t, err := config.Tasks()
+	t, err := cfg.Tasks()
 	if err != nil {
 		slog.Error(err.Error())
 		os.Exit(1)
@@ -84,16 +78,7 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
-	if config.Logfile != "" {
-		f, err := openOutputFile(config.Logfile)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
-		}
-		setupLogging(f)
-	}
-
-	dispatcher := dispatcher.New(config.Processes)
+	dispatcher := dispatcher.New(k.Int("procs"))
 
 	for _, t := range t {
 		dispatcher.AddTask(t)
@@ -102,31 +87,24 @@ func Dispatch(version string) {
 	slog.Info(
 		"loading configuration",
 		"tasks", len(t),
-		"procs", config.Processes,
+		"procs", k.Int("procs"),
+		"verbose", k.Bool("verbose"),
 	)
 
 	dispatcher.Wait()
 	os.Exit(0)
 }
 
-func parseFlags() {
-	flag.Usage = func() {
+func setEnvirons() {
+	os.Setenv("PGAPPNAME", "dispatch")
+}
+
+func parseFlags() *flag.FlagSet {
+	f := config.Flags()
+	f.Usage = func() {
 		fmt.Fprint(flag.CommandLine.Output(), usage)
 	}
 
-	flag.StringVar(&argConfig, "c", "", argConfigDesc)
-	flag.StringVar(&argConfig, "config", "", argConfigDesc)
-
-	flag.StringVar(&argOutput, "o", "", argOutputDesc)
-	flag.StringVar(&argOutput, "output", "", argOutputDesc)
-
-	flag.IntVar(&argProcesses, "P", 0, argProcessesDesc)
-	flag.IntVar(&argProcesses, "procs", 0, argProcessesDesc)
-
-	flag.BoolVar(&argVerbose, "v", false, argVerboseDesc)
-	flag.BoolVar(&argVerbose, "verbose", false, argVerboseDesc)
-
-	flag.BoolVar(&argVersion, "version", false, argVersionDesc)
-
-	flag.Parse()
+	f.Parse(os.Args[1:])
+	return f
 }
