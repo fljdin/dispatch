@@ -82,7 +82,8 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
-	dispatcher := dispatcher.New(k.Int("procs"))
+	procs := config.ValidateProcs(k.Int("procs"))
+	dispatcher := dispatcher.New(procs)
 
 	for _, t := range t {
 		dispatcher.AddTask(t)
@@ -91,7 +92,7 @@ func Dispatch(version string) {
 	slog.Info(
 		"loading configuration",
 		"tasks", len(t),
-		"procs", k.Int("procs"),
+		"procs", procs,
 		"verbose", k.Bool("verbose"),
 	)
 

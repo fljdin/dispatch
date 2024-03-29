@@ -50,6 +50,19 @@ func LoadYamlRaw(k *koanf.Koanf, raw []byte) error {
 	)
 }
 
+// boundary check for the number of processes
+func ValidateProcs(procs int) int {
+	if procs < 1 {
+		return ProcessesDefault
+	}
+
+	if procs > runtime.NumCPU() {
+		return runtime.NumCPU()
+	}
+
+	return procs
+}
+
 var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) error {
 	var IsZero = func(v any) bool {
 		return v == 0 || v == "0" ||
@@ -105,17 +118,6 @@ var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) 
 	// raise an error if the config file is missing
 	if !IsDefined(dest["config"]) {
 		return fmt.Errorf("missing configuration file")
-	}
-
-	// boundary check for the number of processes
-	if procs, ok := dest["procs"].(int); ok {
-		if procs < 1 {
-			dest["procs"] = ProcessesDefault
-		}
-
-		if procs > runtime.NumCPU() {
-			dest["procs"] = runtime.NumCPU()
-		}
 	}
 
 	return nil

@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const ProcessesDefault int = 2
+const ProcessesDefault int = 1
 
 type Config struct {
 	DeclaredTasks []YamlTask   `yaml:"tasks"`
