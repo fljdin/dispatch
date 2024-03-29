@@ -3,7 +3,6 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
@@ -22,7 +21,7 @@ func New(procs int) Dispatcher {
 		cancel:  cancel,
 		memory: &Memory{
 			processes: procs,
-			queue:     queue.New(),
+			queue:     NewQueue(),
 			results:   make(chan Result, procs),
 			tasks:     make(chan tasks.Task, procs),
 		},

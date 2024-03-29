@@ -1,4 +1,4 @@
-package queue
+package dispatcher
 
 import (
 	"sync"
@@ -13,7 +13,7 @@ type Queue struct {
 	tasks *om.OrderedMap[int, []tasks.Task]
 }
 
-func New() Queue {
+func NewQueue() Queue {
 	return Queue{
 		tasks: om.New[int, []tasks.Task](),
 	}

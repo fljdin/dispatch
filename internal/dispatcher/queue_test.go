@@ -1,9 +1,9 @@
-package queue_test
+package dispatcher_test
 
 import (
 	"testing"
 
-	"github.com/fljdin/dispatch/internal/queue"
+	"github.com/fljdin/dispatch/internal/dispatcher"
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
@@ -16,7 +16,7 @@ func TestQueueNext(t *testing.T) {
 		ready tasks.Task
 	)
 
-	queue := queue.New()
+	queue := dispatcher.NewQueue()
 	queue.Add(tasks.Task{
 		Identifier: tasks.NewId(1, 0),
 		Status:     status.Waiting,
@@ -35,7 +35,7 @@ func TestQueueNext(t *testing.T) {
 func TestQueueEvaluate(t *testing.T) {
 	r := require.New(t)
 
-	queue := queue.New()
+	queue := dispatcher.NewQueue()
 	queue.Add(tasks.Task{Identifier: tasks.NewId(1, 0), Status: status.Succeeded})
 	queue.Add(tasks.Task{Identifier: tasks.NewId(1, 1), Status: status.Failed})
 
@@ -64,7 +64,7 @@ func TestQueueTaskWithDependencies(t *testing.T) {
 		ready tasks.Task
 	)
 
-	queue := queue.New()
+	queue := dispatcher.NewQueue()
 	queue.Add(tasks.Task{
 		Identifier: tasks.NewId(1, 0),
 		Status:     status.Waiting,
@@ -97,7 +97,7 @@ func TestQueueTaskIsInterrupted(t *testing.T) {
 		ready tasks.Task
 	)
 
-	queue := queue.New()
+	queue := dispatcher.NewQueue()
 	queue.Add(tasks.Task{
 		Identifier: tasks.NewId(1, 0),
 		Status:     status.Waiting,

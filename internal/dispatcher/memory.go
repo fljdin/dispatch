@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
@@ -18,7 +17,7 @@ type Result struct {
 type Memory struct {
 	active    int
 	processes int
-	queue     queue.Queue
+	queue     Queue
 	results   chan Result
 	tasks     chan tasks.Task
 	wgProcs   sync.WaitGroup
