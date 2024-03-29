@@ -59,11 +59,16 @@ func (p *Process) run(t tasks.Task) {
 		fmt.Sprintf("task=%s", t),
 		"status", report.Status,
 		"name", t.Name,
-		"start", report.StartTime.Format(time.DateTime),
 		"elapsed", report.Elapsed.Round(time.Millisecond),
 	)
 
 	slogFunc(fmt.Sprintf("task=%s cmd=%s action: %s", t, t.Action.Command(), t.Action.String()))
+
+	slog.Debug(
+		fmt.Sprintf("task=%s", t),
+		"start", report.StartTime.Format(time.DateTime),
+		"end", report.EndTime.Format(time.DateTime),
+	)
 
 	if len(report.Error) > 0 {
 		slogFunc(fmt.Sprintf("task=%s error: %s", t, report.Error))
