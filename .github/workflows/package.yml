@@ -16,8 +16,11 @@ jobs:
       - name: Install nfpm
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
       
+      - name: Set version variable
+        run: echo "APP_VERSION=$(grep 'version:' nfpm.yaml | awk '{print $2}')" >> $GITHUB_ENV
+
       - name: Build from sources
-        run: go build
+        run: go build -ldflags "-X main.version=${{ env.APP_VERSION }}"
         env:
           CGO_ENABLED: 0
       

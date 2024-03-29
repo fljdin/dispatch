@@ -97,6 +97,11 @@ var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) 
 		}
 	}
 
+	// stop here if the version flag is set
+	if IsDefined(dest["version"]) {
+		return nil
+	}
+
 	// raise an error if the config file is missing
 	if !IsDefined(dest["config"]) {
 		return fmt.Errorf("missing configuration file")

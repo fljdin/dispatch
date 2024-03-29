@@ -1,6 +1,8 @@
 package main
 
-import "github.com/fljdin/dispatch/internal"
+import (
+	"github.com/fljdin/dispatch/internal"
+)
 
 var (
 	version string = "*unreleased*"

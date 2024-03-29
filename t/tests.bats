@@ -16,6 +16,14 @@ function assert-diff() {
     diff expected/$1 $1
 }
 
+@test "help" {
+    dispatch --help
+}
+
+@test "version" {
+    dispatch --version
+}
+
 @test "tasks loaded from a shell file" {
     create_commands
 

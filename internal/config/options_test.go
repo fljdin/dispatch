@@ -63,6 +63,15 @@ func TestLoadConfigIsRequired(t *testing.T) {
 	r.Error(config.LoadFlags(k, opts))
 }
 
+func TestLoadVersionOnly(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{"-version"})
+	r.NoError(config.LoadFlags(k, opts))
+}
+
 func TestLoadProcessNumberBoundary(t *testing.T) {
 	r := require.New(t)
 	k := koanf.New(".")
