@@ -54,7 +54,7 @@ func TestQueueEvaluate(t *testing.T) {
 	queue.Add(tasks.Task{Identifier: tasks.NewId(4, 0), Status: status.Succeeded})
 	queue.Add(tasks.Task{Identifier: tasks.NewId(4, 1), Status: status.Interrupted})
 
-	r.Equal(status.Failed, queue.Evaluate(4))
+	r.Equal(status.Interrupted, queue.Evaluate(4))
 }
 
 func TestQueueTaskWithDependencies(t *testing.T) {

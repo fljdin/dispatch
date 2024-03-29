@@ -48,7 +48,7 @@ function assert-diff() {
     assert-diff loaded_tasks_multiple_procs.log
 }
 
-@test "task must be interrupter" {
+@test "task must be interrupted" {
     dispatch --config config/interrupted_task.yaml
     assert-diff interrupted_task.log
 }

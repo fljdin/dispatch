@@ -19,7 +19,6 @@ func (m *Monitor) Start() {
 			return
 		case result := <-m.memory.results:
 			m.memory.Done(result.Identifier, result.Status)
-			m.memory.FillTasks()
 		}
 	}
 }

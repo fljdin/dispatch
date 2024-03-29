@@ -9,3 +9,8 @@ tasks:
     name: "task #2 must be interrupted"
     command: true
     depends_on: [1]
+
+  - id: 3
+    name: "task #3 must be interrupted by cascade"
+    command: true
+    depends_on: [2]

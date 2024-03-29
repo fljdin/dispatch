@@ -37,6 +37,7 @@ func (m *Memory) Done(tid tasks.TaskIdentifier, status status.Status) {
 	m.active--
 	m.queue.Update(tid, status)
 	m.wgTasks.Done()
+	m.FillTasks()
 }
 
 // fill back the tasks channel for any idle processes

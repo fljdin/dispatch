@@ -92,7 +92,10 @@ func (q *Queue) Evaluate(id int) status.Status {
 		case status.Waiting, status.Ready, status.Running:
 			return status.Waiting
 
-		case status.Failed, status.Interrupted:
+		case status.Interrupted:
+			return status.Interrupted
+
+		case status.Failed:
 			return status.Failed
 
 		default:
