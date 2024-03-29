@@ -1,4 +1,4 @@
-package dispatcher
+package routines
 
 import (
 	"context"
@@ -6,16 +6,16 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-type Dispatcher struct {
+type Leader struct {
 	cancel  func()
 	context context.Context
 	*Memory
 }
 
-func New(procs int) Dispatcher {
+func NewLeader(procs int) Leader {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	d := Dispatcher{
+	leader := Leader{
 		context: ctx,
 		cancel:  cancel,
 		Memory: &Memory{
@@ -25,22 +25,22 @@ func New(procs int) Dispatcher {
 		},
 	}
 
-	return d
+	return leader
 }
 
-func (d *Dispatcher) Wait() {
-	d.FillTasks()
-	d.launchProcesses()
-	d.WaitForTasks()
-	d.cancel()
-	d.WaitForProcesses()
+func (l *Leader) Wait() {
+	l.FillTasks()
+	l.launchProcesses()
+	l.WaitForTasks()
+	l.cancel()
+	l.WaitForProcesses()
 }
 
-func (d Dispatcher) launchProcesses() {
-	for i := 1; i <= d.processes; i++ {
+func (l Leader) launchProcesses() {
+	for i := 1; i <= l.processes; i++ {
 		process := Process{
-			memory:  d.Memory,
-			context: d.context,
+			memory:  l.Memory,
+			context: l.context,
 		}
 		go process.Start()
 	}
