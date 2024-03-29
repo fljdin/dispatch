@@ -1,4 +1,3 @@
-procs: 1
 output: env_variables.log
 
 environments:

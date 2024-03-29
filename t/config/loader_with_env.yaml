@@ -1,4 +1,3 @@
-procs: 1
 output: loader_with_env.log
 
 environments:

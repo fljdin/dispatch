@@ -1,4 +1,3 @@
-procs: 1
 output: interrupted_task.log
 
 tasks:

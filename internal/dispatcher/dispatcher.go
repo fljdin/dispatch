@@ -9,23 +9,22 @@ import (
 )
 
 type Dispatcher struct {
-	cancel    func()
-	context   context.Context
-	processes int
-	memory    *Memory
+	cancel  func()
+	context context.Context
+	memory  *Memory
 }
 
 func New(procs int) Dispatcher {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	d := Dispatcher{
-		context:   ctx,
-		cancel:    cancel,
-		processes: procs,
+		context: ctx,
+		cancel:  cancel,
 		memory: &Memory{
-			queue:   queue.New(),
-			tasks:   make(chan tasks.Task, procs),
-			results: make(chan Result, procs),
+			processes: procs,
+			queue:     queue.New(),
+			results:   make(chan Result, procs),
+			tasks:     make(chan tasks.Task, procs),
 		},
 	}
 
@@ -33,13 +32,7 @@ func New(procs int) Dispatcher {
 }
 
 func (d *Dispatcher) Wait() {
-	// fill tasks channel with ready tasks
-	for i := 0; i < d.processes; i++ {
-		if task, ok := d.memory.queue.Next(); ok {
-			d.memory.SendTask(task)
-		}
-	}
-
+	d.memory.FillTasks()
 	d.launchMonitor()
 	d.launchProcesses()
 
@@ -65,7 +58,7 @@ func (d Dispatcher) launchMonitor() {
 }
 
 func (d Dispatcher) launchProcesses() {
-	for i := 1; i <= d.processes; i++ {
+	for i := 1; i <= d.memory.processes; i++ {
 		process := Process{
 			ID:      i,
 			memory:  d.memory,

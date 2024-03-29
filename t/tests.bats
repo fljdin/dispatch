@@ -43,6 +43,11 @@ function assert-diff() {
     assert-diff loaded_from_sql_output.log
 }
 
+@test "loaded tasks with multiple procs" {
+    dispatch --config config/loaded_tasks_multiple_procs.yaml
+    assert-diff loaded_tasks_multiple_procs.log
+}
+
 @test "task must be interrupter" {
     dispatch --config config/interrupted_task.yaml
     assert-diff interrupted_task.log
