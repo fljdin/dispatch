@@ -9,16 +9,10 @@ import (
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
-type Result struct {
-	Identifier tasks.TaskIdentifier
-	Status     status.Status
-}
-
 type Memory struct {
 	active    int
 	processes int
 	queue     Queue
-	results   chan Result
 	tasks     chan tasks.Task
 	wgProcs   sync.WaitGroup
 	wgTasks   sync.WaitGroup

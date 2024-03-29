@@ -3,14 +3,13 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Dispatcher struct {
 	cancel  func()
 	context context.Context
-	memory  *Memory
+	*Memory
 }
 
 func New(procs int) Dispatcher {
@@ -19,10 +18,9 @@ func New(procs int) Dispatcher {
 	d := Dispatcher{
 		context: ctx,
 		cancel:  cancel,
-		memory: &Memory{
+		Memory: &Memory{
 			processes: procs,
 			queue:     NewQueue(),
-			results:   make(chan Result, procs),
 			tasks:     make(chan tasks.Task, procs),
 		},
 	}
@@ -31,36 +29,17 @@ func New(procs int) Dispatcher {
 }
 
 func (d *Dispatcher) Wait() {
-	d.memory.FillTasks()
-	d.launchMonitor()
+	d.FillTasks()
 	d.launchProcesses()
-
-	d.memory.WaitForTasks()
+	d.WaitForTasks()
 	d.cancel()
-	d.memory.WaitForProcesses()
-}
-
-func (d *Dispatcher) AddTask(task tasks.Task) {
-	d.memory.AddTask(task)
-}
-
-func (d Dispatcher) Evaluate(id int) status.Status {
-	return d.memory.Evaluate(id)
-}
-
-func (d Dispatcher) launchMonitor() {
-	monitor := Monitor{
-		memory:  d.memory,
-		context: d.context,
-	}
-	go monitor.Start()
+	d.WaitForProcesses()
 }
 
 func (d Dispatcher) launchProcesses() {
-	for i := 1; i <= d.memory.processes; i++ {
+	for i := 1; i <= d.processes; i++ {
 		process := Process{
-			ID:      i,
-			memory:  d.memory,
+			memory:  d.Memory,
 			context: d.context,
 		}
 		go process.Start()

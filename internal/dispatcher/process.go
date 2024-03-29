@@ -11,7 +11,6 @@ import (
 )
 
 type Process struct {
-	ID      int
 	memory  *Memory
 	context context.Context
 }
@@ -74,8 +73,5 @@ func (p *Process) run(t tasks.Task) {
 		slogFunc(fmt.Sprintf("task=%s output: %s", t, report.Output))
 	}
 
-	p.memory.results <- Result{
-		Identifier: t.Identifier,
-		Status:     report.Status,
-	}
+	p.memory.Done(t.Identifier, report.Status)
 }
