@@ -61,7 +61,7 @@ var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) 
 	}
 
 	for k, v := range src {
-		// do not overwrite a zero value
+		// do not overwrite with zero values
 		if IsZero(v) {
 			continue
 		}
@@ -84,11 +84,11 @@ var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) 
 		case "P", "procs":
 			switch v := v.(type) {
 			case int:
-				// when value comes from yaml, it's int
+				// when value comes from yaml, it's an int
 				dest["procs"] = v
 
 			case string:
-				// when value comes from flag, it's string
+				// when value comes from flag, it's a string
 				dest["procs"], _ = strconv.Atoi(v)
 			}
 

@@ -25,11 +25,14 @@ var (
 		  -v, --verbose        verbose mode
 		      --version        show version
  	`)[1:], config.ProcessesDefault)
+
+	out *os.File = os.Stderr
+	err error
 )
 
 func Dispatch(version string) {
 	setEnvirons()
-	setupLogging(os.Stderr, false)
+	setupLogging(out, false)
 
 	f := parseFlags()
 	k := koanf.New(".")
@@ -51,15 +54,16 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
-	// redirect output to a file if specified
-	if output := k.String("output"); output != "" {
-		w, err := openOutputFile(output)
+	// redirect path to a file if specified
+	if path := k.String("output"); path != "" {
+		out, err = openOutputFile(path)
 		if err != nil {
 			slog.Error(err.Error())
 			os.Exit(1)
 		}
-		setupLogging(w, k.Bool("verbose"))
 	}
+
+	setupLogging(out, k.Bool("verbose"))
 
 	cfg, err := config.New(k.String("config"))
 	if err != nil {

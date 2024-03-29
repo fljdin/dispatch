@@ -9,9 +9,9 @@ import (
 	"github.com/lmittmann/tint"
 )
 
-func openOutputFile(filename string) (*os.File, error) {
+func openOutputFile(path string) (*os.File, error) {
 	const flag int = os.O_APPEND | os.O_TRUNC | os.O_CREATE | os.O_WRONLY
-	return os.OpenFile(filename, flag, 0644)
+	return os.OpenFile(path, flag, 0644)
 }
 
 func setupLogging(out *os.File, verbose bool) {
