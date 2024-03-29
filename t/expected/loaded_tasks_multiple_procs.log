@@ -1,0 +1,40 @@
+2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=2 verbose=true
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
+2000-01-01 00:00:00 DEBUG  task=1:0 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:0 cmd=sh action: for i in $(seq .05 .01 .10) ; do
+  echo sleep $i
+done
+
+2000-01-01 00:00:00 INFO   task=1:0 output: sleep 0.05
+sleep 0.06
+sleep 0.07
+sleep 0.08
+sleep 0.09
+sleep 0.10
+
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
+2000-01-01 00:00:00 DEBUG  task=1:1 msg="task sent to internal channel"
+2000-01-01 00:00:00 DEBUG  task=1:2 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:1 cmd=sh action: sleep 0.05
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
+2000-01-01 00:00:00 DEBUG  task=1:3 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:2 cmd=sh action: sleep 0.06
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
+2000-01-01 00:00:00 DEBUG  task=1:4 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:3 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:3 cmd=sh action: sleep 0.07
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
+2000-01-01 00:00:00 DEBUG  task=1:5 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:4 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:4 cmd=sh action: sleep 0.08
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
+2000-01-01 00:00:00 DEBUG  task=1:6 msg="task sent to internal channel"
+2000-01-01 00:00:00 INFO   task=1:5 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:5 cmd=sh action: sleep 0.09
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
+2000-01-01 00:00:00 INFO   task=1:6 status=succeeded name="loaded task must be handled by idle process as soon as possible" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:6 cmd=sh action: sleep 0.10
+2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2

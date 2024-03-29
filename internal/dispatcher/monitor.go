@@ -19,11 +19,6 @@ func (m *Monitor) Start() {
 			return
 		case result := <-m.memory.results:
 			m.memory.Done(result.Identifier, result.Status)
-
-			// fill back the tasks channel
-			if task, ok := m.memory.queue.Next(); ok {
-				m.memory.SendTask(task)
-			}
 		}
 	}
 }

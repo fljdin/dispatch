@@ -35,10 +35,16 @@ func TestDispatcherDependentTaskNeverExecuted(t *testing.T) {
 		Depends:    []int{1},
 		Action:     Command{Text: "true"},
 	})
+	dispatcher.AddTask(Task{
+		Identifier: NewId(3, 0),
+		Depends:    []int{2},
+		Action:     Command{Text: "true"},
+	})
 	dispatcher.Wait()
 
 	r.Equal(Failed, dispatcher.Evaluate(1))
-	r.Equal(Failed, dispatcher.Evaluate(2))
+	r.Equal(Interrupted, dispatcher.Evaluate(2))
+	r.Equal(Interrupted, dispatcher.Evaluate(2))
 }
 
 func TestDispatcherDependentTaskGetSucceeded(t *testing.T) {

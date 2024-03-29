@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/fljdin/dispatch/internal/queue"
 	"github.com/fljdin/dispatch/internal/status"
 	"github.com/fljdin/dispatch/internal/tasks"
 )
@@ -16,11 +15,13 @@ type Result struct {
 }
 
 type Memory struct {
-	wgTasks sync.WaitGroup
-	wgProcs sync.WaitGroup
-	queue   queue.Queue
-	tasks   chan tasks.Task
-	results chan Result
+	active    int
+	processes int
+	queue     Queue
+	results   chan Result
+	tasks     chan tasks.Task
+	wgProcs   sync.WaitGroup
+	wgTasks   sync.WaitGroup
 }
 
 func (m *Memory) Evaluate(id int) status.Status {
@@ -33,11 +34,26 @@ func (m *Memory) AddTask(task tasks.Task) {
 }
 
 func (m *Memory) Done(tid tasks.TaskIdentifier, status status.Status) {
+	m.active--
 	m.queue.Update(tid, status)
 	m.wgTasks.Done()
+	m.FillTasks()
 }
 
-func (m *Memory) SendTask(task tasks.Task) {
+// fill back the tasks channel for any idle processes
+func (m *Memory) FillTasks() {
+	idleProcs := m.processes - m.active
+	slog.Debug("filling tasks channel", "idle", idleProcs)
+
+	for i := 0; i < idleProcs; i++ {
+		if task, ok := m.queue.Next(); ok {
+			m.queuing(task)
+		}
+	}
+}
+
+func (m *Memory) queuing(task tasks.Task) {
+	m.active++
 	m.queue.Update(task.Identifier, status.Running)
 	slog.Debug(
 		fmt.Sprintf("task=%s", task),

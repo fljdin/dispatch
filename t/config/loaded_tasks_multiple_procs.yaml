@@ -1,0 +1,13 @@
+procs: 2
+output: loaded_tasks_multiple_procs.log
+verbose: true
+
+tasks:
+- id: 1
+  name: "loaded task must be handled by idle process as soon as possible"
+  loaded:
+    from: sh
+    command: |
+      for i in $(seq .05 .01 .10) ; do
+        echo sleep $i
+      done

@@ -1,4 +1,3 @@
-procs: 1
 output: loaded_from_sh_file.log
 
 tasks:

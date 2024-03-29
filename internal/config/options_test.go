@@ -35,7 +35,7 @@ func TestLoadFlagPrecedenceOverYAML(t *testing.T) {
 	opts := config.Flags()
 	opts.Parse([]string{
 		"--config", "config.yaml",
-		"--procs", "2",
+		"--procs", "4",
 		"--output", "/dev/stdout",
 		"--verbose",
 	})
@@ -48,7 +48,7 @@ func TestLoadFlagPrecedenceOverYAML(t *testing.T) {
 	`))
 	r.NoError(config.LoadYamlRaw(k, yaml))
 
-	r.Equal(2, k.Int("procs"))
+	r.Equal(4, k.Int("procs"))
 	r.Equal("/dev/stdout", k.String("output"))
 	r.True(k.Bool("verbose"))
 }
@@ -72,6 +72,38 @@ func TestLoadVersionOnly(t *testing.T) {
 	r.NoError(config.LoadFlags(k, opts))
 }
 
+func TestLoadProcessFromYAML(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{
+		"-c", "config.yaml",
+	})
+	r.NoError(config.LoadFlags(k, opts))
+
+	yaml := []byte(dedent.Dedent(`
+		procs: 4
+	`))
+	r.NoError(config.LoadYamlRaw(k, yaml))
+
+	r.Equal(4, k.Int("procs"))
+}
+
+func TestLoadDefaultProcessNumber(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{
+		"-c", "config.yaml",
+	})
+	r.NoError(config.LoadFlags(k, opts))
+
+	procs := config.ValidateProcs(k.Int("procs"))
+	r.Equal(config.ProcessesDefault, procs)
+}
+
 func TestLoadProcessNumberBoundary(t *testing.T) {
 	r := require.New(t)
 	k := koanf.New(".")
@@ -83,5 +115,7 @@ func TestLoadProcessNumberBoundary(t *testing.T) {
 	})
 
 	r.NoError(config.LoadFlags(k, opts))
-	r.Equal(config.ProcessesDefault, k.Int("procs"))
+
+	procs := config.ValidateProcs(k.Int("procs"))
+	r.Equal(config.ProcessesDefault, procs)
 }

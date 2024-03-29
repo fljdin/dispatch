@@ -22,7 +22,7 @@ Options:
   -c, --config=FILE    configuration file
   -h, --help           display this help and exit
   -o, --output=FILE    redirect output to file
-  -P, --procs=PROCS    number of processes (default 2)
+  -P, --procs=PROCS    number of processes (default 1)
   -v, --verbose        verbose mode
       --version        show version
 ```

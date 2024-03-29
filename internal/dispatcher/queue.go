@@ -1,4 +1,4 @@
-package queue
+package dispatcher
 
 import (
 	"sync"
@@ -13,7 +13,7 @@ type Queue struct {
 	tasks *om.OrderedMap[int, []tasks.Task]
 }
 
-func New() Queue {
+func NewQueue() Queue {
 	return Queue{
 		tasks: om.New[int, []tasks.Task](),
 	}
@@ -92,7 +92,10 @@ func (q *Queue) Evaluate(id int) status.Status {
 		case status.Waiting, status.Ready, status.Running:
 			return status.Waiting
 
-		case status.Failed, status.Interrupted:
+		case status.Interrupted:
+			return status.Interrupted
+
+		case status.Failed:
 			return status.Failed
 
 		default:
