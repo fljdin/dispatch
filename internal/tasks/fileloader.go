@@ -46,14 +46,14 @@ func (l FileLoader) Validate() error {
 	return nil
 }
 
-func (l FileLoader) Run() (Report, []Action) {
+func (l FileLoader) Run() (Result, []Actioner) {
 	startTime := helper.Now()
 	data, err := os.ReadFile(l.File)
 
 	if err != nil {
 		endTime := helper.Now()
 
-		result := Report{
+		result := Result{
 			StartTime: startTime,
 			EndTime:   endTime,
 			Elapsed:   endTime.Sub(startTime),
@@ -63,7 +63,7 @@ func (l FileLoader) Run() (Report, []Action) {
 		return result, nil
 	}
 
-	var commands []Action
+	var commands []Actioner
 	for _, command := range l.load(string(data)) {
 		commands = append(commands, Command{
 			Text:      command,
@@ -74,7 +74,7 @@ func (l FileLoader) Run() (Report, []Action) {
 
 	endTime := helper.Now()
 
-	result := Report{
+	result := Result{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),

@@ -54,7 +54,7 @@ func (l OutputLoader) Validate() error {
 	return nil
 }
 
-func (l OutputLoader) Run() (Report, []Action) {
+func (l OutputLoader) Run() (Result, []Actioner) {
 	if l.From == "psql" {
 		l.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", l.Text)
 	}
@@ -69,7 +69,7 @@ func (l OutputLoader) Run() (Report, []Action) {
 	err := cmd.Validate()
 
 	if err != nil {
-		return Report{Status: status.Failed, Error: err.Error()}, nil
+		return Result{Status: status.Failed, Error: err.Error()}, nil
 	}
 
 	result, _ := cmd.Run()
@@ -78,7 +78,7 @@ func (l OutputLoader) Run() (Report, []Action) {
 		return result, nil
 	}
 
-	var commands []Action
+	var commands []Actioner
 	for _, command := range l.load(result.Output) {
 		// pass outer variables to children
 		commands = append(commands, Command{

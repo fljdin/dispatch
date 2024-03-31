@@ -28,7 +28,7 @@ type YamlTask struct {
 	Variables   Variables  `yaml:"variables,omitempty"`
 }
 
-func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
+func (t YamlTask) Normalize(env Environments) (Task, error) {
 	// make variables map if it's nil
 	if t.Variables == nil {
 		t.Variables = make(Variables)
@@ -39,7 +39,7 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 		env, err := env.ByName(t.Environment)
 
 		if err != nil {
-			return tasks.Task{}, err
+			return Task{}, err
 		}
 
 		// own variables take precedence over env variables
@@ -56,7 +56,7 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 		t.Type = tasks.Shell
 	}
 
-	var action tasks.Action
+	var action tasks.Actioner
 
 	if !t.Loader.IsZero() {
 		if t.Loader.Command != "" && t.Loader.From != "" {
@@ -65,7 +65,7 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 				env, err := env.ByName(t.Loader.Environment)
 
 				if err != nil {
-					return tasks.Task{}, err
+					return Task{}, err
 				}
 
 				// make variables map if it's nil
@@ -104,8 +104,8 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 		}
 	}
 
-	return tasks.Task{
-		Identifier: tasks.NewId(t.ID, 0),
+	return Task{
+		Identifier: NewId(t.ID, 0),
 		Name:       t.Name,
 		Action:     action,
 		Depends:    t.Depends,

@@ -5,15 +5,15 @@ import (
 	"log/slog"
 	"sync"
 
+	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Memory struct {
 	active    int
 	processes int
 	queue     Queue
-	tasks     chan tasks.Task
+	tasks     chan config.Task
 	wgProcs   sync.WaitGroup
 	wgTasks   sync.WaitGroup
 }
@@ -22,12 +22,12 @@ func (m *Memory) Evaluate(id int) status.Status {
 	return m.queue.Evaluate(id)
 }
 
-func (m *Memory) AddTask(task tasks.Task) {
+func (m *Memory) AddTask(task config.Task) {
 	m.queue.Add(task)
 	m.wgTasks.Add(1)
 }
 
-func (m *Memory) Done(tid tasks.TaskIdentifier, status status.Status) {
+func (m *Memory) Done(tid config.TaskIdentifier, status status.Status) {
 	m.active--
 	m.queue.Update(tid, status)
 	m.wgTasks.Done()
@@ -46,7 +46,7 @@ func (m *Memory) FillTasks() {
 	}
 }
 
-func (m *Memory) queuing(task tasks.Task) {
+func (m *Memory) queuing(task config.Task) {
 	m.active++
 	m.queue.Update(task.Identifier, status.Running)
 	slog.Debug(

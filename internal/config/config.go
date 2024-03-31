@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fljdin/dispatch/internal/tasks"
 	"gopkg.in/yaml.v2"
 )
 
@@ -34,8 +33,8 @@ func NewFromRaw(raw string) (Config, error) {
 	return config, nil
 }
 
-func (c Config) Tasks() ([]tasks.Task, error) {
-	var finalTasks []tasks.Task
+func (c Config) Tasks() ([]Task, error) {
+	var finalTasks []Task
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {

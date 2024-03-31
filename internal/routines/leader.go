@@ -3,7 +3,7 @@ package routines
 import (
 	"context"
 
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/config"
 )
 
 type Leader struct {
@@ -21,7 +21,7 @@ func NewLeader(procs int) Leader {
 		Memory: &Memory{
 			processes: procs,
 			queue:     NewQueue(),
-			tasks:     make(chan tasks.Task, procs),
+			tasks:     make(chan config.Task, procs),
 		},
 	}
 

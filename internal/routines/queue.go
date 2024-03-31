@@ -3,29 +3,29 @@ package routines
 import (
 	"sync"
 
+	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 	om "github.com/wk8/go-ordered-map/v2"
 )
 
 type Queue struct {
 	mut   sync.Mutex
-	tasks *om.OrderedMap[int, []tasks.Task]
+	tasks *om.OrderedMap[int, []config.Task]
 }
 
 func NewQueue() Queue {
 	return Queue{
-		tasks: om.New[int, []tasks.Task](),
+		tasks: om.New[int, []config.Task](),
 	}
 }
 
-func (q *Queue) Add(t tasks.Task) {
+func (q *Queue) Add(t config.Task) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
 	subs, exists := q.tasks.Get(t.Identifier.ID)
 	if !exists {
-		q.tasks.Set(t.Identifier.ID, []tasks.Task{t})
+		q.tasks.Set(t.Identifier.ID, []config.Task{t})
 		return
 	}
 
@@ -33,7 +33,7 @@ func (q *Queue) Add(t tasks.Task) {
 	q.tasks.Set(t.Identifier.ID, subs)
 }
 
-func (q *Queue) Update(tid tasks.TaskIdentifier, s status.Status) {
+func (q *Queue) Update(tid config.TaskIdentifier, s status.Status) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -45,7 +45,7 @@ func (q *Queue) Update(tid tasks.TaskIdentifier, s status.Status) {
 	}
 }
 
-func (q *Queue) Next() (tasks.Task, bool) {
+func (q *Queue) Next() (config.Task, bool) {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
@@ -78,7 +78,7 @@ func (q *Queue) Next() (tasks.Task, bool) {
 	}
 
 	// no task found
-	return tasks.Task{}, false
+	return config.Task{}, false
 }
 
 func (q *Queue) Evaluate(id int) status.Status {

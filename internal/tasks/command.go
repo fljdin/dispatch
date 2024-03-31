@@ -43,7 +43,7 @@ func (c Command) getExecCommand() *exec.Cmd {
 	var cmd *exec.Cmd
 
 	switch c.Type {
-	case "psql":
+	case PgSQL:
 		// ON_ERROR_STOP is used to retrieve the correct exit code
 		cmd = exec.Command("psql", "-v", "ON_ERROR_STOP=1")
 
@@ -66,7 +66,7 @@ func (c Command) getExecCommand() *exec.Cmd {
 	return cmd
 }
 
-func (c Command) Run() (Report, []Action) {
+func (c Command) Run() (Result, []Actioner) {
 	startTime := helper.Now()
 
 	var stdout, stderr bytes.Buffer
@@ -77,7 +77,7 @@ func (c Command) Run() (Report, []Action) {
 
 	endTime := helper.Now()
 
-	result := Report{
+	result := Result{
 		StartTime: startTime,
 		EndTime:   endTime,
 		Elapsed:   endTime.Sub(startTime),

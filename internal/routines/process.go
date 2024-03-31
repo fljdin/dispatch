@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Process struct {
@@ -29,7 +29,7 @@ func (p *Process) Start() {
 	}
 }
 
-func (p *Process) run(t tasks.Task) {
+func (p *Process) run(t config.Task) {
 	if t.Status == status.Interrupted {
 		slog.Error(
 			fmt.Sprintf("task=%s", t),
@@ -43,8 +43,8 @@ func (p *Process) run(t tasks.Task) {
 
 	report, commands := t.Action.Run()
 	for id, command := range commands {
-		p.memory.AddTask(tasks.Task{
-			Identifier: tasks.NewId(t.Identifier.ID, id+1),
+		p.memory.AddTask(config.Task{
+			Identifier: config.NewId(t.Identifier.ID, id+1),
 			Action:     command,
 			Name:       t.Name,
 		})
