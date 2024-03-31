@@ -3,18 +3,18 @@ package config_test
 import (
 	"testing"
 
-	"github.com/fljdin/dispatch/internal/config"
-	"github.com/fljdin/dispatch/internal/tasks"
+	. "github.com/fljdin/dispatch/internal/actions"
+	. "github.com/fljdin/dispatch/internal/config"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateTask(t *testing.T) {
 	r := require.New(t)
 
-	task := config.Task{
-		Identifier: config.NewId(1, 0),
-		Action: tasks.Command{
-			Type: tasks.Shell,
+	task := Task{
+		Identifier: NewId(1, 0),
+		Action: Command{
+			Type: Shell,
 			Text: "echo test",
 		},
 	}
@@ -26,8 +26,8 @@ func TestCreateTask(t *testing.T) {
 func TestTaskVerifyIDRequired(t *testing.T) {
 	r := require.New(t)
 
-	task := config.Task{
-		Action: tasks.Command{Text: "true"},
+	task := Task{
+		Action: Command{Text: "true"},
 	}
 	err := task.Validate()
 
@@ -38,8 +38,8 @@ func TestTaskVerifyIDRequired(t *testing.T) {
 func TestTaskVerifyCommandRequired(t *testing.T) {
 	r := require.New(t)
 
-	task := config.Task{
-		Identifier: config.NewId(1, 0),
+	task := Task{
+		Identifier: NewId(1, 0),
 	}
 	err := task.Validate()
 

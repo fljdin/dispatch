@@ -1,11 +1,11 @@
-package tasks_test
+package actions_test
 
 import (
 	"os"
 	"testing"
 
+	. "github.com/fljdin/dispatch/internal/actions"
 	. "github.com/fljdin/dispatch/internal/status"
-	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 

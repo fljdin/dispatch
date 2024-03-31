@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/actions"
 )
 
 type YamlLoader struct {
@@ -53,10 +53,10 @@ func (t YamlTask) Normalize(env Environments) (Task, error) {
 
 	// use shell as default type
 	if t.Type == "" {
-		t.Type = tasks.Shell
+		t.Type = actions.Shell
 	}
 
-	var action tasks.Actioner
+	var action actions.Actioner
 
 	if !t.Loader.IsZero() {
 		if t.Loader.Command != "" && t.Loader.From != "" {
@@ -80,24 +80,24 @@ func (t YamlTask) Normalize(env Environments) (Task, error) {
 			// inherit variables from task
 			t.Loader.Variables = t.Loader.Variables.Inherit(t.Variables)
 
-			action = tasks.OutputLoader{
+			action = actions.OutputLoader{
 				Text: t.Loader.Command,
 				From: t.Loader.From,
 				Type: t.Type,
-				Variables: tasks.NestedVariables{
+				Variables: actions.NestedVariables{
 					Outer: t.Variables,
 					Inner: t.Loader.Variables,
 				},
 			}
 		}
 	} else if t.File != "" {
-		action = tasks.FileLoader{
+		action = actions.FileLoader{
 			File:      t.File,
 			Type:      t.Type,
 			Variables: t.Variables,
 		}
 	} else {
-		action = tasks.Command{
+		action = actions.Command{
 			Text:      t.Command,
 			Type:      t.Type,
 			Variables: t.Variables,

@@ -4,10 +4,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/fljdin/dispatch/internal/actions"
 	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/routines"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func TestLeaderAddTask(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 
 	r.Equal(status.Waiting, leader.Evaluate(1))
@@ -29,17 +29,17 @@ func TestLeaderDependentTaskNeverExecuted(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action:     tasks.Command{Text: "false"},
+		Action:     actions.Command{Text: "false"},
 	})
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(2, 0),
 		Depends:    []int{1},
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(3, 0),
 		Depends:    []int{2},
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 	leader.Wait()
 
@@ -54,12 +54,12 @@ func TestLeaderDependentTaskGetSucceeded(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(2, 0),
 		Depends:    []int{1},
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 	leader.Wait()
 
@@ -73,11 +73,11 @@ func TestLeaderStatusOfFileTaskMustSummarizeLoadedTaskStatus(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action:     tasks.Command{Text: "false"},
+		Action:     actions.Command{Text: "false"},
 	})
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 1),
-		Action:     tasks.Command{Text: "true"},
+		Action:     actions.Command{Text: "true"},
 	})
 	leader.Wait()
 
@@ -90,8 +90,8 @@ func TestLeaderWithOutputLoader(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action: tasks.OutputLoader{
-			From: tasks.Shell,
+		Action: actions.OutputLoader{
+			From: actions.Shell,
 			Text: `echo -n "true\nfalse"`,
 		},
 	})
@@ -114,7 +114,7 @@ func TestLeaderWithFileLoader(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action: tasks.FileLoader{
+		Action: actions.FileLoader{
 			File: tempFile.Name(),
 		},
 	})

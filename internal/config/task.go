@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/actions"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 	"golang.org/x/exp/slices"
 )
 
@@ -25,10 +25,10 @@ func (t TaskIdentifier) IsZero() bool {
 }
 
 type Task struct {
+	Action     actions.Actioner
+	Depends    []int
 	Identifier TaskIdentifier
 	Name       string
-	Action     tasks.Actioner
-	Depends    []int
 	Status     status.Status
 }
 
