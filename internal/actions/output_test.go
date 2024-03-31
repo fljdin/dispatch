@@ -11,7 +11,7 @@ import (
 func TestOutputLoaderWithInvalidType(t *testing.T) {
 	r := require.New(t)
 
-	cmd := OutputLoader{
+	cmd := Output{
 		Text: "unknown",
 		From: "unknown",
 	}
@@ -24,7 +24,7 @@ func TestOutputLoaderWithInvalidType(t *testing.T) {
 func TestOutputLoaderWithFailedCommand(t *testing.T) {
 	r := require.New(t)
 
-	cmd := OutputLoader{
+	cmd := Output{
 		From: Shell,
 		Text: `echo true ; false`,
 	}
@@ -36,7 +36,7 @@ func TestOutputLoaderWithFailedCommand(t *testing.T) {
 func TestOutputLoaderRun(t *testing.T) {
 	r := require.New(t)
 
-	cmd := OutputLoader{
+	cmd := Output{
 		From: Shell,
 		Text: "echo true; echo false",
 	}

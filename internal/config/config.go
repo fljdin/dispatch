@@ -34,7 +34,7 @@ func NewFromRaw(raw string) (Config, error) {
 }
 
 func (c Config) Tasks() ([]Task, error) {
-	var finalTasks []Task
+	var tasks []Task
 	var identifiers []int
 
 	for _, declared := range c.DeclaredTasks {
@@ -51,9 +51,9 @@ func (c Config) Tasks() ([]Task, error) {
 			return nil, err
 		}
 
-		finalTasks = append(finalTasks, task)
+		tasks = append(tasks, task)
 		identifiers = append(identifiers, task.Identifier.ID)
 	}
 
-	return finalTasks, nil
+	return tasks, nil
 }

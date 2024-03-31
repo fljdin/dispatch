@@ -80,7 +80,7 @@ func (t YamlTask) Normalize(env Environments) (Task, error) {
 			// inherit variables from task
 			t.Loader.Variables = t.Loader.Variables.Inherit(t.Variables)
 
-			action = actions.OutputLoader{
+			action = actions.Output{
 				Text: t.Loader.Command,
 				From: t.Loader.From,
 				Type: t.Type,
@@ -91,7 +91,7 @@ func (t YamlTask) Normalize(env Environments) (Task, error) {
 			}
 		}
 	} else if t.File != "" {
-		action = actions.FileLoader{
+		action = actions.File{
 			File:      t.File,
 			Type:      t.Type,
 			Variables: t.Variables,

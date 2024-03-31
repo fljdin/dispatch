@@ -13,14 +13,14 @@ type NestedVariables struct {
 	Inner map[string]string
 }
 
-type OutputLoader struct {
+type Output struct {
 	Text      string
 	From      string
 	Type      string
 	Variables NestedVariables
 }
 
-func (l OutputLoader) load(input string) []string {
+func (l Output) load(input string) []string {
 	switch l.Type {
 	case "psql":
 		return languages.PgSQL.Split(input)
@@ -29,15 +29,15 @@ func (l OutputLoader) load(input string) []string {
 	}
 }
 
-func (l OutputLoader) String() string {
+func (l Output) String() string {
 	return l.Text
 }
 
-func (l OutputLoader) Command() string {
+func (l Output) Command() string {
 	return l.From
 }
 
-func (l OutputLoader) Validate() error {
+func (l Output) Validate() error {
 
 	if l.Text == "" {
 		return fmt.Errorf("command is required")
@@ -54,8 +54,8 @@ func (l OutputLoader) Validate() error {
 	return nil
 }
 
-func (l OutputLoader) Run() (Result, []Actioner) {
-	if l.From == "psql" {
+func (l Output) Run() (Result, []Actioner) {
+	if l.From == PgSQL {
 		l.Text = fmt.Sprintf("%s \\g (format=unaligned tuples_only)", l.Text)
 	}
 

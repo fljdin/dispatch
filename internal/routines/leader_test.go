@@ -90,7 +90,7 @@ func TestLeaderWithOutputLoader(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action: actions.OutputLoader{
+		Action: actions.Output{
 			From: actions.Shell,
 			Text: `echo -n "true\nfalse"`,
 		},
@@ -114,7 +114,7 @@ func TestLeaderWithFileLoader(t *testing.T) {
 	leader := routines.NewLeader(1)
 	leader.AddTask(config.Task{
 		Identifier: config.NewId(1, 0),
-		Action: actions.FileLoader{
+		Action: actions.File{
 			File: tempFile.Name(),
 		},
 	})

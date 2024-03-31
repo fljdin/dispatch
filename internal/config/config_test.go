@@ -169,8 +169,8 @@ func TestConfigWithOutputLoader(t *testing.T) {
 	cfg, _ := NewFromRaw(yaml)
 	ts, _ := cfg.Tasks()
 
-	r.Equal("sh", ts[0].Action.(OutputLoader).From)
-	r.Equal("echo true", ts[0].Action.(OutputLoader).Text)
+	r.Equal("sh", ts[0].Action.(Output).From)
+	r.Equal("echo true", ts[0].Action.(Output).Text)
 }
 
 func TestConfigWithFileLoader(t *testing.T) {
@@ -186,7 +186,7 @@ func TestConfigWithFileLoader(t *testing.T) {
 	ts, err := cfg.Tasks()
 
 	r.NoError(err)
-	r.Equal("junk.sql", ts[0].Action.(FileLoader).File)
+	r.Equal("junk.sql", ts[0].Action.(File).File)
 }
 
 func TestConfigWithInvalidLoader(t *testing.T) {

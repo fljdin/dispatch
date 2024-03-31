@@ -20,7 +20,7 @@ func TestFileLoaderRun(t *testing.T) {
 	defer tempFile.Close()
 	defer os.Remove(tempFile.Name())
 
-	cmd := FileLoader{
+	cmd := File{
 		File: tempFile.Name(),
 		Type: PgSQL,
 	}

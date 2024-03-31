@@ -10,30 +10,30 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type FileLoader struct {
+type File struct {
 	File      string
 	Type      string
 	Variables map[string]string
 }
 
-func (l FileLoader) load(input string) []string {
+func (l File) load(input string) []string {
 	switch l.Type {
-	case "psql":
+	case PgSQL:
 		return languages.PgSQL.Split(input)
 	default:
 		return languages.Shell.Split(input)
 	}
 }
 
-func (l FileLoader) String() string {
+func (l File) String() string {
 	return fmt.Sprintf("execute %s", l.File)
 }
 
-func (l FileLoader) Command() string {
+func (l File) Command() string {
 	return l.Type
 }
 
-func (l FileLoader) Validate() error {
+func (l File) Validate() error {
 
 	if !slices.Contains(CommandTypes, l.Type) {
 		return fmt.Errorf("%s is not supported", l.Type)
@@ -46,7 +46,7 @@ func (l FileLoader) Validate() error {
 	return nil
 }
 
-func (l FileLoader) Run() (Result, []Actioner) {
+func (l File) Run() (Result, []Actioner) {
 	startTime := helper.Now()
 	data, err := os.ReadFile(l.File)
 
