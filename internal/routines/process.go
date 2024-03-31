@@ -1,4 +1,4 @@
-package dispatcher
+package routines
 
 import (
 	"context"
@@ -6,12 +6,11 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/fljdin/dispatch/internal/config"
 	"github.com/fljdin/dispatch/internal/status"
-	"github.com/fljdin/dispatch/internal/tasks"
 )
 
 type Process struct {
-	ID      int
 	memory  *Memory
 	context context.Context
 }
@@ -30,7 +29,7 @@ func (p *Process) Start() {
 	}
 }
 
-func (p *Process) run(t tasks.Task) {
+func (p *Process) run(t config.Task) {
 	if t.Status == status.Interrupted {
 		slog.Error(
 			fmt.Sprintf("task=%s", t),
@@ -44,8 +43,8 @@ func (p *Process) run(t tasks.Task) {
 
 	report, commands := t.Action.Run()
 	for id, command := range commands {
-		p.memory.AddTask(tasks.Task{
-			Identifier: tasks.NewId(t.Identifier.ID, id+1),
+		p.memory.AddTask(config.Task{
+			Identifier: config.NewId(t.Identifier.ID, id+1),
 			Action:     command,
 			Name:       t.Name,
 		})
@@ -60,11 +59,16 @@ func (p *Process) run(t tasks.Task) {
 		fmt.Sprintf("task=%s", t),
 		"status", report.Status,
 		"name", t.Name,
-		"start", report.StartTime.Format(time.DateTime),
 		"elapsed", report.Elapsed.Round(time.Millisecond),
 	)
 
 	slogFunc(fmt.Sprintf("task=%s cmd=%s action: %s", t, t.Action.Command(), t.Action.String()))
+
+	slog.Debug(
+		fmt.Sprintf("task=%s", t),
+		"start", report.StartTime.Format(time.DateTime),
+		"end", report.EndTime.Format(time.DateTime),
+	)
 
 	if len(report.Error) > 0 {
 		slogFunc(fmt.Sprintf("task=%s error: %s", t, report.Error))
@@ -74,8 +78,5 @@ func (p *Process) run(t tasks.Task) {
 		slogFunc(fmt.Sprintf("task=%s output: %s", t, report.Output))
 	}
 
-	p.memory.results <- Result{
-		Identifier: t.Identifier,
-		Status:     report.Status,
-	}
+	p.memory.Done(t.Identifier, report.Status)
 }

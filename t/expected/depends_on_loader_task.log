@@ -1,22 +1,26 @@
 2000-01-01 00:00:00 INFO   loading configuration tasks=2 procs=2 verbose=true
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
 2000-01-01 00:00:00 DEBUG  task=1:0 msg="task sent to internal channel"
-2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="task #1 must load two others" elapsed=0s
 2000-01-01 00:00:00 INFO   task=1:0 cmd=sh action: echo -n "sleep .2\nsleep .1\n"
 
+2000-01-01 00:00:00 DEBUG  task=1:0 start="2000-01-01 00:00:00" end="2000-01-01 00:00:00"
 2000-01-01 00:00:00 INFO   task=1:0 output: sleep .2
 sleep .1
 
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
 2000-01-01 00:00:00 DEBUG  task=1:1 msg="task sent to internal channel"
 2000-01-01 00:00:00 DEBUG  task=1:2 msg="task sent to internal channel"
-2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:2 status=succeeded name="task #1 must load two others" elapsed=0s
 2000-01-01 00:00:00 INFO   task=1:2 cmd=sh action: sleep .1
+2000-01-01 00:00:00 DEBUG  task=1:2 start="2000-01-01 00:00:00" end="2000-01-01 00:00:00"
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=1
-2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="task #1 must load two others" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=1:1 status=succeeded name="task #1 must load two others" elapsed=0s
 2000-01-01 00:00:00 INFO   task=1:1 cmd=sh action: sleep .2
+2000-01-01 00:00:00 DEBUG  task=1:1 start="2000-01-01 00:00:00" end="2000-01-01 00:00:00"
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
 2000-01-01 00:00:00 DEBUG  task=2:0 msg="task sent to internal channel"
-2000-01-01 00:00:00 INFO   task=2:0 status=succeeded name="task #2 must wait for all subtask completion" start="2000-01-01 00:00:00" elapsed=0s
+2000-01-01 00:00:00 INFO   task=2:0 status=succeeded name="task #2 must wait for all subtask completion" elapsed=0s
 2000-01-01 00:00:00 INFO   task=2:0 cmd=sh action: true
+2000-01-01 00:00:00 DEBUG  task=2:0 start="2000-01-01 00:00:00" end="2000-01-01 00:00:00"
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2

@@ -1,10 +1,10 @@
-package tasks_test
+package actions_test
 
 import (
 	"testing"
 
+	. "github.com/fljdin/dispatch/internal/actions"
 	. "github.com/fljdin/dispatch/internal/status"
-	. "github.com/fljdin/dispatch/internal/tasks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,7 +37,10 @@ func TestCommandValidate(t *testing.T) {
 func TestCommandWithOutput(t *testing.T) {
 	r := require.New(t)
 
-	cmd := Command{Text: "echo test"}
+	cmd := Command{
+		Type: Shell,
+		Text: "echo test",
+	}
 	result, _ := cmd.Run()
 
 	r.Equal(Succeeded, result.Status)
@@ -47,7 +50,10 @@ func TestCommandWithOutput(t *testing.T) {
 func TestCommandWithError(t *testing.T) {
 	r := require.New(t)
 
-	cmd := Command{Text: "false"}
+	cmd := Command{
+		Type: Shell,
+		Text: "false",
+	}
 	result, _ := cmd.Run()
 
 	r.Equal(Failed, result.Status)

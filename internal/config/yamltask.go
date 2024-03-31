@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/fljdin/dispatch/internal/tasks"
+	"github.com/fljdin/dispatch/internal/actions"
 )
 
 type YamlLoader struct {
@@ -28,7 +28,7 @@ type YamlTask struct {
 	Variables   Variables  `yaml:"variables,omitempty"`
 }
 
-func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
+func (t YamlTask) Normalize(env Environments) (Task, error) {
 	// make variables map if it's nil
 	if t.Variables == nil {
 		t.Variables = make(Variables)
@@ -39,7 +39,7 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 		env, err := env.ByName(t.Environment)
 
 		if err != nil {
-			return tasks.Task{}, err
+			return Task{}, err
 		}
 
 		// own variables take precedence over env variables
@@ -53,10 +53,10 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 
 	// use shell as default type
 	if t.Type == "" {
-		t.Type = tasks.Shell
+		t.Type = actions.Shell
 	}
 
-	var action tasks.Action
+	var action actions.Actioner
 
 	if !t.Loader.IsZero() {
 		if t.Loader.Command != "" && t.Loader.From != "" {
@@ -65,7 +65,7 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 				env, err := env.ByName(t.Loader.Environment)
 
 				if err != nil {
-					return tasks.Task{}, err
+					return Task{}, err
 				}
 
 				// make variables map if it's nil
@@ -80,32 +80,32 @@ func (t YamlTask) Normalize(env Environments) (tasks.Task, error) {
 			// inherit variables from task
 			t.Loader.Variables = t.Loader.Variables.Inherit(t.Variables)
 
-			action = tasks.OutputLoader{
+			action = actions.Output{
 				Text: t.Loader.Command,
 				From: t.Loader.From,
 				Type: t.Type,
-				Variables: tasks.NestedVariables{
+				Variables: actions.NestedVariables{
 					Outer: t.Variables,
 					Inner: t.Loader.Variables,
 				},
 			}
 		}
 	} else if t.File != "" {
-		action = tasks.FileLoader{
+		action = actions.File{
 			File:      t.File,
 			Type:      t.Type,
 			Variables: t.Variables,
 		}
 	} else {
-		action = tasks.Command{
+		action = actions.Command{
 			Text:      t.Command,
 			Type:      t.Type,
 			Variables: t.Variables,
 		}
 	}
 
-	return tasks.Task{
-		Identifier: tasks.NewId(t.ID, 0),
+	return Task{
+		Identifier: NewId(t.ID, 0),
 		Name:       t.Name,
 		Action:     action,
 		Depends:    t.Depends,

@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/fljdin/dispatch/internal/config"
-	"github.com/fljdin/dispatch/internal/dispatcher"
+	"github.com/fljdin/dispatch/internal/routines"
 	"github.com/knadh/koanf/v2"
 	"github.com/lithammer/dedent"
 )
@@ -83,7 +83,7 @@ func Dispatch(version string) {
 	}
 
 	procs := config.ValidateProcs(k.Int("procs"))
-	dispatcher := dispatcher.New(procs)
+	dispatcher := routines.NewLeader(procs)
 
 	for _, t := range t {
 		dispatcher.AddTask(t)

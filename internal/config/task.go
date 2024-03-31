@@ -1,8 +1,9 @@
-package tasks
+package config
 
 import (
 	"fmt"
 
+	"github.com/fljdin/dispatch/internal/actions"
 	"github.com/fljdin/dispatch/internal/status"
 	"golang.org/x/exp/slices"
 )
@@ -24,10 +25,10 @@ func (t TaskIdentifier) IsZero() bool {
 }
 
 type Task struct {
+	Action     actions.Actioner
+	Depends    []int
 	Identifier TaskIdentifier
 	Name       string
-	Action     Action
-	Depends    []int
 	Status     status.Status
 }
 
