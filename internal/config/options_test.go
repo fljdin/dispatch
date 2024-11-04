@@ -101,16 +101,41 @@ func TestLoadDefaultProcessNumber(t *testing.T) {
 	})
 	r.NoError(config.LoadFlags(k, opts))
 
-	procs := config.ValidateProcs(k.Int("procs"))
+	procs := config.ValidateProcs(k.Int("procs"), false)
 	r.Equal(config.ProcessesDefault, procs)
 }
 
 func TestValidateProcessNumberBoundary(t *testing.T) {
 	r := require.New(t)
 
-	procs := config.ValidateProcs(-1)
+	procs := config.ValidateProcs(-1, false)
 	r.Equal(config.ProcessesDefault, procs)
 
-	procs = config.ValidateProcs(64)
+	procs = config.ValidateProcs(64, false)
 	r.Equal(runtime.NumCPU(), procs)
+}
+
+func TestFlagRemoteFromProcessNumber(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{
+		"-c", "config.yaml",
+		"-P", "+64",
+	})
+	r.NoError(config.LoadFlags(k, opts))
+	r.Equal(true, k.Bool("remote"))
+}
+
+func TestInvalidProcsFlag(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{
+		"-c", "config.yaml",
+		"-P", "invalid",
+	})
+	r.Error(config.LoadFlags(k, opts))
 }

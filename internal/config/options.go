@@ -19,8 +19,8 @@ func Flags() *flag.FlagSet {
 	f.Bool("v", false, "")
 	f.Bool("verbose", false, "")
 	f.Bool("version", false, "")
-	f.Int("P", 0, "")
-	f.Int("procs", 0, "")
+	f.String("P", "0", "")
+	f.String("procs", "0", "")
 	f.String("c", "", "")
 	f.String("config", "", "")
 	f.String("o", "", "")
@@ -51,12 +51,12 @@ func LoadYamlRaw(k *koanf.Koanf, raw []byte) error {
 }
 
 // boundary check for the number of processes
-func ValidateProcs(procs int) int {
+func ValidateProcs(procs int, remote bool) int {
 	if procs < 1 {
 		return ProcessesDefault
 	}
 
-	if procs > runtime.NumCPU() {
+	if !remote && procs > runtime.NumCPU() {
 		return runtime.NumCPU()
 	}
 
@@ -64,6 +64,7 @@ func ValidateProcs(procs int) int {
 }
 
 var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) error {
+	var err error
 	var IsZero = func(v any) bool {
 		return v == 0 || v == "0" ||
 			v == "" || v == "false"
@@ -97,12 +98,20 @@ var MergeFunc koanf.Option = koanf.WithMergeFunc(func(src, dest map[string]any) 
 		case "P", "procs":
 			switch v := v.(type) {
 			case int:
-				// when value comes from yaml, it's an int
+				// when value comes from yaml, it's should be an int
 				dest["procs"] = v
 
 			case string:
-				// when value comes from flag, it's a string
-				dest["procs"], _ = strconv.Atoi(v)
+				// when a string is given, a sign "+" could be prefixed
+				// to bypass the local CPU limit
+				if v[0] == '+' {
+					dest["remote"] = true
+				}
+
+				dest["procs"], err = strconv.Atoi(v)
+				if err != nil {
+					return fmt.Errorf("must be a valid integer: %s", v)
+				}
 			}
 
 		default:
