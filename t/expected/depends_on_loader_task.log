@@ -1,4 +1,4 @@
-2000-01-01 00:00:00 INFO   loading configuration tasks=2 procs=2 verbose=true
+2000-01-01 00:00:00 INFO   loading configuration tasks=2 procs=2 remote=false verbose=true
 2000-01-01 00:00:00 DEBUG  filling tasks channel idle=2
 2000-01-01 00:00:00 DEBUG  task=1:0 msg="task sent to internal channel"
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="task #1 must load two others" elapsed=0s

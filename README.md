@@ -19,12 +19,18 @@ Usage:
   dispatch [options]
 
 Options:
-  -c, --config=FILE    configuration file
-  -h, --help           display this help and exit
-  -o, --output=FILE    redirect output to file
-  -P, --procs=PROCS    number of processes (default 1)
-  -v, --verbose        verbose mode
-      --version        show version
+  -c, --config=FILE      configuration file
+  -h, --help             display this help and exit
+  -o, --output=FILE      redirect output to file
+  -P, --procs=(+)PROCS   number of processes (default 1)
+  -v, --verbose          verbose mode
+      --version          show version
+
+The number of processes is limited to the number of CPU cores available
+locally by default. In a remote execution context, where the number of
+processes must not rely on the local machine, the sign "+" can be used to
+by-pass this limitation. For example, "dispatch -P +16" will spawn 16
+processes regardless of the number of CPU cores available locally.
 ```
 
 ## Configuration
@@ -150,10 +156,13 @@ tasks:
 
 * `procs`: declares number of processes
   - option `--procs` takes precedence
-  - limited by the number of logical CPUs usable by the main process
+* `remote`: defines the execution context
+  - `false` (default): limit to the number of CPU cores available locally
+  - `true`: no limit is applied to the number of processes
 
 ```yaml
 procs: 1
+remote: false
 
 # run the following tasks sequentially
 tasks:

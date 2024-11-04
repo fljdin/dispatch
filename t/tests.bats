@@ -65,3 +65,8 @@ function assert-diff() {
     dispatch --config config/loader_with_env.yaml
     assert-diff loader_with_env.log
 }
+
+@test "#36 do not limit CPU on remote execution" {
+    dispatch --config config/remote_execution.yaml
+    assert-diff remote_execution.log
+}
