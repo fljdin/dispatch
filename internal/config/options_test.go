@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/fljdin/dispatch/internal/config"
@@ -104,18 +105,12 @@ func TestLoadDefaultProcessNumber(t *testing.T) {
 	r.Equal(config.ProcessesDefault, procs)
 }
 
-func TestLoadProcessNumberBoundary(t *testing.T) {
+func TestValidateProcessNumberBoundary(t *testing.T) {
 	r := require.New(t)
-	k := koanf.New(".")
 
-	opts := config.Flags()
-	opts.Parse([]string{
-		"-c", "config.yaml",
-		"-P", "-1",
-	})
-
-	r.NoError(config.LoadFlags(k, opts))
-
-	procs := config.ValidateProcs(k.Int("procs"))
+	procs := config.ValidateProcs(-1)
 	r.Equal(config.ProcessesDefault, procs)
+
+	procs = config.ValidateProcs(64)
+	r.Equal(runtime.NumCPU(), procs)
 }
