@@ -1,6 +1,6 @@
 module github.com/fljdin/dispatch
 
-go 1.21
+go 1.23
 
 require (
 	github.com/fljdin/fragment v0.0.0-20230907113410-b8a526c9c145

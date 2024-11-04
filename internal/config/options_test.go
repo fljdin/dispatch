@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/fljdin/dispatch/internal/config"
@@ -100,22 +101,41 @@ func TestLoadDefaultProcessNumber(t *testing.T) {
 	})
 	r.NoError(config.LoadFlags(k, opts))
 
-	procs := config.ValidateProcs(k.Int("procs"))
+	procs := config.ValidateProcs(k.Int("procs"), false)
 	r.Equal(config.ProcessesDefault, procs)
 }
 
-func TestLoadProcessNumberBoundary(t *testing.T) {
+func TestValidateProcessNumberBoundary(t *testing.T) {
+	r := require.New(t)
+
+	procs := config.ValidateProcs(-1, false)
+	r.Equal(config.ProcessesDefault, procs)
+
+	procs = config.ValidateProcs(64, false)
+	r.Equal(runtime.NumCPU(), procs)
+}
+
+func TestFlagRemoteFromProcessNumber(t *testing.T) {
 	r := require.New(t)
 	k := koanf.New(".")
 
 	opts := config.Flags()
 	opts.Parse([]string{
 		"-c", "config.yaml",
-		"-P", "-1",
+		"-P", "+64",
 	})
-
 	r.NoError(config.LoadFlags(k, opts))
+	r.Equal(true, k.Bool("remote"))
+}
 
-	procs := config.ValidateProcs(k.Int("procs"))
-	r.Equal(config.ProcessesDefault, procs)
+func TestInvalidProcsFlag(t *testing.T) {
+	r := require.New(t)
+	k := koanf.New(".")
+
+	opts := config.Flags()
+	opts.Parse([]string{
+		"-c", "config.yaml",
+		"-P", "invalid",
+	})
+	r.Error(config.LoadFlags(k, opts))
 }

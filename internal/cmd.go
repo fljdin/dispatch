@@ -18,12 +18,18 @@ var (
 		  dispatch [options]
 
 		Options:
-		  -c, --config=FILE    configuration file
-		  -h, --help           display this help and exit
-		  -o, --output=FILE    redirect output to file
-		  -P, --procs=PROCS    number of processes (default %d)
-		  -v, --verbose        verbose mode
-		      --version        show version
+		  -c, --config=FILE      configuration file
+		  -h, --help             display this help and exit
+		  -o, --output=FILE      redirect output to file
+		  -P, --procs=(+)PROCS   number of processes (default %d)
+		  -v, --verbose          verbose mode
+		      --version          show version
+
+		The number of processes is limited to the number of CPU cores available
+		locally by default. In a remote execution context, where the number of
+		processes must not rely on the local machine, the sign "+" can be used to
+		by-pass this limitation. For example, "dispatch -P +16" will spawn 16
+		processes regardless of the number of CPU cores available locally.
  	`)[1:], config.ProcessesDefault)
 
 	out *os.File = os.Stderr
@@ -82,7 +88,7 @@ func Dispatch(version string) {
 		os.Exit(1)
 	}
 
-	procs := config.ValidateProcs(k.Int("procs"))
+	procs := config.ValidateProcs(k.Int("procs"), k.Bool("remote"))
 	dispatcher := routines.NewLeader(procs)
 
 	for _, t := range t {
@@ -93,6 +99,7 @@ func Dispatch(version string) {
 		"loading configuration",
 		"tasks", len(t),
 		"procs", procs,
+		"remote", k.Bool("remote"),
 		"verbose", k.Bool("verbose"),
 	)
 

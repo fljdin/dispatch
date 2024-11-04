@@ -1,4 +1,4 @@
-2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1 verbose=false
+2000-01-01 00:00:00 INFO   loading configuration tasks=1 procs=1 remote=false verbose=false
 2000-01-01 00:00:00 INFO   task=1:0 status=succeeded name="dispatch queries from a sql file" elapsed=0s
 2000-01-01 00:00:00 INFO   task=1:0 cmd=psql action: execute queries.sql
 2000-01-01 00:00:00 INFO   task=1:0 output: 2 loaded from queries.sql

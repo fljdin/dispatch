@@ -1,0 +1,8 @@
+procs: 10
+remote: true
+output: remote_execution.log
+verbose: true
+
+tasks:
+  - id: 1
+    command: "sleep .1"
