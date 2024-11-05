@@ -1,16 +1,14 @@
-# Simple task dispatcher
+# Simple command dispatcher
 
 [![go-test](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml)
 [![go-e2e](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml)
 
-Provides an easy-to-use command to dispatch tasks described in a YAML file.
+Orchestrates commands described in a YAML file with advanced features.
 
-Common use cases:
-
-* Launching multiple elementary tasks in parallel
-* Add a condition with a task dependent on another
-* Split SQL files to execute statements as elementary tasks
-* Behave as `\gexec` on multiple connections
+* Run multiple shell or psql commands in parallel
+* Load and execute delimited commands or SQL statements from a file
+* Run commands from the result of another command
+* Make dependent a task from another
 
 ## Usage
 
@@ -186,3 +184,20 @@ tasks:
     variables:
       PGAPPNAME: my_app
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## References
+
+- [dispatcher_pg](https://github.com/marco44/dispatcher_pg) - Dispatch a bunch
+  of queries over several sessions
+
+- [Dagu](https://github.com/dagu-org/dagu) - Developer-friendly, minimalism
+  Cron alternative, but with much more capabilities. It aims to solve greate
+  problems.
+
+- [Ansible](https://docs.ansible.com/ansible/) - Ansible is a radically simple
+  IT automation platform that makes your applications and systems easier to
+  deploy and maintain.
