@@ -21,7 +21,7 @@ priority: extra
 maintainer: Florent Jardin <https://github.com/fljdin>
 
 # Description.
-description: Provides an easy-to-use command to dispatch tasks described in a YAML file
+description: Orchestrates commands described in a YAML file with advanced features
 
 # Vendor.
 vendor: GoReleaser

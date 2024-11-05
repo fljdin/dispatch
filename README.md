@@ -1,16 +1,14 @@
-# Simple task dispatcher
+# Simple command dispatcher
 
 [![go-test](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-test.yml)
 [![go-e2e](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml/badge.svg)](https://github.com/fljdin/dispatch/actions/workflows/go-e2e.yml)
 
-Provides an easy-to-use command to dispatch tasks described in a YAML file.
+Orchestrates commands described in a YAML file with advanced features.
 
-Common use cases:
-
-* Launching multiple elementary tasks in parallel
-* Add a condition with a task dependent on another
-* Split SQL files to execute statements as elementary tasks
-* Behave as `\gexec` on multiple connections
+* Run multiple shell or psql commands in parallel
+* Load and execute delimited commands or SQL statements from a file
+* Run commands from the result of another command
+* Make dependent a task from another
 
 ## Usage
 
@@ -35,28 +33,39 @@ processes regardless of the number of CPU cores available locally.
 
 ## Configuration
 
-Use a valid YAML file to describe tasks.
+The configuration file is a YAML file that describes the tasks to be executed.
 
-### Tasks declaration
+### Parallelism
 
-* `tasks`: list of tasks to run
-  * must be a valid array of tasks as described below
+```yaml
+# "procs" declares number of processes
+# option --procs takes precedence
+procs: 1
 
-#### Elementary task
+# "remote" defines the execution context
+# false (default): limit to the number of CPU cores available locally
+# true: no limit is applied to the number of processes
+remote: false
+```
 
-- `id` (required)
-- `name`: as task description
-- `type`: execution context in following choices
-  + `sh` (default)
-  + `psql`: needs PostgreSQL `psql` client to be installed
-- `command`: instruction to be executed
-- `env`: environment name as described below
-- `variables`: a map of key-value used as environment variables, takes
-  precedence over `env`
-- `depends_on`: a list of identifiers of others tasks declared upstream
+### Traces
+
+```yaml
+# redirect output to a file
+output: /dev/stderr
+
+# print debugging messages
+verbose: false
+```
+
+### Commands
+
+A basic unit of work is a task that executes a command. Each task is described
+in an array of `tasks` with a unique identifier and a command to be executed.
 
 ```yaml
 # run the following shell commands simultaneously
+procs: 2
 tasks:
   - id: 1
     command: echo foo
@@ -64,16 +73,39 @@ tasks:
     command: echo bar
 ```
 
+A command type can be specified to use a supported execution context. Currently,
+only `sh` (default) and `psql` are provided. The following example uses `psql`
+to execute a SQL statement on a PostgreSQL with default environment variables.
+
 ```yaml
-# execute SQL statement with psql on localhost with default credentials
+# execute SQL statement with psql
 tasks:
   - id: 1
     type: psql
     name: run this statement
     command: SELECT user;
-    variables:
-      PGHOST: localhost
 ```
+
+A task can be enriched with environment variables. This is the preferred way to
+define connection parameters for a `psql` command.
+See [Named environments](#named-environments) for more details.
+
+```yaml
+# use custom environment variables
+tasks:
+  - id: 1
+    type: psql
+    command: \conninfo
+    variables:
+      PGHOST: somehost
+      PGDATABASE: somedb
+      PGUSER: someuser
+      PGPORT: someport
+```
+
+A task can depend on another task and will be executed only after the upstream
+task has completed successfully. In a multi-process context, the next ready task
+will be executed as soon as possible, regardless of the order of declaration.
 
 ```yaml
 # make a task dependent from another
@@ -85,17 +117,17 @@ tasks:
     depends_on: [1]
 ```
 
-#### Loader tasks
+### Loaders
 
-A loader is an extended task that dispatch instructions from a result command or
+A loader is an extended task that dispatch instructions from a command or a
+file. These instructions will inherit the environment variables, command type,
+and other properties from the loader task.
+
+Use `file` as a replacement for `command` to read and dispatch instructions from
 a file. Delimiter detection is provided by [Fragment] package and only `PgSQL`
 and `Shell` languages are supported.
 
 [Fragment]: https://github.com/fljdin/fragment
-
-To read and dispatch instructions from a file, use this:
-
-- `file`: instructions to be loaded from a file
 
 ```yaml
 # run queries from a file simultaneously
@@ -106,17 +138,12 @@ tasks:
     file: queries.sql
 ```
 
-To dispatch commands from a specific result command, use the following
-configuration:
-
-- `loaded`: in place of `command`
-  - `from`: source execution context
-  - `command`: instruction to be executed
-  - `env`: environment name as described below
-  - `variables`: a map of key-value used as environment variables
+A more advanced loader relies on the result of a first-executed command to
+generate a list of commands, which will be executed as regular tasks. Use the
+special `loaded` and `from` keys to define the loader task as shown below.
 
 ```yaml
-# run queries generated by another query in parallel
+# run shell commands generated by a psql query
 tasks:
   - id: 1
     type: sh
@@ -126,13 +153,19 @@ tasks:
       command: |
         SELECT format('reindexdb -v -t %I;', tablename) FROM pg_tables
         WHERE schemaname = 'public' AND tablename NOT IN ('log')
+      variables:
+        PGDATABASE: mydb
 ```
 
 ### Named environments
 
-* `environments`: declares named environment used by commands
-  * `name`: environment name (`default` applied to all tasks)
-  * `variables`: a map of key-value used as environment variables
+Named environments are shared accross the configuration file and can be used to
+define environment variables for tasks. Use the `env` key to attach environment
+variables to a task.
+
+The `variables` key takes precedence over the variables defined by the named
+environment. A special environment named `default` is applied to all tasks by
+default.
 
 ```yaml
 environments:
@@ -152,52 +185,19 @@ tasks:
       PGAPPNAME: my_app
 ```
 
-### Parallelism
+## License
 
-* `procs`: declares number of processes
-  - option `--procs` takes precedence
-* `remote`: defines the execution context
-  - `false` (default): limit to the number of CPU cores available locally
-  - `true`: no limit is applied to the number of processes
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```yaml
-procs: 1
-remote: false
+## References
 
-# run the following tasks sequentially
-tasks:
-  - id: 1
-    command: echo foo
-  - id: 2
-    command: echo bar
-```
+- [dispatcher_pg](https://github.com/marco44/dispatcher_pg) - Dispatch a bunch
+  of queries over several sessions
 
-### Traces
+- [Dagu](https://github.com/dagu-org/dagu) - Developer-friendly, minimalism
+  Cron alternative, but with much more capabilities. It aims to solve greate
+  problems.
 
-* `output`: redirect output to a file
-* `verbose`: print debugging messages
-
-```yaml
-output: result.out
-verbose: true
-```
-
-## Testing
-
-[Bats](https://bats-core.readthedocs.io) testing framework is used. End-to-end
-tests are located under `t/` directory A local PostgreSQL instance is required
-with `postgres/postgres` authentication or `trust` method in `pg_hba.conf`
-
-```sh
-go build -tags testing
-bats t
-
-# or using
-make test
-```
-
-Unit tests are provided under `internal` packages.
-
-```sh
-go test ./...
-```
+- [Ansible](https://docs.ansible.com/ansible/) - Ansible is a radically simple
+  IT automation platform that makes your applications and systems easier to
+  deploy and maintain.
